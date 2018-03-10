@@ -1,7 +1,9 @@
 ---
 title: Spring BindingResult를 json으로 받기
 date: 2018-03-10 08:58:29
-tags: spring
+tags: [spring, json, bindingResult]
+categories: 
+  - spring
 ---
 
 # 개요
