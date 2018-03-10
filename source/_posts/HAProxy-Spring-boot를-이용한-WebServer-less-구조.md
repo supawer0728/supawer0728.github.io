@@ -1,9 +1,9 @@
 ---
 title: HAProxy, Spring-boot를 이용한 WebServer-less 구조
 date: 2018-03-10 03:14:40
-tags: [HAProxy,spring-boot]
+tags: [haproxy,spring-boot,web-server,architecture]
 categories:
-  - Architecture
+  - architecture
 ---
 
 # 개요
