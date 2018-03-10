@@ -13,6 +13,8 @@ static resouce는 CDN에서 처리하고,
 Web Server(Apache, nginx 등)이 과연 필요할까라는 의문에서,
 Web Server 없이 서비스할 수 있지 않을까해서 조사해보았다
 
+<!-- more -->
+
 > 하나의 서버에서 Tomcat 앞에 webserver를 사용하는 것은, 대부분의 경우 기본 HTTP connector로 standalone으로 동작하는 것보다 현저히 낮은 성능을 보이며, 이는 web application의 대부분이 static file로 구성되었어도 마찬가지이다
 > -Tomcat 문서 내용
 
