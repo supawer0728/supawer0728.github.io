@@ -3,9 +3,7 @@ title: (Spring Cloud) Hystrix
 date: 2018-03-11 01:03:18
 tags: [spring-cloud, hystrix, netflix, spring]
 categories:
-  - spring
-  - cloud
-  - netflix
+  - [spring,cloud,netflix]
 ---
 
 # Hystrix란

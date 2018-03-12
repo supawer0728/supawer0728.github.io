@@ -1,7 +1,10 @@
 ---
 title: Spring에서 요청에 따른 부가 응답 추가하기(2) - reactor 적용
 date: 2018-03-11 14:59:03
-tags:
+tags: [spring,reactor,async,fallback]
+categories:
+  - [practice]
+  - [spring,practice]
 ---
 # 개요
 

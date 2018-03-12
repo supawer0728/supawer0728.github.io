@@ -3,9 +3,7 @@ title: (Spring Cloud)Ribbon과 Eureka
 date: 2018-03-11 01:07:43
 tags: [spring-cloud,ribbon,eureka,netflix]
 categories:
-  - spring
-  - cloud
-  - netflix
+  - [spring,cloud,netflix]
 ---
 # Ribbon(Load Balancer)
 

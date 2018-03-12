@@ -3,9 +3,7 @@ title: (Spring Cloud) Feign
 date: 2018-03-11 01:00:53
 tags: [spring-cloud, feign, spring, netflix]
 categories:
-  - spring
-  - cloud
-  - netflix
+  - [spring,cloud,netflix]
 ---
 
 # Feign

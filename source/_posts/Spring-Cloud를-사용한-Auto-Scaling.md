@@ -1,10 +1,10 @@
 ---
 title: Spring Cloud를 사용한 Auto Scaling
 date: 2018-03-11 02:00:00
-tags: [spring-cloud, eureka, spring-actuator, architecture, MSA]
+tags: [spring-cloud, eureka, spring-actuator, architecture, msa]
 categories:
-  - spring
-  - cloud
+  - [spring,cloud,netflix]
+  - [architecture,msa]
 ---
 
 # Eureka Topology
@@ -338,12 +338,12 @@ if (policies.getPolicy(serviceId).isScaleOutRequired(serviceId, metrics)) {
 **SamplePolicy**
 
 ```
-public boolean isScaleUpRequired(String serviceId, Map metrics) {
-    // 분당 10회 이상의 요청이 있는 경우 배포
+public boolean isScaleOutRequired(String serviceId, Map metrics) {
+    // 10초당 100회 이상의 요청이 있는 경우 배포
     if (metrics.containsKey(key)) {
-        Double tpm = (Double) metrics.get(key);
-        System.out.println(key + " : " + tpm);
-        return tpm > 10L;
+        Long requestsPer10Seconds = (Long) metrics.get(key);
+        log.info("{} : {}", key, requestsPer10Seconds);
+        return requestsPer10Seconds > 10L;
     }
 
     return false;
@@ -355,7 +355,7 @@ public boolean isScaleUpRequired(String serviceId, Map metrics) {
 ### DeplymentEngine
 
 ```
-public boolean scaleUp(DeploymentRule rule, String serviceId) {
+public boolean scaleOut(DeploymentRule rule, String serviceId) {
 
     if (!rule.executable()) {
         return false;

@@ -19,6 +19,7 @@ public class MyBean {
 ```
 
 classpath 내의 application.properties(yml)을 사용하여 어플리케이션에서 사용할 프로퍼티를 정의할 수 있다.
+<!-- more -->
 
 ## application.properties
 Srping boot enviroment abstraction은 다음 순서로 application.properties를 검색한다

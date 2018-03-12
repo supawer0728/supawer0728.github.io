@@ -2,6 +2,8 @@
 title: Spring에서 요청에 따른 부가 응답 추가하기 (1)
 date: 2018-03-11 02:48:41
 tags: [spring,aop,interceptor]
+categories:
+  - practice
 ---
 # 개요
 

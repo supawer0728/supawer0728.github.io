@@ -1,9 +1,9 @@
 ---
 title: Hazelcast 공유
 date: 2018-03-11 00:05:51
-tags: [hazlecast, NoSQL]
+tags: [hazlecast, nosql]
 categories:
-  - NoSQL
+  - nosql
 ---
 
 # In-Memory Data Grid

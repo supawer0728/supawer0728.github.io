@@ -3,9 +3,7 @@ title: (Spring Cloud) Zuul
 date: 2018-03-11 02:29:18
 tags: [spring-cloud, spring, netflix, zuul, api-gateway, proxy]
 categories:
-  - spring
-  - cloud
-  - netflix
+  - [spring,cloud,netflix]
 ---
 # Zuul
 
