@@ -26,7 +26,9 @@ component [member-api(Eureka Client)]
 
 * 인스턴스 추가를 수동으로 해야한다!!!
 * 인스턴스 종료를 수동으로 해야한다!!!
+
 <!-- more -->
+
 # 자동확장(Auto Scale-out)
 
 ## 자동확장이란?
@@ -374,3 +376,9 @@ private void executeDeploy() {
     log.info("배포 실행");
 }
 ```
+
+# 참고
+
+**서적**
+
+[스프링 마이크로 서비스(라제시 RV, 2017.07.27, acorn+PACKT)](http://www.acornpub.co.kr/book/spring-microservices)
