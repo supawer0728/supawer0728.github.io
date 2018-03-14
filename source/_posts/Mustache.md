@@ -451,3 +451,5 @@ script 기반의 view template engine인 mustache에 대해서 알아보았다.
 물론 이런 종류의 테스트는 최적화를 위해서는 더 다양한 케이스를 테스트해 봐야겠지만, 생각보다 훨씬 빠르다는 것에 다시 놀랐다.
 
 logic-less의 view를 구현하고, client의 logic을 node나 전담 front-server에서 구현할 수 있다면, 꽤 괜찮은 솔루션이라 생각된다.
+
+소스코드 : https://github.com/supawer0728/simple-mustache
