@@ -12,9 +12,9 @@ Java 서버를 개발하면서 View Template Engine에 대해서 매번 고민�
 
 spring boot를 써보면,
 - [더 이상 JSP를 쓰지 말아야할 것처럼 말한다](https://docs.spring.io/spring-boot/docs/2.0.0.RELEASE/reference/htmlsingle/#boot-features-spring-mvc-template-engines)
-- boot에서 jsp를 쓸 경우 war로 만들어야하며, WAS에 따라서 지원하지 않을 수 있다 - Tomcat만 고집한다면야...
+  - boot에서 jsp를 쓸 경우 war로 만들어야하며, WAS에 따라서 지원하지 않을 수 있다 - Tomcat만 고집한다면야...
 - Velocity는 boot에서 지원하지 않는다
-- 너무 오랫동안 업데이트가 없다면서 뺐는데, 2017-08-06에 Velocity Engine 2.0이 나왔다
+  - 너무 오랫동안 업데이트가 없다면서 뺐는데, 2017-08-06에 Velocity Engine 2.0이 나왔다
 - Thymeleaf3는 여전히 느린 모양이다.
 - Freemarker가 그나마 가장 무난하다.
 
@@ -74,7 +74,6 @@ spring.mustache.suffix: .html
 
 [Online Fake Rest Api](https://jsonplaceholder.typicode.com/users)를 사용했다
 
-
 ```java
 @Data
 @NoArgsConstructor
@@ -95,10 +94,8 @@ public class User {
 | API | URI | viewName |
 | - | - | - |
 | 목록 | `/users` | `/users/list` |
-- 목록 : `GET /users`
-- 상세 : `GET /users/{id}`
-- 
-`GET /users/{id}`를 할 경우, `/users/detail` 템플릿을 보여준다.
+| 상세 | `/users/{id}` | `/users/detail` |
+
 `spring.mustache.prefix=classpath:/templates/`가 기본설정으로 되어 있다.
 
 ```java
@@ -159,7 +156,7 @@ User 객체의 속성을 보여준다
 
 ### 변수
 
-콧수염 두 개(`{{id}}`)로 표현한다
+콧수염 두 개(`{% raw %}{{id}}{% endraw %}`)로 표현한다
 
 #### HTML Escape
 
