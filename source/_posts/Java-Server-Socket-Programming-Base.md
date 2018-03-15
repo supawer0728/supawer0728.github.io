@@ -15,7 +15,9 @@ Spring에서 지원하는 Streaming이나, WebSocket에 관련해서 공부하�
 
 Kernel 상에서 File Descriptor로 취급된다.
 Local과 Remote의 Ip Address, Port 정보를 가지고 있다.
-Data를 이 Socket을 대상으로 Read, Writer한다.
+Data를 이 Socket을 대상으로 Read, Write한다.
+
+<!-- more -->
 
 # Linux Socket Programming
 
