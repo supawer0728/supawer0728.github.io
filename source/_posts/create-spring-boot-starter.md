@@ -28,7 +28,7 @@ categories:
 
 # 구현할 내용
 
-아래 요구 사항을 충족하는 경우 reaquest parameter를 logging하는 `spring-boot-starter`를 작성한다.
+아래 요구 사항을 충족하는 경우, reaquest parameter를 logging하는 `spring-boot-starter`를 작성한다.
 
 - `application.yml`에서 `spring.mvc.custom-uri-logging-filter.enabled: true`일 것
 - `application.yml`에서 `spring.mvc.custom-uri-logging-filter.level: info` 등으로 지정한 레벨로 찍을 것
@@ -67,11 +67,10 @@ reference에서는 가능한 고유한 key를 사용할 것을 권고하고 있�
 `server`, `management`, `spring` 등, spring이 이미 정의한 property key를 사용하는 경우,
 향후 spring의 수정내용이 어떠한 영향을 미칠지 알 수 없기 때문이다.
 
-## `autoconfigure` 모듈
+## autoconfigure 모듈
 
 `autoconfigure` 모듈은 자동 설정에 필요한 모든 요소(`@ConfigurationProperties` 등)와 `library`를 갖고 있다.
-`autoconfigure`에서 참조한 의존성에는 `optional`을 걸어두는 것이 좋다.
-이 경우, `autoconfigure`를 참조하는 모듈에서 필요한 의존성이 없을 때, Spring Boot는 자동 설정을 하지 않는다.
+`autoconfigure`에서 참조한 의존성에는 `optional`을 걸어두는 것이 좋다. 이 경우, `autoconfigure`를 참조하는 모듈에서 필요한 의존성이 없을 때, Spring Boot는 자동 설정을 하지 않는다.
 
 ### 구현
 
@@ -142,7 +141,7 @@ reference에서는 가능한 고유한 key를 사용할 것을 권고하고 있�
 
 - `slf4j-api` : log를 사용하기 위해 의존
 - `javax.servlet-api` : Filter를 사용하기 위해 의존
-- `spring-boot-configuration-processor` : IDE가 `application.xml`의 내용을 가이드할 수 있도록 한다. 추후 상세 설명함.
+- `spring-boot-configuration-processor` : IDE가 `application.yml`의 내용을 가이드할 수 있도록 한다. 추후 상세 설명함.
 
 #### application.yml
 
@@ -160,7 +159,7 @@ logging.level.com.parfait.study.autoconfigure.logging.filter.RequestParameterLog
 `application.yml`에서 설정한 key에 대한 정보를 정의할 수 있다.
 이를 Configuration Metadata라 부르며, 이 파일을 정의한 경우 IDE에서 해당 키에 대한 가이드를 보여줄 수 있다.
 가이드가 보여진 화면은 추후 첨부하겠다.
-[Configuration Metadata에 대해](https://docs.spring.io/spring-boot/docs/current/reference/html/configuration-metadata.html#configuration-metadata-annotation-processor)
+[Configuration Metadata에 대해](https://docs.spring.io/spring-boot/docs/current/reference/html/configuration-metadata.html)
 
 ```json
 {
@@ -253,7 +252,7 @@ org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.parfait.study
 
 [spring-boot-autoconfigure에서 사용되는 spring.factories](https://github.com/spring-projects/spring-boot/blob/v2.0.0.RELEASE/spring-boot-project/spring-boot-autoconfigure/src/main/resources/META-INF/spring.factories)
 
-## `starter` 모듈
+## starter 모듈
 
 필요한 설정 정보는 `autoconfigure`에서 모두 마쳤다.
 `starter`에서는 의존성만 걸어주면 된다.
@@ -312,9 +311,10 @@ org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.parfait.study
 </project>
 ```
 
-## `web` 모듈
+## web 모듈
 
 이제 설정한 `starter`를 써먹어보자
+`sample-spring-boot-starter-web`이라는 이름이지만 그냥 웹 API Application이다.
 
 #### pom.xml
 
@@ -393,15 +393,18 @@ public class UserController {
 
 ```yml
 spring.mvc.request-parameter-logging-filter.enabled=true
-spring.mvc.request-parameter-logging-filter.level=debug
+spring.mvc.request-parameter-logging-filter.level=info
 ```
+
+> `autoconfigure`에서 작성한 `appliaction.yml`값이 default이다.
+> `autoconfigure`에서도 기본값을 지정하지 않고, Configuration Meta만 넘길 수도 있다.
 
 #### 실행 결과
 
-사용하는 소스에서는 `application.yml` 외에는 아무런 설정을 하지 않았는데
-잘 동작하는 것은 덤이다
+이제 서버를 의우고 API를 실행해보자.
+사용하는 소스에서는 `application.yml` 외에는 아무런 설정을 하지 않았는데 Filter가 잘 동작하는 것을 확인할 수 있다.
 
-**`GET /users/1?name=hello`***
+**`GET /users/1?name=hello`**
 
 ```
 2018-03-15 21:24:20.656  INFO 16048 --- [nio-8080-exec-1] .p.s.a.l.f.RequestParameterLoggingFilter : uri : name=hello
@@ -409,11 +412,9 @@ spring.mvc.request-parameter-logging-filter.level=debug
 
 # 또 다른 할 수 있는 일들에 대해
 
-`spring-boot-starter`는 협업에 있어서 강력한 자동 설정을 지원해 줄 수 있다는 점에서 매우 권장한다.
-boot를 사용하는 팀 간의 지원을 아주 간편하게 해줄 수 있다.
+`spring-boot-starter`는 협업에 있어서 강력한 자동 설정을 지원해 줄 수 있다는 점에서 매우 권장한다. boot를 사용하는 팀 간의 지원을 아주 간편하게 해줄 수 있다.
 
-예를 들어, 빅데이터 분석을 위해 정보를 수집해야하는 서비스에서는 `bigdata-spring-boot-starter-log`를 제공하여
-아래와 같은 설정만으로 로그 수집 로직이 동작하게 하거나
+예를 들어, 빅데이터 분석을 위해 정보를 수집해야하는 서비스에서는 `bigdata-spring-boot-starter-log`를 제공하여 아래와 같은 설정만으로 로그 수집 로직이 동작하게 하거나
 
 ```yml
 bigdata.log:
@@ -439,8 +440,8 @@ member-server:
   result.attribute-name: RESOLVER_MEMBER_INFO
 ```
 
-다른 예를 들어보자.
-spring의 `Cache Abstraction`을 이용해서 `@Cacheable`을 [Near Cache](https://docs.oracle.com/cd/E24290_01/coh.371/e22840/nearcache.htm#COHGS228)로 구성할 수도 있다.
+필터 말고 다른 예를 들어보자.
+spring의 `Cache Abstraction`을 이용해서 `@Cacheable`을 [Near Cache](https://docs.oracle.com/cd/E24290_01/coh.371/e22840/nearcache.htm)로 구성할 수도 있다.
 
 ```yml
 chained-cache-namager:
