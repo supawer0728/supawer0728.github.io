@@ -1,5 +1,5 @@
 ---
-title: HAProxy, Spring-boot를 이용한 WebServer-less 구조
+title: HAProxy를 이용한 WebServer-less 구조
 date: 2018-03-10 03:14:40
 tags: [haproxy,spring-boot,web-server,architecture]
 categories:
@@ -8,36 +8,96 @@ categories:
 
 # 개요
 
-static resouce는 CDN에서 처리하고,
-동적인 부분은 WAS(Web application server)로 처리하는 경우,
-Web Server(Apache, nginx 등)이 과연 필요할까라는 의문에서,
-Web Server 없이 서비스할 수 있지 않을까해서 조사해보았다
+L4의 scale-out이 어렵다는 점을 해결하기 위해, HAProxy를 사용하게 된 후, 과연 web server가 필요할까라는 의문이 들었다. `apache http + tomcat`라는 기술 스택은 마치 표준인양 Java 서버 진영에서는 많이 사용되고 있는데, HAProxy로 L4를 대체해버린 경우에도 정말 apache http가 필요한 걸까? 한 번 따져볼 일이다.
 
 <!-- more -->
 
-> 하나의 서버에서 Tomcat 앞에 webserver를 사용하는 것은, 대부분의 경우 기본 HTTP connector로 standalone으로 동작하는 것보다 현저히 낮은 성능을 보이며, 이는 web application의 대부분이 static file로 구성되었어도 마찬가지이다
-> -Tomcat 문서 내용
+# L4 + Apache Http + Tomcat VS HAProxy + Tomcat
 
-**장점**
-* 관리 포인트가 줄어듬
-    * connection, socket timeout을 계산하기가 조금 더 수월하다
-    * apache 혹은 nginx 등의 학습비용을 줄일 수 있다
-    * 서버 증설시 해야할 일이 줄어든다(question)
-* 성능향상
-    * webserver에 사용되는 시스템리소스를 web application server에 줄 수 있다
-    * single server에서 tomcat을 standalone으로 사용하는 것이, 앞단에 web server를 두는 것보다 훨씬 빠르다(고 한다)
-* ajp를 사용하는 것보다 http를 사용하는 것이 개발자에게 익숙하다(apache의 경우)
+HAProxy로 L4/L7 switch를 대체하는 것에 대한 내용은 [Naver의 기술 블로그(L4/L7 스위치의 대안, 오픈 소스 로드 밸런서 HAProxy)](http://d2.naver.com/helloworld/284659)를 참고하자
 
-# Embedded Tomcat의 성능에 대한 염려
+다음은 각 구성을 다이어그램으로 표현한 것이다.
 
-Spring boot에서 내장하고 있는 Tomcat이 외장 Tomcat에 비해 성능이 빠를까?
+**전통적인 L4 - Server 구성**
 
-## Embedded Tomcat VS Non-embedded Tomcat
+{% plantuml %}
 
-- 외장 Tomcat을 사용시 .war로 압축된 소스의 내용을 loading
-- 내장 Tomcat은 jar로 압축된 소스를 loading
+package "apache + tomcat 서버" {
+  [apache + tomcat 1]
+  [apache + tomcat 2]
+}
 
-> 성능 비교는 무의미
+[client] --> [L4]
+[L4] --> [apache + tomcat 1]
+[L4] --> [apache + tomcat 2]
+
+{% endplantuml %}
+
+**GSLB - HAProxy - Server 구성**
+
+{% plantuml %}
+package "apache + tomcat 서버" {
+  [apache + tomcat 1]
+  [apache + tomcat 2]
+}
+[client] --> [gslb]
+[gslb] --> [haproxy1]
+[gslb] --> [haproxy2]
+[haproxy1] --> [apache + tomcat 1]
+[haproxy1] --> [apache + tomcat 2]
+[haproxy2] --> [apache + tomcat 1]
+[haproxy2] --> [apache + tomcat 2]
+{% endplantuml %}
+
+## Apache Http + Tomcat 스택을 쓰는 이유
+
+우선 왜 `apache http + tomcat`을 사용할까?
+개인적으로 생각하는 `apache http + tomcat`을 쓰는 이유에 대해서 꼽아봤다.
+
+- 정적 컨텐츠 제공
+  - apache http는 빠른 성능의 정적 컨텐츠 제공이 강점이다.
+  - apache http로 정적 컨텐츠를 제공하고, tomcat으로 동적 service logic을 실행한다.
+- 보안
+  - 여러 조건을 가지고 ACL을 걸 수 있다.
+  - SSL Offloading으로 tomcat에서는 http로만 잘 동작하도록 해도 문제없다.
+- Apache 모듈 지원
+  - 많은 기능을 모듈화하여 필요에 따라 사용할 수 있다.
+- 레퍼런스
+  - `apache http + tomcat`은 사용자가 많다.
+  - 많은 실패사례, 성공사례, 예제와 설명을 접할 수 있다.
+
+적어놓고 보니 안 쓸 이유가 없어보인다.
+사실 이 외에도 많은 장점이 있다.(가상호스트, 요청 편집, 프록시 등)
+HAProxy를 사용한다는 가정하에 몇 가지 태클을 걸어보자.
+
+> 만약 위의 기능이 필요하다면 `apache http + tomcat`을 쓰자
+
+### 정적 컨텐츠 제공
+
+과연 정적인 컨텐츠가 서버마다 있어야 할까?
+`/static/a.png` 파일이 A서버에 요청할 때와, B서버에 요청할 때 다른 결과가 나와야할 컨텐츠가 있을까?
+그렇지 않다면 차라리 가용성을 높게 구성한 CDN에서 관리하는게 좋다고 생각한다.
+
+### 보안
+
+SSL Offloading, URI, Header 등, L4/L7을 대체하는 HAProxy에서 ACL체크를 할 수 있다.
+
+### Apache 모듈 지원
+
+HAProxy의 주된 기능은 당연히 Proxy이다. 만약 Caching이 필요하다거나, Apache의 모듈에서만 제공하는 기능이 반드시 필요하다면 Apache를 써야한다. 하지만 인프라 구성이 HAProxy로도 충분히 해낼 수 있다면 Apache를 사용해야할 이유가 희미해진다.
+
+### 성능
+
+{% blockquote Tomcat Reference https://tomcat.apache.org/tomcat-8.5-doc/connectors.html Connectors How To %}
+단일 서버를 사용한다면 native web server를 tomcat 앞에 두는 것은 대부분의 경우, HTTP connector로 standalone으로 동작하는 것보다 `현저하게 낮은 성능(significantly worse)`을 보인다. 이는 web application의 대부분이 정적 파일로 구성된 경우에도 마찬가지다.
+{% endblockquote %}
+
+물론 `apache http + tomcat`으로 구성할 때에는, 둘 사이의 통신을 ajp 프로토콜을 사용하여 빠른 성능을 내려고 노력하지만 **필연적으로 tomcat standalone보다는 느릴 수 밖에 없다**
+
+### 결론
+
+Apache http에 의존적인 서비스를 해야하는 가에 대해 확인할 필요가 있다.
+꼭 Apache http를 써야할 이유가 없고, 성능이나 비용 절감의 요구가 더 크다면 과감히 WebServer-less로 전환해보는 건 어떨까?
 
 # 기존에 사용하던 Apache의 기능을 HAProxy로 Porting 할 수 있을까?
 
@@ -70,8 +130,6 @@ acl favicon_request path /favicon.ico
 http-request deny 404 if favicon_request
 ```
 
-# 기존에 사용하던 Apache의 기능을 HAProxy로 Porting 할 수 있을까?
-
 ## 특정 경로 ACL(403)
 
 **apache**
@@ -86,12 +144,10 @@ http-request deny 404 if favicon_request
 **HAProxy**
 
 ```
-cl meta_inf_request path_reg (^|/)META-INF($|/)
-http-request deny if meta_inf_request
-= http-request allow if !meta_inf_request
+acl meta_inf_request path_reg (^|/)META-INF($|/)
+http-request deny if meta_inf_request # http-request allow if !meta_inf_request
 ```
 
-# 기존에 사용하던 Apache의 기능을 HAProxy로 Porting 할 수 있을까?
 
 ## 응답 압축
 
@@ -111,37 +167,19 @@ compression algo gzip
 comporession type text/html text/pain text/xml
 ```
 
-# 기존에 사용하던 Apache의 기능을 HAProxy로 Porting 할 수 있을까?
-
 ## Request 재작성(mod_rewrite)
 
-```
-http-request {
-  allow | tarpit | auth [realm <realm>] | redirect <rule> | deny [deny_status <status>]
-  | add-header <name> <fmt> | set-header <name> <fmt> | capture <sample> [ len <length>
-  | id <id> ] | del-header <name> | set-nice <nice> | set-log-level <level>
-  | replace-header <name> <match-regex> <replace-fmt>
-  | replace-value <name> <match-regex> <replace-fmt> | set-method <fmt> | set-path <fmt>
-  | set-query <fmt> | set-uri <fmt> | set-tos <tos> | set-mark <mark>
-  | add-acl(<file name>) <key fmt> | del-acl(<file name>) <key fmt>
-  | del-map(<file name>) <key fmt> | set-map(<file name>) <key fmt> <value fmt>
-  | set-var(<var name>) <expr> | unset-var(<var name>)
-  | { track-sc0 | track-sc1 | track-sc2} <key> [table <table>]
-  | sc-inc-gpc0(<sc-id>) | sc-set-gpt0(<sc-id>) <int> | silent-drop |
-}
-[ { if | unless } <condition> ]
+**www를 강제로 붙이기**
 
-www를 강제로 붙이는 예제)
+```
 http-request redirect code 301 \
 location http://www.%[hdr(host)]%[capture.req.uri] \
 unless { hdr_beg(host) -i www }
 ```
 
-# 기존에 사용하던 Apache의 기능을 HAProxy로 Porting 할 수 있을까?
-
 ## VirtualHost
 
-**로드밸런서에 등록된 ip 기반으로 나누는 방식(권장)**
+**로드밸런서(GSLB)에 등록된 ip 기반으로 나누는 방식(권장)**
 
 ```
 frontend a_domain
@@ -166,32 +204,25 @@ frontend http_proxy
   use_backend b_backend if b
 ```
 
-# 기존에 사용하던 Apache의 기능을 HAProxy로 Porting 할 수 있을까?
-
 ## X-Forwarded-For
 
 ```
-option forwardfor [ except <network> ] [ header <name> ] [ if-none ]
-
-# Public HTTP address also used by stunnel on the same machine
 frontend www
     mode http
-    option forwardfor except 127.0.0.1  # stunnel already adds the header
+    option forwardfor except 127.0.0.1
 
-# Those servers want the IP Address in X-Client
 backend www
     mode http
-    option forwardfor header X-Client
+    option forwardfor
+    # option forwardfor header X-Client : X-Client 이름의 헤더로 forwardfor 값을 넣음
 ```
 
-# 결론
+# 마무리
 
-static 자원을 모두 CDN에서 처리를 하며, HAProxy를 모든 서버 앞에 두게 된다면
-굳이 apache, nginx와 같은 web server를 사용할 필요가 없어진다.
-오히려 사용하므로써 서버 간 구조를 복잡하게 만들고,
-서버 리소스를 비효율적으로 사용할 가능성을 높이며,
-이는 곧 최적화, 성능 이슈를 야기하는 원인이 될 수 있다.
+관례는 좋다고 생각한다. 레퍼런스가 많고, 배우기 쉬우며, 많은 사람들이 그 기술을 사용할 때에는 다 이유가 있기 때문에 쓴다. 하지만 레퍼런스 케이스가 모든 경우에 대입할 수 있는 것은 아니다. 새로운 요구 사항들이 생기고, 새로운 기술들을 익히는 과정에서 한 번 쯤은 내가 쓰고 있던 기술들을 돌이켜 보고 더 나은 구조는 없을까 고민해보는 것도 좋은 경험인 것 같다.
 
-습관처럼 사용해오던 apache + tomcat을 왜 그렇게 사용했는지 이유를 되짚어보고,
-우리의 시스템에 그 이유가 마찬가지로 적용이 되는지를 생각해본다면,
-과감히 web server를 버리고 standalone tomcat을 사용하는 것이 좋다고 본다
+한 가지 분명히 밝혀둬야할 것은 HAProxy는 Apache의 대체 기술이 아니다. Apache는 server이고, HAProxy는 proxy이다. 각자 자신만이 할 수 있는 영역이 있고, 두 기술 모두 처리할 수 있는 영역이 있다. 여기서는 교집합이 되는 영역에 대해서 이야기하고 싶었다.
+
+본문에서는 전체 주제를 유지하기 위해 Apache의 기능에만 많은 초점을 맞추었지만, HAProxy 또한 각 node끼리 P2P로 통신하여 전체 트래픽을 제어하거나, sticky session을 구성하거나, 임계치를 걸 수 있는 등, Apache에서는 하지 못할 일들을 할 수 있다. 그러니 한 번 쯤은 HAProxy 레퍼런스를 훑어보는 것도 좋다.
+
+HAProxy는 L4/L7에서 요청을 다룰 수 있는 기능을 제공한다. HAProxy를 사용해서 L4/L7을 대체하는 구성을 사용하게 된다면, 그동안 당연히 사용해왔던 apache http에 대해서 다시 한 번 돌아볼 필요가 있다고 생각한다.

@@ -8,11 +8,13 @@ categories:
 
 # Feign
 
-* REST 기반 서비스 호출을 추상화해주는 Spring Cloud Netflix 라이브러리
+* REST 기반 서비스 호출을 추상화한 Spring Cloud Netflix 라이브러리
 * 선언적 방식
 * 인터페이스를 통해 클라이언트 측 프로그램 작성
 * Spring이 런타임에 구현체를 제공(RestTemplate을 사용)
+
 <!-- more -->
+
 # Dependencies
 
 ```gradle
@@ -111,7 +113,7 @@ feign:
         decoder: com.example.SimpleDecoder
         contract: com.example.SimpleContract
 ```
-- connectionTimeout, readTimeout : hystrix의 timeout 설저이 더 짧은 경우 hystirx 옵션을 따라감
+- connectionTimeout, readTimeout : hystrix의 timeout 설정이 더 짧으면, hystirx 옵션을 따라감
 - loggerLevel : NONE, BASIC, HEADER, FULL을 지정할 수 있음
     - NONE : default, 로그를 남기지 않음
     - BASIC : Request Method, URL과 응답 코드, 실행 시간을 남김

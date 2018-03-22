@@ -11,15 +11,15 @@ tags:
 Java 서버를 개발하면서 View Template Engine에 대해서 매번 고민하게 된다.
 
 spring boot를 써보면,
-- [더 이상 JSP를 쓰지 말아야할 것처럼 말한다](https://docs.spring.io/spring-boot/docs/2.0.0.RELEASE/reference/htmlsingle/#boot-features-spring-mvc-template-engines)
-  - boot에서 jsp를 쓸 경우 war로 만들어야하며, WAS에 따라서 지원하지 않을 수 있다 - Tomcat만 고집한다면야...
+- [더 이상 JSP를 쓰지 말아야 할 것처럼 말한다](https://docs.spring.io/spring-boot/docs/2.0.0.RELEASE/reference/htmlsingle/#boot-features-spring-mvc-template-engines)
+  - boot에서 jsp를 쓸 경우 war로 만들어야 하며, WAS에 따라서 지원하지 않을 수 있다 - Tomcat만 고집한다면야...
 - Velocity는 boot에서 지원하지 않는다
   - 너무 오랫동안 업데이트가 없다면서 뺐는데, 2017-08-06에 Velocity Engine 2.0이 나왔다
 - Thymeleaf3는 여전히 느린 모양이다.
 - Freemarker가 그나마 가장 무난하다.
 
-위와 같이 알고 있던 중에 최신 spring 문서를 뒤져보다가, `script views`라는게 있다는 걸 알게 되었다.
-Handlebars, Mustache, React, Kotlin Script templating 등등의 많은 라이브러리가 있었는 데, 그 중에서 Mustache를 살펴보려 한다.
+위와 같이 알고 있던 중에 최신 spring 문서를 뒤져보다가, `script views`라는 게 있다는 걸 알게 되었다.
+Handlebars, Mustache, React, Kotlin Script templating 등등의 많은 라이브러리가 있었는데, 그중에서 Mustache를 살펴보려 한다.
 
 <!-- more -->
 
@@ -31,11 +31,11 @@ Mustache는 Simple하다.
 `spring-boot`에서 `starter`를 지원하기 때문에 설정도 간단하게 할 수 있다.
 
 하지만 가장 중요한 것은 `Logic-less`라는 점이다.
-MVC 패턴으로 개발을 하다보면, view에 로직을 구현하려는 경우를 종종 보게된다.
-web view를 작성하다보면 필연적으로 JavaScript를 사용하게 되고,
+MVC 패턴으로 개발을 하다 보면, view에 로직을 구현하려는 경우를 종종 보게 된다.
+web view를 작성하다 보면 필연적으로 JavaScript를 사용하게 되고,
 client에서 필요한 로직을 JavaScript로 구현하게 된다.
-개인적으로 client의 역할과 view의 역할은 분리되어야 한다고 생각하며,
-view에 로직이 구현되어 있는 경우, OOP의 5원칙 중에 SRP를 어긴것으로 생각한다.
+개인적으로 client의 역할과 view의 역할은 분리해야 한다고 생각하며,
+view에 로직이 구현되어 있는 경우, OOP의 5원칙 중에 SRP를 어겼다고 생각한다.
 
 때문에 Mustache의 `Logic-less`라고 하는 점은 매우 끌리는 장점 중 하나이다.
 
@@ -63,7 +63,7 @@ testCompile('io.projectreactor:reactor-test')
 
 ## application.yml
 
-기본설정으로 `spring.mustache.suffix=.mustache`로 되어있다.
+기본설정은 `spring.mustache.suffix=.mustache`다.
 이를 `.html`로 바꿨다. (취향)
 
 ```yml
@@ -96,7 +96,7 @@ public class User {
 | 목록 | `/users` | `/users/list` |
 | 상세 | `/users/{id}` | `/users/detail` |
 
-`spring.mustache.prefix=classpath:/templates/`가 기본설정으로 되어 있다.
+`spring.mustache.prefix=classpath:/templates/`가 기본설정이다.
 
 ```java
 @Controller
@@ -449,4 +449,4 @@ script 기반의 view template engine인 mustache에 대해서 알아보았다.
 
 logic-less의 view를 구현하고, client의 logic을 node나 전담 front-server에서 구현할 수 있다면, 꽤 괜찮은 솔루션이라 생각된다.
 
-소스코드 : https://github.com/supawer0728/simple-mustache
+소스 코드 : https://github.com/supawer0728/simple-mustache

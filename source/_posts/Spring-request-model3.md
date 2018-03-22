@@ -15,7 +15,9 @@ categories:
 
 # spring-webflux
 
-![image1](https://docs.spring.io/spring/docs/5.0.0.BUILD-SNAPSHOT/spring-framework-reference/html/images/webflux-overview.png)
+| ![image1](https://docs.spring.io/spring/docs/5.0.0.BUILD-SNAPSHOT/spring-framework-reference/html/images/webflux-overview.png) |
+| - |
+| *출처 : https://docs.spring.io/spring/docs/5.0.0.BUILD-SNAPSHOT/spring-framework-reference/html/images/webflux-overview.png* |
 
 `spring-webflux`를 사용하더라도, 기존의 애노테이션(`@Controller` 등)은 사용할 수 있다.
 하지만 이번에는 기존의 방식보다는 `Functional Endpoints` 기반으로 작성을 해보겠다.

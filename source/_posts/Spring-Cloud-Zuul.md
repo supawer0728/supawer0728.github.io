@@ -16,8 +16,12 @@ Netflix에서 사용하는 JVM 기반의 라우터이자, 로드 밸런서
 - 동적 라우팅
 - 트래픽 조정
 - 그 외...
+
 <!-- more -->
-![image](https://camo.githubusercontent.com/5e596c573110bffb608614a09c97611107205d0d/687474703a2f2f6e6574666c69782e6769746875622e696f2f7a75756c2f696d616765732f7a75756c2d706879736963616c2d617263682e706e67)
+
+| ![image](https://camo.githubusercontent.com/5e596c573110bffb608614a09c97611107205d0d/687474703a2f2f6e6574666c69782e6769746875622e696f2f7a75756c2f696d616765732f7a75756c2d706879736963616c2d617263682e706e67) |
+| - |
+| *출처 : https://github.com/Netflix/zuul/wiki/How-We-Use-Zuul-At-Netflix* |
 
 # 기본 예제
 
@@ -344,7 +348,9 @@ class MyFallbackProvider implements FallbackProvider {
 
 # Zuul Filter
 
-![image](https://camo.githubusercontent.com/4eb7754152028cdebd5c09d1c6f5acc7683f0094/687474703a2f2f6e6574666c69782e6769746875622e696f2f7a75756c2f696d616765732f7a75756c2d726571756573742d6c6966656379636c652e706e67)
+| ![image](https://camo.githubusercontent.com/4eb7754152028cdebd5c09d1c6f5acc7683f0094/687474703a2f2f6e6574666c69782e6769746875622e696f2f7a75756c2f696d616765732f7a75756c2d726571756573742d6c6966656379636c652e706e67) |
+| - |
+| *출처 : https://github.com/Netflix/zuul/wiki/How-it-Works* |
 
 ## Pre Filter
 

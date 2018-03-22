@@ -8,26 +8,29 @@ categories:
 
 # Hystrix란
 
-Netflix에서 [Circuit Breaker Pattern](https://martinfowler.com/bliki/CircuitBreaker.html)을 구현한 라이브러리.
-Micro Service Architecture에서 장애 전파 방지를 할 수 있음
+Netflix에서 [Circuit Breaker Pattern](https://martinfowler.com/bliki/CircuitBreaker.html)을 구현한 라이브러리이다. Micro Service Architecture에서 장애 전파 방지를 할 수 있다.
 <!-- more -->
 ## Circuit Breaker Pattern
 
-![Inline-image-2018-02-28 17.38.25.834.png](https://martinfowler.com/bliki/images/circuitBreaker/sketch.png)
+| ![Inline-image-2018-02-28 17.38.25.834.png](https://martinfowler.com/bliki/images/circuitBreaker/sketch.png) |
+| - |
+| *출처 : https://martinfowler.com/bliki/images/circuitBreaker* |
 
 # 장애 연쇄
 
-위 그림에서 `supplier 서버`에 장애가 생겨 항상 Timeout이 발생한다는 경우,
-`supplier 서버`를 호출한 `client 서버`는 Timeout이 발생할 때까지 응답이 밀리게 되고,
-응답이 밀리는 동안 요청이 계속 쌓여 결국 `client 서버`까지 요청이 과하게 밀려 장애가 발생할 수 있음.
+위 그림에서 `supplier 서버`에 장애가 생겨 항상 Timeout이 발생하는 경우, `supplier 서버`를 호출한 `client 서버`는 Timeout이 발생할 때까지 응답이 밀리게 된다. 응답이 밀리는 동안 요청이 계속 쌓여 결국 `client 서버`까지 요청이 과하게 밀려 장애가 발생할 수 있다.
 
-이러한 상황이 발생하지 않도록 `circuit breaker`를 두어 장애 전파를 막을 수 있도록 함
+이러한 상황이 발생하지 않도록 `circuit breaker`를 두어 장애 전파를 막을 수 있다.
 
-![image2](https://raw.githubusercontent.com/spring-cloud/spring-cloud-netflix/master/docs/src/main/asciidoc/images/HystrixFallback.png)
+| ![image2](https://raw.githubusercontent.com/spring-cloud/spring-cloud-netflix/master/docs/src/main/asciidoc/images/HystrixFallback.png) |
+| - |
+| *출처 : https://cloud.spring.io/spring-cloud-netflix/multi/multi__circuit_breaker_hystrix_clients.html* |
 
 # Hystrix Flow Chart
 
-![Inline-image-2018-03-05 10.55.00.102.png](https://raw.githubusercontent.com/wiki/Netflix/Hystrix/images/hystrix-command-flow-chart.png)
+| ![Inline-image-2018-03-05 10.55.00.102.png](https://raw.githubusercontent.com/wiki/Netflix/Hystrix/images/hystrix-command-flow-chart.png) |
+| - |
+| *출처 : https://github.com/Netflix/Hystrix/wiki/How-it-Works* |
 
 1. `HystrixCommand`, `HystrixObservableCommand` 객체 생성
 2. Command 실행
@@ -41,7 +44,9 @@ Micro Service Architecture에서 장애 전파 방지를 할 수 있음
 
 # Hystrix Circuit Breaker 구현
 
-![Inline-image-2018-03-05 11.04.14.221.png](https://github.com/Netflix/Hystrix/wiki/images/circuit-breaker-1280.png)
+| ![Inline-image-2018-03-05 11.04.14.221.png](https://github.com/Netflix/Hystrix/wiki/images/circuit-breaker-1280.png) |
+| - |
+| *출처 : https://github.com/Netflix/Hystrix/wiki/How-it-Works* |
 
 1. circuit health check를 위한 최소한의 요청이 있을 때(`HystrixCommandProperties.circuitBreakerRequestVolumeThreshold()`)
 2. 그리고, 지정한 오류율을 초과했을 때(`HystrixCommandProperties.circuitBreakerErrorThresholdPercentage()`)
@@ -55,10 +60,10 @@ Micro Service Architecture에서 장애 전파 방지를 할 수 있음
 - `circuitBreaker.requestVolumeThreshold` : 감시 시간 내 요청 수, 기본값 20
 - `circuitBreaker.errorThresholdPercentage` : 요청 대비 오류율, 기본값 50
 
-기본 설정을 풀어서 설명하면 다음과 같음
+기본 설정을 풀어서 설명하면 다음과 같다
 
-> 감시시간 내(30초)에, 20번 이상의 요청이 있었고, 그 중에서 오류율이 50% 이상일 때 Circuit Breaker가 작동(circuit open)
-> 감시 시간 내에 요청이 반드시 20번 이상이 있어야 회로가 열림. 30초 동안 요청이 19번이었고 모두 실패했어도 Circuit Breaker는 작동하지 않음
+> 감시시간 내(30초)에, 20번 이상의 요청이 있었고, 그 중에서 오류율이 50% 이상일 때 Circuit Breaker가 작동한다(circuit open)
+> 감시 시간 내에 요청이 반드시 20번 이상이 있어야 회로가 열림. 30초 동안 요청이 19번이었고 모두 실패했어도 Circuit Breaker는 작동하지 않는다
 
 # 예제
 
@@ -102,7 +107,7 @@ public class StoreIntegration {
 }
 ```
 
-- `StoreIntegration.getStores()`가 실패하거나 회로가 열렸을 시에는 `.defaultStores`가 실행됨
+- `StoreIntegration.getStores()`가 실패하거나 회로가 열렸을 시에는 `.defaultStores`가 실행된다.
 
 # 설정
 
@@ -144,7 +149,7 @@ https://github.com/Netflix/Hystrix/wiki/Configuration#execution.isolation.strate
 # 실사용례
 
 Micro Service Architecture에서 하나의 게시판을 보여주는 예제(게시글, 댓글, 추천 게시글 API를 호출)
-예제는 spring 4.3.x + reactor로 작성되었습니다
+예제는 spring 4.3.x + reactor로 작성했다.
 
 {% plantuml %}
 component client
@@ -210,30 +215,36 @@ public class CommentClient {
 
 # Isolation
 
-bulkhead pattern를 채용하여 종속성(dependency)을 분리하며, 각각에 대한 접근을 제한함
+bulkhead pattern를 채용하여 종속성(dependency)을 분리하며, 각각에 대한 접근을 제한했다.
 
-![Inline-image-2018-03-05 11.45.23.425.png](https://github.com/Netflix/Hystrix/wiki/images/soa-5-isolation-focused-640.png)
+| ![Inline-image-2018-03-05 11.45.23.425.png](https://github.com/Netflix/Hystrix/wiki/images/soa-5-isolation-focused-640.png) |
+| - |
+| *출처 : https://github.com/Netflix/Hystrix/wiki/How-it-Works* |
 
 ## Threads & ThreadPool
 
-호출 thread와 별도의 thread(ex. Tomcat thread pool)에서 동작. 
+호출 thread와 별도의 thread(ex. Tomcat thread pool)에서 동작한다. 
 
-![Inline-image-2018-03-05 11.48.29.958.png](https://github.com/Netflix/Hystrix/wiki/images/request-example-with-latency-1280.png)
+| ![Inline-image-2018-03-05 11.48.29.958.png](https://github.com/Netflix/Hystrix/wiki/images/request-example-with-latency-1280.png) |
+| - |
+| *출처 : https://github.com/Netflix/Hystrix/wiki/How-it-Works* |
 
 > ThreadPool을 사용하지 않아도 되는 경우
 > 1. 네트워크 connection/read timeout, retry 옵션을 사용하여 매우 빨리 실패하거나
 > 2. client가 항상 정상동작한다는 신뢰가 있는 경우
-> 즉, 그냥 ThreadPool을 사용합시다^^
+> 즉, 그냥 ThreadPool을 사용하자
 
 **Netflix에서 각각의 Thread pool을 사용하여 의존성 격리를 구성한 이유**
 
-- 결론부터 먼저 말하자면, Thread를 나누어 다른 Thread에 접근하기 어렵도록 종속성을 원천차단하기 위함
+- 결론부터 먼저 말하자면, Thread를 나누어 다른 Thread에 접근하기 어렵도록 종속성을 원천차단한다.
 - application은 수없이 많은 팀의, 수없이 많은 back-end service 를 수없이 많이 호출한다
 - 각 service는 client library를 가지고 있다
 - client library는 항상 바뀐다
 - client library는 새로운 네트워크를 호출할 수도 있고, retry, parsing, caching 등의 logic을 가지며 `blackbox` 취급된다
 
-![Inline-image-2018-03-05 11.59.03.923.png](https://github.com/Netflix/Hystrix/wiki/images/isolation-options-1280.png)
+| ![Inline-image-2018-03-05 11.59.03.923.png](https://github.com/Netflix/Hystrix/wiki/images/isolation-options-1280.png) |
+| - |
+| *출처 : https://github.com/Netflix/Hystrix/wiki/How-it-Works* |
 
 **Thread Pool 사용상 이점**
 
@@ -242,29 +253,26 @@ bulkhead pattern를 채용하여 종속성(dependency)을 분리하며, 각각�
 
 **Thread Pool 사용상 단점**
 
-- queueing, scheduling, context switching 등의 오버 헤드 발생(Netflix에서는 이를 사소한 정도로 간주)
+- queueing, scheduling, context switching 등의 오버 헤드 발생가 발생된다(Netflix에서는 이를 사소한 정도로 간주)
 
 **Thread 비용**
 
-- Hystrix는 자식 thread에서 `construct()`, `run()`을 실행할 때, 부모 thread에서 총 종단 시간을 측정하여 overhead를 계산
-- Netflix에서는 10억 건 이상의 Hystrix Command를 실행하며, 각 API 인스턴스마다 5-20개의 thread를 가지고 있는 thread pool을 40+개를 설정함(대부분의 thread pool 내의 thread 개수는 10개)
+- Hystrix는 자식 thread에서 `construct()`, `run()`을 실행할 때, 부모 thread에서 총 종단 시간을 측정하여 overhead를 계산한다.
+- Netflix에서는 10억 건 이상의 Hystrix Command를 실행하며, 각 API 인스턴스마다 5-20개의 thread를 가지고 있는 thread pool을 40+개를 설정한다.(대부분의 thread pool 내의 thread 개수는 10개)
 
 **ThreadLocal**
 
-기본적으로 `@HytrixCommand`는 다른 Thread로 동작을 하기 때문에, ThreadLocal이나 spring에서 지원해주는 `@RequestScope`, `@SessionScope` 빈에 접근할 수 없음
-필요한 경우 `execution.isolation.strategy: SEMAPHORE`로 변경하여 현재 Thread에서 연산을 실행하게 할 수 있음
-Spring Security를 사용하는 경우, `hystrix.shareSecurityContext=true`로하여 `SecurityContext`를 공유할 수 있음
+기본적으로 `@HytrixCommand`는 다른 Thread로 동작을 하기 때문에, ThreadLocal이나 spring에서 지원해주는 `@RequestScope`, `@SessionScope` 빈에 접근할 수 없다. 필요한 경우 `execution.isolation.strategy: SEMAPHORE`로 변경하여 현재 Thread에서 연산을 실행하게 할 수 있다.
+Spring Security를 사용하는 경우, `hystrix.shareSecurityContext=true`로 설정해서 `SecurityContext`를 공유할 수 있다.
 
-> THREAD 동작 방식의 경우에는 Thread-pool내의 Thread 갯수 만큼, SEMAPHORE 동작 방식의 경우에는 semaphore count 만큼 요청을 수행할 수 있음
+> THREAD 동작 방식의 경우에는 Thread-pool내의 Thread 갯수 만큼, SEMAPHORE 동작 방식의 경우에는 semaphore count 만큼 요청을 수행할 수 있다
 > `execution.isolation.semaphore.maxConcurrentRequests`
 
 ## Semaphore
 
-Thread pool을 사용하는 대신, `Semaphore(counter)`를 사용하여 종속성에 대한 동시 호출 수를 제한할 수 있음.
-따라서 Thread를 사용하지 않고 부하를 분한하지만, timeout과 격리가 느슨해지는 단점이 있음
-위에서 `ThreadPool을 사용하지 않아도 되는 경우`에서 설명한 것과 같이 `back-end server를 신뢰할 수 있다면 사용해도 괜찮음`
+Thread pool을 사용하는 대신, `Semaphore(counter)`를 사용하여 종속성에 대한 동시 호출 수를 제한할 수 있다. 따라서 Thread를 사용하지 않고 부하를 분한하지만, timeout과 격리가 느슨해지는 단점이 있다 위에서 `ThreadPool을 사용하지 않아도 되는 경우`에서 설명한 것과 같이 `back-end server를 신뢰할 수 있다면 사용해도 괜찮다`
 
-`HystrixCommand`와 `HystrixObservableCommand`는 두 곳에서 `semaphore`를 지원
+`HystrixCommand`와 `HystrixObservableCommand`는 두 곳에서 `semaphore`를 지원한다
 
 - Execution: `execution.isolation.strategy=SEMAPHORE`로 설정이 되어 있으면, 해당 command를 실행할 수 있는 부모 스레스 수를 제한
 - Fallback 검색

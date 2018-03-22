@@ -108,8 +108,8 @@ public class AdderRequestValidator implements Validator {
 }
 ```
 
-응답에 내용에 `error,xml`에서 정의한 메시지 내용이 내려가지 않고 있다
-(defaultMessage를 적어줬다면을 써먹을 수는 있겠으나, 국제화가 적용되지 않는다)
+응답에 내용에 `error.xml`에서 정의한 메시지 내용이 내려가지 않고 있다
+(defaultMessage를 정의해다면 써먹을 수는 있겠으나, 국제화가 적용되지 않는다)
 
 
 클라이언트에서 언어 관련 resource를 들고 있고 codes를 적절히 대조해서 가져올 수 있다면 다행이지만,
@@ -185,6 +185,6 @@ public ValidationResult handleBindException(BindException bindException, Locale 
 ## 결론
 
 기본적으로 Spring은 BindException에 대해서 DefaultHandlerExceptionResolver로 Exception의 내용을 json으로 보여주기만 한다
-국제화된 메시지를 가져오기 위해선는 BindException에서 FieldError들을 가져와 messageSource에 던져줘야 한다
+국제화된 메시지를 가져오기 위해서는 BindException에서 FieldError들을 가져와 messageSource에 던져줘야 한다
 
 소스 : https://github.com/supawer0728/spring-bindingresult-json
