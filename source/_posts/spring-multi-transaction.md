@@ -8,7 +8,7 @@ categories:
 
 # 개요
 
-Spring Application을 만들면서 여러 `DataSource`가 존재하는 경우, 어떻게 트랜잭션 처리를 하면 좋을까? 실제로 구현을 해본 적은 없지만 세 가지 방법이 머릿속에 떠올랐다.
+Spring Application을 만들면서 여러 `DataSource`와 `transaction`이 존재하고 하나의 transaction 내에 commit과 rollback이 잘 동작하도록 하려면 어떻게 설정해야 할까? 실제로 구현을 해본 적은 없지만 세 가지 방법이 머릿속에 떠올랐다.
 
 - `@Transactional`의 propagation을 이용
 - `spring-data-commons`의 `ChainedTransactionManager` 이용
@@ -39,7 +39,6 @@ Spring의 `@Transactional`의 `propagation` 속성으로 다음과 같은 설정
 [<memberTx>\nlogicService] --> [<memberTx>\nmemberService] : 1. insertMember
 [<memberTx>\nlogicService] --> [<boardTx>\nboardService] : 2. insertBoard(예외발생!)
 {% endplantuml %}
-
 하고자 하는 일을 다이어그램으로 나타내면 위와 같다.
 주로 사용하는 DataSource와 transaction이 존재하고, 거기에 부가 transaction이 참여하는 모양새다. 2번에서 예외가 발생했을 때, 2번도 rollback이 되고 1번도 같이 rollback이 되었으면 좋겠다. 
 
@@ -391,7 +390,7 @@ logicalService에서는 transaction이 시작되지 않는다. 따라서 memberS
 
 #### 설명
 
-확인하고 싶었던 부분 2다. 등록하지 않은 DataSource를 transactionManager가 rollback할 수 있을까? 불가능하다.
+확인하고 싶었던 부분 2다. `boardTxManager`가 `memberDataSource`에 대한 작업을 rollback할 수 있을까? 불가능하다.
 
 ## 결론
 
@@ -585,3 +584,15 @@ public class MemberSqlSessionConfig {
 | not-supported | requires-new | commit | rollback |
 | not-supported | nested | commit | rollback |
 | not-supported | not-supported | commit | commit |
+
+### 설명
+
+잘 동작한다. 부모의 영향을 받는 전파 수준과 받지 않는 전파 수준에서 기대하는 동작이 잘 수행되고 있다.
+
+# 마무리
+
+여러 `DataSource`가 존재하는 상황에서 transaction 설정을 어떻게 가져가야 하는지에 대해 3가지 방법을 사용해서 살펴보았다. `ChainedTransactionManager`나 `JtaTransactionManager`를 사용해서, 전역 transaction을 지원하도록 설정하지 않는 한, 개발자가 원하는 동작을 하지 않음을 알 수 있었다.
+`ChainedTransactionManager`는 기본 개념이 쉽다. 내부 동작이 어떻게 돌고 있는지 간단하게 파악된다. 별다른 학습 비용 없이 쉽게 사용할 수 있다. 하지만 `JtaTransactionManager`의 경우에는 그에 비해 공부할 내용들이 꽤 있다. 결국은 둘 다 `PlatformTransactionManager`를 구현하고 있다. 개발자가 spring을 사용하는 한, 둘 다 유연하게 적용할 수 있다.
+명심하자, DataSource를 두 개 이상 사용할 때에는 반드시 `ChainedTransactionManager`나 `JtaTransactionManager`로 전역 transaction 설정을 해야한다.
+
+소스 코드 : https://github.com/supawer0728/simple-multi-tx
