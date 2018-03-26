@@ -17,8 +17,8 @@ categories:
 2. transaction 내에 처리하지 않아도 될 부분은, transaction이 끝난 후에 처리하기
 3. Event 사용하기
 4. Event도 비동기로 처리하기
-4. AOP를 사용해서 Advisor에서 Event 발급하기
-5. 순서가 필요 있나? Best Effort!
+5. AOP를 사용해서 Advisor에서 Event 발급하기
+6. 순서가 필요있나? Best Effort!
 
 <!-- more -->
 
@@ -282,6 +282,8 @@ public class EventMemberJoinService implements ApplicationEventPublisherAware, M
 
 `MemberService`는 이제 회원이 가입되었으면, 가입되었다는 Event를 발급한다.(`MemberJoinedEvent`) 어디선가 이 Event를 받아서 처리만 해주면 될 것이다. 이 Event를 어떻게 받아서 처리하는지 확인해보자.
 
+> `// gray zone`이라고 붙인 곳은, 저 코드가 저 위치에 있는 것을 허용할 것이냐, 말 것이냐를 개발자들의 판단에 맡기고 싶어서 두었다. 본문에서는 refactoring의 대상이라 판단하고, 나중에 AOP로 제거할 것이다.
+
 ### Listener
 
 ```java
@@ -394,6 +396,18 @@ public class EventMemberJoinService implements ApplicationEventPublisherAware, M
 
 # 구현 4. Event도 비동기로 처리하기
 
+## Spring Application 설정
+
+```java
+//..
+@EnableAsync(proxyTargetClass = true)
+@SpringBootApplication
+public class SimpleEventApplication implements CommandLineRunner {
+  // ...
+}
+```
+
+## MemberJoinEvnetListener
 ```java
 @Component
 public class MemberJoinedEventListener {
@@ -433,3 +447,281 @@ INFO  [cTaskExecutor-1] c.p.s.s.service.sms.FailSmsService       : send JOIN sms
 INFO  [           main] c.p.s.s.SimpleEventApplication           : member count : 1
 ERROR [cTaskExecutor-1] .a.i.SimpleAsyncUncaughtExceptionHandler : Unexpected error occurred invoking async method 'public void com.parfait.study.simpleevent.service.event.AsyncMemberJoinedEventListener.handle(com.parfait.study.simpleevent.service.member.AsyncEventMemberJoinService$AsyncMemberJoinedEvent)'.
 ```
+
+## 설명
+
+간단하게 spring에서 지원해주는 비동기를 사용할 수 있다. spring에서 어떻게 비동기를 지원해주는지는 본 문서에서는 설명하지 않겠다. 때문에 `TaskExecutor`도 따로 지정하지 않고 사용했다. spring에서 비동기를 사용하는 방법이 궁금하면 [레퍼런스](https://docs.spring.io/spring/docs/5.0.4.RELEASE/spring-framework-reference/integration.html#scheduling)를 읽어보자.
+
+
+# 구현 5. AOP를 사용해서 Advisor에서 Event 발급하기
+
+앞서 Event를 발급하였을 때 `// gray zone`의 주석을 달았다. 왜 `gray zone`이라고 했을까? `MemberJoinedEvent`를 `MemberJoinedService`에서 발급하는 것이 맞을까? 개발자 취향에 따라 나뉠 수 있을 것 같다. 만약 `DDD`를 기반으로 작성한 코드였다면 100% `NO!`라고 할 수 있다. 하지만 지금의 예제는 `Service`에서 대부분의 로직을 처리한다. 때문에 누군가는 `Service`에서 Event를 발급해도 된다고할 것이고, 누군가는 Service는 핵심 로직에만 집중했으면 좋겠다라고 할 것이다.
+여기서는 후자를 지지해서 AOP로 `gray zone`의 코드를 제거해보려고 한다. Event를 발급하는 행위를 하나의 공통된 방식에 따라 처리할 수 있는 관심사로 취급하겠다.
+
+> 서비스에서 Event를 발급하겠다는 전자의 선택도 존중한다. AOP는 공통 관심사를 분리해서 더 나은 POJO를 만들 수 있게 해준다. 하지만 익숙치 않은 개발자에게는, 전체 어플리케이션 동작을 파악하는 데에 애를 먹을 수 있다. 혼자 개발하는 개발자가 아니라면, 내가 속한 팀에서 어떠한 방법의 프로그래밍이 가장 큰 효율을 낼 수 있는지 파악해봐야할 것이다.
+
+## 의존성 설정
+
+spring의 AOP를 사용할 것이니 관련된 의존성을 추가하자
+
+```gradle
+dependencies {
+  compile('org.springframework.boot:spring-boot-starter-aop')
+}
+```
+
+## Spring Application 설정
+
+```java
+//..
+@EnableAspectJAutoProxy(proxyTargetClass = true)
+@SpringBootApplication
+public class SimpleEventApplication implements CommandLineRunner {
+  // ...
+}
+```
+
+## MemberJoinService
+
+최종적으로 아래 코드가 동작하도록 만들 것이다. 기존에 `eventPublisher.publishEvent(new MemberJoinedEvent(member));`가 없어졌다. 즉 `MemberJoinService`는 더이상 `ApplicationEventPublisher`에 의존하지 않으며, 그 존재를 모르게 되었다.
+
+```java
+@Profile("aop-async-event")
+@Service
+@Transactional
+public class AopAsyncEventMemberJoinService implements MemberJoinService {
+
+    @Autowired
+    private MemberMapper memberMapper;
+
+    @PublishEvent(eventType = AopAsyncMemberJoinedEvent.class, params = "#{T(com.parfait.study.simpleevent.model.SendableParameter).create(email, phoneNo)}")
+    public Member join(Member member) {
+
+        memberMapper.insert(member);
+        return member;
+    }
+}
+```
+
+AOP는 `@PublishEvent`를 대상으로 실행된다. `eventType`을 보고 어떤 타입의 Event를 발급할 것이며, `params`를 해석해서 알맞은 생성자 파라미터를 던져준다.
+
+## 발행할 Event 정의
+
+```java
+// 해당 소스의 구현체는 목적에 따라 기본 생성자 혹은 하나의 값을 받는 생성자를 가질 것.
+public interface EventHoldingValue<T> {
+    T getValue();
+}
+
+public static class AopAsyncMemberJoinedEvent implements EventHoldingValue<SendableParameter> {
+
+    @Getter
+    private SendableParameter value;
+
+    public AopAsyncMemberJoinedEvent(@NonNull SendableParameter sendableParameter) {
+        this.value = sendableParameter;
+    }
+}
+
+@Data
+public class SendableParameter {
+
+    private String email;
+    private String phoneNo;
+
+    public static SendableParameter create(String email, String phoneNo) {
+        SendableParameter parameter = new SendableParameter();
+        parameter.setEmail(email);
+        parameter.setPhoneNo(phoneNo);
+        return parameter;
+    }
+}
+```
+
+`value`를 가지는 Event를 뜻하는 `EventHoldingValue<T>`를 정의하고 이를 구현한 `AopAsyncMemberJoinedEvent`를 위와 같이 정의했다. `SendableParameter`는 앞서 봤던 `@PublishEvent(params)`에서 정의된 SpEL이 실행되어 생성된다.
+
+## AOP관련 코드
+
+### @PublishEvent
+
+```java
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface PublishEvent {
+
+    /**
+    * return이 비어있는 경우 new eventType()
+    * params가 비어있는 경우 new eventType(returnValue)
+    * params가 문자열인 경우 new event
+    */
+    Class<? extends EventHoldingValue> eventType();
+
+    // 빈값, 문자열, SpEL('#{표현식}')을 사용할 수 있음
+    String params() default "";
+}
+```
+
+Pointcut을 제공할 애노테이션을 정의한다.
+
+### Advisor
+
+```java
+@Component
+@Aspect
+public class PublishEventAspect implements ApplicationEventPublisherAware {
+
+    // ...
+
+    @Pointcut("@annotation(publishEvent)")
+    public void pointcut(PublishEvent publishEvent) {
+    }
+
+    /**
+    * return값 없으면 new eventType()
+    * params값 없으면 new eventType(retVal)
+    * params값이 문자열이면 new eventType(params)
+    * params값이 SpEL이면 parse 후에 evnetType(params)
+    */
+    @AfterReturning(pointcut = "pointcut(publishEvent)", returning = "retVal", argNames = "publishEvent,retVal")
+    public void afterReturning(PublishEvent publishEvent, Object retVal) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+
+        Object event;
+
+        if (retVal == null) {
+            // method 반환 값이 void일 때에는 new eventType(this);
+            event = publishEvent.eventType()
+                                .getDeclaredConstructor()
+                                .newInstance();
+
+        } else if (StringUtils.isEmpty(publishEvent.params())) {
+            // params가 비어 있는 경우 new eventType(retVal);
+            event = publishEvent.eventType()
+                                .getConstructor(retVal.getClass())
+                                .newInstance(retVal);
+
+        } else if (isSpel(publishEvent.params())) {
+            // params가 spel인 경우 new eventType(parsed(publishEvent.params()))
+            String spel = publishEvent.params().replaceAll(spelRegex, "$1");
+            Object constructArg = expressionParser.parseExpression(spel).getValue(retVal);
+            event = publishEvent.eventType()
+                                .getDeclaredConstructor(constructArg.getClass())
+                                .newInstance(constructArg);
+
+        } else {
+            // params가 그냥 string인 경우 new eventType(publishEvent.params());
+            event = publishEvent.eventType().getConstructor(String.class).newInstance(publishEvent.params());
+        }
+
+        eventPublisher.publishEvent(event);
+    }
+
+    private boolean isSpel(String params) {
+        return spelPattern.matcher(params).matches();
+    }
+
+    @Override
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+        this.eventPublisher = applicationEventPublisher;
+    }
+}
+```
+
+## 실행 결과
+
+**성공**
+
+```
+INFO  [cTaskExecutor-1] c.p.s.s.service.email.EmailService       : send JOIN email to test@test.com
+INFO  [cTaskExecutor-1] c.p.s.s.service.sms.SuccessSmsService    : send JOIN sms to 012-3456-7890
+INFO  [           main] c.p.s.s.SimpleEventApplication           : member count : 1
+```
+
+**실패**
+
+```
+INFO  [cTaskExecutor-1] c.p.s.s.service.email.EmailService       : send JOIN email to test@test.com
+INFO  [cTaskExecutor-1] c.p.s.s.service.sms.FailSmsService       : send JOIN sms to 012-3456-7890
+INFO  [           main] c.p.s.s.SimpleEventApplication           : member count : 1
+ERROR [cTaskExecutor-1] .a.i.SimpleAsyncUncaughtExceptionHandler : Unexpected error occurred invoking async method 'public void com.parfait.study.simpleevent.service.event.AopAsyncMemberJoinedEventListener.handle(com.parfait.study.simpleevent.service.member.AopAsyncEventMemberJoinService$AopAsyncMemberJoinedEvent)'.
+```
+
+## 설명
+
+Event를 발급하는 공통된 행위를 애노테이션과 AOP를 사용해서 구현해보았다. 이로써 `Service` 계층의 로직에서는 특별한 일이 아니면 Event를 발급할 소스가 등장하지 않을 것이고, `ApplicationEventPublisher`와의 의존 관계도 끊을 수 있다. 
+
+여기서 한 번 더 리팩토링하려고 한다. 아직도 문제점이 있다. 바로 이벤트 처리에 `순서`가 존재한다는 점이다.
+
+# 구현 6. 순서가 필요있나? Best Effort!
+
+비동기를 처리하는 데 굳이 순서가 필요할까? 여태까지의 코드를 보면 `Email`이 성공해야 `Sms`가 성공한다. 실제로 우리의 로직은 이러한 순서를 필요로하지 않는다. `MemberJoinedEvent`를 발급했을 때, 이를 처리할 핸들러를 여럿 등록하고 각각의 thread를 격리해보자.
+
+### 설명
+
+`MemberJoinService`의 구현체에서 달라진 부분은 없다
+
+## EventListeners
+
+```java
+@Service
+public class EmailEventListener {
+
+    @Autowired
+    private EmailService emailService;
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, classes = DistributedAopAsyncMemberJoinedEvent.class)
+    public void handleMemberJoinedEvent(DistributedAopAsyncMemberJoinedEvent event) {
+        SendableParameter parameter = event.getValue();
+        emailService.sendEmail(parameter.getEmail(), parameter.getEmailTemplateType());
+    }
+}
+
+@Service
+public class SmsEventListener {
+
+    @Autowired
+    private SmsService smsEventService;
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, classes = DistributedAopAsyncMemberJoinedEvent.class)
+    public void sendEmail(DistributedAopAsyncMemberJoinedEvent event) {
+        SendableParameter request = event.getValue();
+        smsEventService.sendSms(request.getPhoneNo(), request.getSmsTemplateType());
+    }
+}
+```
+
+## 결과
+
+**성공**
+
+```
+INFO  [cTaskExecutor-2] c.p.s.s.service.sms.SuccessSmsService    : send JOIN sms to 012-3456-7890
+INFO  [cTaskExecutor-1] c.p.s.s.service.email.EmailService       : send JOIN email to test@test.com
+INFO  [           main] c.p.s.s.SimpleEventApplication           : member count : 1
+```
+
+**실패**
+
+```
+INFO  [cTaskExecutor-1] c.p.s.s.service.email.EmailService       : send JOIN email to test@test.com
+INFO  [cTaskExecutor-2] c.p.s.s.service.sms.FailSmsService       : send JOIN sms to 012-3456-7890
+INFO  [           main] c.p.s.s.SimpleEventApplication           : member count : 1
+ERROR [cTaskExecutor-2] .a.i.SimpleAsyncUncaughtExceptionHandler : Unexpected error occurred invoking async method 'public void com.parfait.study.simpleevent.service.sms.SmsEventService.sendEmail(com.parfait.study.simpleevent.service.member.DistributedAopAsyncEventMemberJoinService$DistributedAopAsyncMemberJoinedEvent)'.
+
+```
+
+## 설명
+
+Email과 Sms를 다른 thread에서 보내고 있는 것을 확인할 수 있다.
+말만 어렵게 했지 내용은 간단하다. Event에 대한 `Listener(subscriber, 혹은 handler)`는 필요하면 언제든지 추가하면 된다. 또한 `@Async` 지원도 가능하다.
+
+# 마무리
+
+Spring에서 지원하는 Event 처리 방법과 실제로 어떻게 사용할 수 있을지 살펴보았다. 가장 중요한 것은 Event를 사용하는 이유를 깨닫는 것이다. 가장 큰 이유는 Event 방식은 `시스템 간의 결합도를 낮춰주는 것`이다. 결합도를 낮춰서 서비스 로직에 집중하고, 장애 전파에 강한 어플리케이션을 작성할 수 있다. 비동기로 실행하는 것도 Spring의 지원을 받아 간단하게 처리할 수 있다. 
+
+물론 이러한 Event 방식도 문제는 있다. Global Transaction을 어떻게 쥐고 갈 것인지 하는 것이다. 본문에서는 하나의 Application 내에서 Event를 발생시키고 처리했는데, Event-Driven Architecture의 MSA 환경을 구성하는 경우, 어떻게 Transaction과 Latency 사이에서 타협점을 찾을 것인가는, 현재 이 업계의 큰 이슈 중 하나가 아닐까? 아직까지는 Event를 사용하면서 완벽한 Transaction을 지원하는 것은 어려워 보인다. 서비스 간의 결합도를 떨어뜨리기 위해, Event를 위한 별도의 모듈(RabbitMQ, Kafka)을 사용하는 중에 데이터 손실 등 넘어야할 난관도 많이 있다. 하지만 Event를 사용하는 구조 자체는 매우 매력적이며, 개발자에게 더 많은 선택지를 가져다 준다.
+
+Spring은 개발자로 하여금 POJO를 작성하여 OOP를 할 수 있도록 유도한다. Spring Event 또한 개발자가 OOP를 더 잘할 수 있도록 도와주는 장치다. 더 유연한 구조로 나아가는 방법 중의 하나로 충분히 써먹을 수 있을 것이라 믿어 의심치 않는다.
+
+소스 코드 : https://github.com/supawer0728/simple-event
