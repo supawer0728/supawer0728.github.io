@@ -14,7 +14,7 @@ Web Browser에서 Request를 보내면, Server는 Response를 준다. HTTP 통�
 
 WebSocket이란 HTTP 환경에서 전이중 통신(full duplex, 2-way communication)을 지원하기 위한 프로토콜로, [RFC 6455](https://tools.ietf.org/html/rfc6455)에 정의되어 있다. HTTP 프로토콜에서 Handshaking을 완료한 후, HTTP로 동작을 하지만, HTTP와는 다른 방식으로 통신을 한다.
 
-본 문서는 간단하게 Web Chatting을 지원하는 Application을 작성하여 Spring에서 어떻게 WebSocket을 사용할 수 있도록 지원하는지 소개한다.
+본 문서는 WebSocket을 소개하며, 간단하게 Web Chatting을 지원하는 Application을 작성하여 Spring에서 어떻게 WebSocket을 사용할 수 있도록 지원하는지 소개한다.
 
 # Handshake
 
@@ -33,8 +33,6 @@ Sec-WebSocket-Protocol: v10.stomp, v11.stomp, my-team-custom
 Sec-WebSocket-Version: 13
 ```
 
-**해석**
-
 - `Connection: Upgrade` : HTTP 사용 방식을 변경하자.
 - `Upgrade : websocket` : WebSocket을 사용하자.
 - `Sec-WebSocket-Protocol: xxx, yyy, zzz` : WebSocket을 쓰면서 이 중에서 protocol을 골라서 쓰자.
@@ -48,8 +46,6 @@ Upgrade: websocket
 Connection: Upgrade
 Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
 ```
-
-**해석**
 
 - `101 Switching Protocols` : Handshake 요청 내용을 기반으로 다음부터 WebSocket으로 통신할 수 있다.
 - `Sec-WebSocket-Accept` : 보안을 위한 응답 키 - `base64.encode(Sec-WebSocket-Key.concat(GUID))`
@@ -96,7 +92,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
 }
 ```
 
-**WebSocket 기본 설정**
+**WebSocket SockJS 설정**
 
 ```java
 @Configuration
@@ -118,31 +114,6 @@ public class WebSocketConfig implements WebSocketConfigurer {
 ## Gradle 설정
 
 ```gradle
-buildscript {
-    ext {
-        springBootVersion = '2.0.0.RELEASE'
-    }
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-    }
-}
-
-apply plugin: 'java'
-apply plugin: 'eclipse'
-apply plugin: 'org.springframework.boot'
-apply plugin: 'io.spring.dependency-management'
-
-group = 'com.parfait.study'
-version = '0.0.1-SNAPSHOT'
-sourceCompatibility = 1.8
-
-repositories {
-    mavenCentral()
-}
-
 dependencies {
   compile('org.springframework.boot:spring-boot-starter-mustache')
   compile('org.springframework.boot:spring-boot-starter-web')
@@ -163,9 +134,7 @@ dependencies {
 **application.yml**
 
 ```yml
-spring:
-  mustache:
-    suffix: .html
+spring.mustache.suffix: .html
 ```
 
 **WebSocketConfig**
@@ -181,10 +150,13 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+        // 해당 endpoint로 handshake가 이루어진다.
         registry.addHandler(chatHandler, "/ws/chat").setAllowedOrigins("*").withSockJS();
     }
 }
 ```
+
+`WebSocketHandlerRegistry`에 `WebSocketHandler`의 구현체를 등록한다. 등록된 Handler는 특정 endpoint(`"/wa/chat"`)로 handshake를 완료한 후 맺어진 connection의 관리한다. `WebSocketHandler`의 구현체(`ChatHandler`)의 내용은 아래에서 살펴보겠다.
 
 ## 채팅방 입장 구현
 
@@ -197,6 +169,7 @@ public class ChatRoom {
     private String name;
     private Set<WebSocketSession> sessions = new HashSet<>();
     
+    // 채팅방 생성
     public static ChatRoom create(@NonNull String name) {
         ChatRoom created = new ChatRoom();
         created.id = UUID.randomUUID().toString();
@@ -205,6 +178,8 @@ public class ChatRoom {
     }
 }
 ```
+
+채팅방은 `id`, `name`, `sessions`로 구성된다. `WebSocketSession`은 spring에서 WebSocket connection이 맺어진 세션을 가리킨다. 편하게 고수준 `socket`이라고 생각하자. 해당 session을 통해서 메시지를 보낼(`sendMessage()`) 수 있다.
 
 ### ChatRoomRepository
 
@@ -230,6 +205,8 @@ public class ChatRoomRepository {
     }
 }
 ```
+
+테스트를 위한 용도로 UUID로 채팅방 id를 지정하여, 3개의 채팅방을 생성해두었다.
 
 ### ChatController
 
@@ -262,6 +239,8 @@ public class ChatRoomController {
     }
 }
 ```
+
+채팅방에 진입을 하기위한 Controller다. `/chat/rooms`를 통해서 채팅방의 목록을 확인할 수 있고, `/chat/rooms/{id}`를 통해서 특정 id의 채팅방에 입장할 수 있다.
 
 ### room-list.html
 
@@ -301,11 +280,13 @@ public class ChatRoomController {
         var roomId = $('.content').data('room-id');
         var member = $('.content').data('member');
 
+        // handshake
         var sock = new SockJS("/ws/chat");
 
         // onopen : connection이 맺어졌을 때의 callback
         sock.onopen = function () {
             // send : connection으로 message를 전달
+            // connection이 맺어진 후 가입(JOIN) 메시지를 전달
             sock.send(JSON.stringify({chatRoomId: roomId, type: 'JOIN', writer: member}));
             
             // onmessage : message를 받았을 때의 callback
@@ -325,3 +306,104 @@ public class ChatRoomController {
 </body>
 </html>
 ```
+
+- `new SockJS("/ws/chat")` : handshake를 한다.
+- `sock.onoepn = function() { ... }` : handshake가 완료되고 connection이 맺어지면 실행된다.
+- `sock.send(string)` : socket을 대상으로 문자열을 전송한다.
+- `sock.onmessage = function(evt) { ... }` : socket에서 정보를 수신했을 때 실행된다. `evt.data`로 정보가 들어온다.
+
+### ChatMessage
+
+```java
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class ChatMessage {
+    private String chatRoomId;
+    private String writer;
+    private String message;
+    private MessageType type;
+}
+```
+
+client와 주고 받을 모델이다.
+
+### ChatHandler
+
+```java
+@Slf4j
+@Profile("!stomp")
+@Component
+public class ChatHandler extends TextWebSocketHandler {
+
+    private final ObjectMapper objectMapper;
+    private final ChatRoomRepository repository;
+
+    @Autowired
+    public ChatHandler(ObjectMapper objectMapper, ChatRoomRepository chatRoomRepository) {
+        this.objectMapper = objectMapper;
+        this.repository = chatRoomRepository;
+    }
+
+    @Override
+    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+
+        String payload = message.getPayload();
+        log.info("payload : {}", payload);
+
+        ChatMessage chatMessage = objectMapper.readValue(payload, ChatMessage.class);
+        ChatRoom chatRoom = repository.getChatRoom(chatMessage.getChatRoomId());
+        chatRoom.handleMessage(session, chatMessage, objectMapper);
+    }
+
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        repository.remove(session);
+    }
+}
+```
+
+`ChatHandler`는 `WebSocketHandler`의 구현체이다. `WebSocketHandler`는 다음 메서드를 가지고 있다.
+
+- `afterConnectionEstablished(WebSocketSession session)` : connection이 맺어진 후 실행된다.
+- `handleMessage(WebSocketSession session, WebSocketMessage<?> message)` : message 타입에 따라 `handleTextMessage()`, `handleBinaryMessage()`를 실행한다.
+  - 본문에서 상속한 `TextWebSocketHandler`는 `handleTextMessage(WebSocketSession session, TextMessage message)`를 실행한다.
+- `afterConnectionClosed(WebSocketSession session, CloseStatus status)` : close 이후 실행된다.
+
+message가 들어오는 경우, `message.getChatRoomId()`로 채팅방을 찾아 메시지를 전파한다.
+
+### ChatRoom
+
+```java
+@Getter
+public class ChatRoom {
+    private String id;
+    private String name;
+    private Set<WebSocketSession> sessions = new HashSet<>();
+
+    public void handleMessage(WebSocketSession session, ChatMessage chatMessage, ObjectMapper objectMapper) {
+
+        if (chatMessage.getType() == MessageType.JOIN) {
+            join(session);
+            chatMessage.setMessage(chatMessage.getWriter() + "님이 입장했습니다.");
+        }
+        
+        send(chatMessage, objectMapper);
+    }
+
+    private void join(WebSocketSession session) {
+        sessions.add(session);
+    }
+
+    private <T> void send(T messageObject, ObjectMapper objectMapper) {
+
+        TextMessage message = new TextMessage(objectMapper.writeValueAsString(messageObject));
+        sessions.parallelStream().forEach(session -> session.sendMessage(message));
+    }
+}
+```
+
+## 실행
+
+![스크린샷1](websocket-example1.png)
