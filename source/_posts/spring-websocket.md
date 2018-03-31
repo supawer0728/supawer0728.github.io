@@ -366,12 +366,12 @@ public class ChatHandler extends TextWebSocketHandler {
 
 `ChatHandler`는 `WebSocketHandler`의 구현체이다. `WebSocketHandler`는 다음 메서드를 가지고 있다.
 
-- `afterConnectionEstablished(WebSocketSession session)` : connection이 맺어진 후 실행된다.
-- `handleMessage(WebSocketSession session, WebSocketMessage<?> message)` : message 타입에 따라 `handleTextMessage()`, `handleBinaryMessage()`를 실행한다.
-  - 본문에서 상속한 `TextWebSocketHandler`는 `handleTextMessage(WebSocketSession session, TextMessage message)`를 실행한다.
-- `afterConnectionClosed(WebSocketSession session, CloseStatus status)` : close 이후 실행된다.
+- `afterConnectionEstablished(WebSocketSession)` : connection이 맺어진 후 실행된다.
+- `handleMessage(WebSocketSession, WebSocketMessage<?>)` : session에서 메시지를 수신했을 때 실행된다. message 타입에 따라 `handleTextMessage()`, `handleBinaryMessage()`를 실행한다.
+  - 본문에서 상속한 `TextWebSocketHandler`는 `handleTextMessage(WebSocketSession, TextMessage)`를 실행한다.
+- `afterConnectionClosed(WebSocketSession, CloseStatus)` : close 이후 실행된다.
 
-message가 들어오는 경우, `message.getChatRoomId()`로 채팅방을 찾아 메시지를 전파한다.
+위 소스에서는 message가 들어오는 경우, `message.getChatRoomId()`로 채팅방을 찾아 메시지를 전파한다.
 
 ### ChatRoom
 
@@ -407,3 +407,250 @@ public class ChatRoom {
 ## 실행
 
 ![스크린샷1](websocket-example1.png)
+
+## 현재 채팅 서버의 단점
+
+`ChatRoom`이 하는 일이 저수준이다. 마치 socket을 직접 처리하는 것 같다. socket을 보유하고 있고, 특정 이벤트가 발생하면 socket에 메시지를 보내고, session이 종료되면 socket을 삭제한다. 지금까지의 소스에서 WebSocket의 기본적인 동작에 대해서 배웠다고 생각하자. Spring에서 지원해주는 STOMP를 사용하게 되면, 지금까지와는 전혀 다른 모습으로 개발을 하게 될 것이다.
+
+# STOMP
+<br>
+> 여태까지의 WebSocket Application은 잊자. STOMP를 사용하게 되면, 사실상 Application에서 직접 session을 처리하는 것이 아니라, 오히려 proxy에 가까운 역할을 하게 된다.
+
+앞서 `WebSocketHandler`에 대해서 설명하기를 message 타입이 binary 혹은 text로 나뉜다고 했었다. message가 binary거나 text이기만 하면 실제 내용물이 무엇이든지 통신이 이루어지는 것이다. 이를 sub-protocol을 사용해서 제어할 수 있다. handshake과정에서 특정 sub-protocol을 사용하기로 합의할 수 있다. sub-protocol의 하나인 STOMP를 사용하게 되면 단순한 binary, text가 아닌 규격을 갖춘(format) message를 보낼 수 있다.
+
+STOMP의 형식은 마치 HTTP와 닮아 있다.
+
+```
+COMMAND
+header1:value1
+header2:value2
+
+Body^@
+```
+
+- COMMAND : SEND, SUBSCRIBE를 지시할 수 있다.
+- header : 기존의 WebSocket으로는 표현이 불가능한 header를 작성할 수 있다.
+  - destination : 이 헤더로 메시지를 보내거나(SEND), 구독(SUBSCRIBE)할 수 있다. 이를 통해 간단하게 PUB-SUB를 구현할 수 있다.
+
+예를 들어 ClientA는 아래와 같이 5번 채팅방에 대해 구독을 걸어둘 수 있다.
+
+```
+SUBSCRIBE
+destination: /subscribe/chat/room/5
+```
+
+후에 ClientB에서 아래와 같이 채팅 메시지를 보낼 수 있다.
+
+```
+SEND
+content-type: application/json
+destination: /publish/chat
+
+{"chatRoomId": 5, "type": "MESSAGE", "writer": "clientB"}
+```
+
+이 때 Server에서는 내용을 기반(`chatRoomId`)으로 메시지를 전송할 broker에 전달한다.
+
+```
+MESSAGE
+destination: /subscribe/chat/room/5
+
+{"chatRoomId": 5, "type": "MESSAGE", "writer": "clientB"}
+```
+
+이렇게 `/subscribe/chat/room/5`를 구독하는 Client에게 메시지가 송신된다.
+
+{% plantuml %}
+clientA -> Server : 1. SUBSCRIBE /subscribe/chat/room/5
+Server <- clientB : 2. SEND /publish/chat
+Server -> Server : 3. MESSAGE /subscribe/chat/room/5
+Server -> clientA : 4. 응답
+{% endplantuml %}
+
+# STOMP 기반 채팅서버 예제
+
+[Spring Reference](https://docs.spring.io/spring/docs/5.0.4.RELEASE/spring-framework-reference/web.html#websocket-stomp-message-flow)에서는 동작 방식을 먼저 상세히 설명한 후에 이런 저런 소스를 설명하는데, 오히려 소스를 한 번 보고 동작 방식을 설명하는 것이 이해하기 쉬울 것 같아서 예제를 먼저 소개하려고 한다.
+
+## Spring Application 설정
+
+### StompWebSocketConfig
+
+```java
+@Profile("stomp")
+@EnableWebSocketMessageBroker
+@Configuration
+public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
+    @Override
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        registry.addEndpoint("/stomp-chat").setAllowedOrigins("*").withSockJS();
+    }
+
+    @Override
+    public void configureMessageBroker(MessageBrokerRegistry registry) {
+        registry.setApplicationDestinationPrefixes("/publish");
+        registry.enableSimpleBroker("/subscribe");
+    }
+}
+```
+
+구현할 interface의 대상이 `WebSocketMessageBrokerConfigurer`로 바꼈다. `registerStompEndpoints`에서 기존의 WebSocket 설정과 마찬가지로 handshake와 통신을 담당할 엔드포인트를 지정한다. `configureMessageBroker`에서 Application 내부에서 사용할 path를 지정할 수 있다.
+
+- `setApplicationDestinationPrefixes` : client에서 `SEND` 요청을 처리한다.
+  - Spring Reference에서는 `/topic`, `/queue`가 주로 등장하는데 여기서는 이해를 돕기 위해 `/publish`로 지정하였다.
+    - `/topic` : 암시적으로 1:N 전파를 의미한다.
+    - `/queue` : 암시적으로 1:1 전파를 의미한다.
+- `enableSimpleBroker` : 해당 경로로 `SimpleBroker`를 등록한다. `SimpleBroker`는 해당하는 경로를 `SUBSCRIBE`하는 client에게 메시지를 전달하는 간단한 작업을 수행한다.
+- `enableStompBrokerRelay` : `SimpleBroker`의 기능과 외부 message broker(`RabbitMQ`, `ActiveMQ` 등)에 메시지를 전달하는 기능을 가지고 있다.
+
+## Client
+
+### room.html
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{room.name}}</title>
+    <script src="/webjars/jquery/dist/jquery.min.js"></script>
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+</head>
+<body>
+<h1>{{room.name}}({{room.id}})</h1>
+<div class="content" data-room-id="{{room.id}}" data-member="{{member}}">
+    <ul class="chat_box">
+    </ul>
+    <input name="message">
+    <button class="send">보내기</button>
+</div>
+<script>
+    $(function () {
+        var chatBox = $('.chat_box');
+        var messageInput = $('input[name="message"]');
+        var sendBtn = $('.send');
+        var roomId = $('.content').data('room-id');
+        var member = $('.content').data('member');
+
+        var sock = new SockJS("/stomp-chat");
+        var client = Stomp.over(sock); // 1. SockJS를 내부에 들고 있는 client를 내어준다.
+
+        // 2. connection이 맺어지면 실행된다.
+        client.connect({}, function () {
+            // 3. send(path, header, message)로 메시지를 보낼 수 있다.
+            client.send('/publish/chat/join', {}, JSON.stringify({chatRoomId: roomId, writer: member})); 
+            // 4. subscribe(path, callback)로 메시지를 받을 수 있다. callback 첫번째 파라미터의 body로 메시지의 내용이 들어온다.
+            client.subscribe('/subscribe/chat/room/' + roomId, function (chat) {
+                var content = JSON.parse(chat.body);
+                chatBox.append('<li>' + content.message + '(' + content.writer + ')</li>')
+            });
+        });
+
+        sendBtn.click(function () {
+            var message = messageInput.val();
+            client.send('/publish/chat/message', {}, JSON.stringify({chatRoomId: roomId, message: message, writer: member}));
+            messageInput.val('');
+        });
+    });
+</script>
+</body>
+</html>
+```
+
+## Controller
+
+```java
+@Profile("stomp")
+@Controller
+public class ChatMessageController {
+
+    private final SimpMessagingTemplate template;
+
+    @Autowired
+    public ChatMessageController(SimpMessagingTemplate template) {
+        this.template = template;
+    }
+
+    @MessageMapping("/chat/join")
+    public void join(ChatMessage message) {
+        message.setMessage(message.getWriter() + "님이 입장하셨습니다.");
+        template.convertAndSend("/subscribe/chat/room/" + message.getChatRoomId(), message);
+    }
+
+    @MessageMapping("/chat/message")
+    public void message(ChatMessage message) {
+        template.convertAndSend("/subscribe/chat/room/" + message.getChatRoomId(), message);
+    }
+}
+```
+
+- `SimpleMessagingTemplate` : `@EnableWebSocketMessageBroker`를 통해서 등록되는 bean이다. 특정 Broker로 메시지를 전달한다.
+- `@MessageMapping` : Client가 `SEND`를 할 수 있는 경로다. `StompWebSocketConfig`에서 등록한 `applicationDestinationPrfixes`와 `@MessageMapping`의 경로가 합쳐진다.(`/publish/chat/join`)
+
+## 설명
+
+소스는 위에서 설명한 것이 전부다. session도 Spring이 알아서 관리한다. 개발자가 할 일은 권한과 서비스 로직에 맞게 메시지를 처리하거나, broker로 메시지를 라우팅하는 것이다.
+
+### 메시지 흐름
+
+아래 그림은 [Spring Reference](https://docs.spring.io/spring/docs/5.0.4.RELEASE/spring-framework-reference/web.html#websocket-stomp-message-flow)에서 가져왔다. 이해하기 어렵다면 `/app`을 `/publish`로, `/topic`을 `/subscribe`로 치환해서 보자.
+
+| ![메시지 흐름](message-flow-simple-broker.png) |
+| - |
+| 출처 : https://docs.spring.io/spring/docs/5.0.4.RELEASE/spring-framework-reference/web.html#websocket-stomp-message-flow |
+
+- SimpAnnotationMethod : `@MessageMapping` 등 client의 `SEND`를 받아서 처리한다.
+- SimpleBroker : client의 정보를 메모리 상에 들고 있으며, client로 메시지를 내보낸다.
+- channel : 3종류의 channel이 등장한다
+  - clientInboundChannel : WebSocket Client로부터 들어오는 요청을 전달하며, `WebSocketMessageBrokerConfigurer`를 통해 interceptor, taskExecutor를 설정할 수 있다.
+  - clientOutboundChannel : WebSocket Client로 Server의 메시지를 내보내며, `WebSocketMessageBrokerConfigurer`를 통해 interceptor, taskExecutor를 설정할 수 있다.
+  - brokerChannel : Server 내부에서 사용하는 channel이며, 이를 통해 `SimpAnnotationMetho`는 `SimpleBroker`의 존재를 직접 알지 못해도 메시지를 전달할 수 있다(결합도를 낮춤)
+
+# 2대 이상의 서버를 사용한다면?
+
+WebSocket을 사용해서 채팅 서버를 구현하고, 여러 서버를 사용한다면 당연히 아래와 같은 구조가 나올 것이다.
+
+{% plantuml %}
+package "server1" {
+  [MessageHandler1]
+  [Broker1]
+}
+package "server2" {
+  [MessageHandler2]
+  [Broker2]
+}
+
+package "server3" {
+  [MessageHandler3]
+  [Broker3]
+}
+
+[clientA] --> [MessageHandler1] : 1. SEND
+[MessageHandler1] -> [Broker1] : 2. Broker에 메시지 전달
+[Broker1] --> [MessageQueue] : 3. MessageQueue에 메시지 전송
+[Broker1] -up-> [clientA] : 3. 메시지 전달
+[Broker1] -up-> [clientB] : 3. 메시지 전달
+[MessageQueue] --> [Broker2] : 4. Queue의 내용 전파
+[Broker2] --> [clientC] : 5. 메시지 전달
+[Broker2] --> [clientD] : 5. 메시지 전달
+[MessageQueue] --> [Broker3] : 4. Queue의 내용 전파
+[Broker3] --> [clientE] : 5. 메시지 전달
+[Broker3] --> [clientF] : 5. 메시지 전달
+{% endplantuml %}
+
+# 마무리
+
+WebSocket에 대해서 알아보고, Spring에서 WebSocket을 어떻게 지원하는 지 알아보았다. WebSocket 기술은 Web에서 Socket 통신을 하는 것처럼 동작하며, Spring에서는 이를 STOMP를 사용하여 고수준의 프로그래밍을 가능하게 했다. 간단한 소개가 목적이었기 때문에 Security, Load Balancing, Firewall 등의 주제는 다루지 않았다. 이러한 기술이 있음을 기억하고, 필요할 때 더 깊이 있게 파고들면 좋을 것 같다.
+
+WebSocket을 사용하고자 하는 서비스가 Web과 iOS, Android 환경을 모두 지원해야하는 경우가 있을 수 있다. 이럴 때에는 Web환경에서는 SockJS를 사용하여 `/ws-sockjs`로 endpoint를 열어두고, mobile 환경에는 `/ws`로 endpoint를 열어서 endpoint를 분리해서 운용할 수 있을 것이다. Android나 iOS 둘다 STOMP를 지원하는 Library가 있는 것은 확인했다. 다만 필자가 해당 분야의 개발자가 아니기에 얼마나 사용성이 있는지는 확인하지 않았다. 가능하다면 STOMP로 동일한 sub-protocol을 운용할 수 있다면 운영하는 데에 큰 도움이 될 것 같다.
+
+WebSocket의 사용여부를 결정하는 것은 사실상 하나로 귀결되는 것 같다. Connection을 유지할 필요가 있는지를 따져보는 것이다.
+
+- 장점 : Handshake(TCP 상의 통신 준비)를 할 필요가 없으며, 덕분에 지연이 낮다.
+  - 적은 지연, 높은 빈도, 대량의 정보 통신에 유리
+- 단점 : Connection이 유지되는 동안 항상 통신을 하는 것은 아니다(Connection 낭비)
+
+Server에서 Client로 메시지를 보낼 수 있다는 것은 하나의 기능에 불과하다. 가장 중요하게 염두해야할 사항은 Connection 유지의 필요성이라 생각한다.
+
+2011년에 작성된 [네이버 Hello Wold의 글](http://d2.naver.com/helloworld/1336)에서는 WebSocket이 한창 발전하고 있다고 시사하였다. 이제는 미래 기술로서 발전 가능성이 아니라, 요구 사항이 충족된다면 실 서비스에서 도입할만한 기술이라고 생각한다.
