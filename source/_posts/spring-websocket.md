@@ -654,3 +654,5 @@ WebSocket의 사용여부를 결정하는 것은 사실상 하나로 귀결되�
 Server에서 Client로 메시지를 보낼 수 있다는 것은 하나의 기능에 불과하다. 가장 중요하게 염두해야할 사항은 Connection 유지의 필요성이라 생각한다.
 
 2011년에 작성된 [네이버 Hello Wold의 글](http://d2.naver.com/helloworld/1336)에서는 WebSocket이 한창 발전하고 있다고 시사하였다. 이제는 미래 기술로서 발전 가능성이 아니라, 요구 사항이 충족된다면 실 서비스에서 도입할만한 기술이라고 생각한다.
+
+소스 코드 : https://github.com/supawer0728/simple-websocket
