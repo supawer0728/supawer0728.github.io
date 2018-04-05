@@ -6,7 +6,8 @@ categories:
   - [practice]
   - [spring,practice]
 ---
-# 개요
+
+# 서론
 
 앞 번에 개발한 소스에는 2가지 문제점이 있었다
 

@@ -7,7 +7,7 @@ categories:
   - [spring,data]
 ---
 
-# 개요
+# 서론
 
 Spring Data REST는 도메인 모델과 repository를 분석해서, `RESTful API`를 제공해준다.
 본 문서에서는 Spring Data REST에 대한 간단한 예제와 함께 사용법에 관한 소개를 하고자 한다.

@@ -6,7 +6,7 @@ categories:
   - spring
 ---
 
-# 개요
+# 서론
 
 Spring Application을 만들면서 여러 `DataSource`와 `transaction`이 존재하고 하나의 transaction 내에 commit과 rollback이 잘 동작하도록 하려면 어떻게 설정해야 할까? 실제로 구현을 해본 적은 없지만 세 가지 방법이 머릿속에 떠올랐다.
 

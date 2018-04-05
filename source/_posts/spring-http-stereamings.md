@@ -7,7 +7,7 @@ categories:
   - practice
 ---
 
-# 개요
+# 서론
 
 Spring의 Stream이라고 하면, 가장 먼저 떠오르는 것은 websocket일 것 같다.
 websocket은 full-duplex communication(전 이중 통신)을 표방하고 있으며, 별도의 프로토콜을 공부해야하는 등, web상의 양방향 통신을 복잡하다고 느낄 수 있을 것 같다.

@@ -7,7 +7,7 @@ categories:
   - [spring]
 ---
 
-# 개요
+# 서론
 
 Spring은 Controller에서 Validation을 한 후, 유효하지 못한 값이 존재할 때, Error(BindingResult)에 그 내용을 담아서, JSP, FreeMarker 등의 View Template Engine으로 오류 내용을 MessageSource로 국제화하여 보여줄 수 있도록 지원을 하고 있다.
 

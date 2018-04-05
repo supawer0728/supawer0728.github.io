@@ -6,7 +6,7 @@ categories:
   - spring
 ---
 
-# 개요
+# 서론
 
 Web Browser에서 Request를 보내면, Server는 Response를 준다. HTTP 통신의 기본적인 동작 방식이다. 하지만 Server에서 Client로 특정 동작을 알려야하는 상황도 있다. 예를 들어 Browser로 Facebook에 접속해 있다가, 누군가 친구가 글을 등록하는 경우, 혹은 Web Browser로 메신저를 구현하는 경우다. WebSocket이 있기 전에는 이를 Polling이나 Long polling 등의 방식으로 해결했었다. 하지만 WebSocket의 등장으로 Server-Client 간의 실시간 통신이 가능하게 되면서, 앞으로 Long polling은 역사의 뒤안길으로 사라질 것 같다.
 

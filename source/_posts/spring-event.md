@@ -7,7 +7,7 @@ categories:
   - practice
 ---
 
-# 개요
+# 서론
 
 원래 글을 쓰기 위해 준비하던 내용은 Event를 강조하는 것이었는데, 준비를 하다보니 Async와 AOP를 다 쓰게 되어버렸다.
 

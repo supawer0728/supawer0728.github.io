@@ -6,7 +6,8 @@ categories:
   - practice
   - [spring,practice]
 ---
-# 개요
+
+# 서론
 
 앞서 개발한 소스는 spring-webmvc로 작성했었다.
 이번에는 netty의 힘을 빌어 non-blocking으로 동작한다는 webflux로 기존의 소스를 포팅해보려고 한다.

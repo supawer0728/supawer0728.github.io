@@ -6,7 +6,7 @@ tags:
   - view
 ---
 
-# 개요
+# 서론
 
 Java 서버를 개발하면서 View Template Engine에 대해서 매번 고민하게 된다.
 

@@ -6,7 +6,7 @@ categories:
   - architecture
 ---
 
-# 개요
+# 서론
 
 L4의 scale-out이 어렵다는 점을 해결하기 위해, HAProxy를 사용하게 된 후, 과연 web server가 필요할까라는 의문이 들었다. `apache http + tomcat`라는 기술 스택은 마치 표준인양 Java 서버 진영에서는 많이 사용되고 있는데, HAProxy로 L4를 대체해버린 경우에도 정말 apache http가 필요한 걸까? 한 번 따져볼 일이다.
 
