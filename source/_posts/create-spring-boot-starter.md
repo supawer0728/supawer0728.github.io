@@ -16,7 +16,7 @@ categories:
 
 - `spring-aop`, `spring-jdbc` 등의 의존성을 걸어준다.
 - `classpath`를 뒤져서 어떤 Database를 사용하는지 파악하고, 자동으로 entityManager를 구성해준다.
-- 해당 모듈들 설정에 필요한 properties 설정을 제공한다(`Configuration Processor`를 사용시 효과 UP)
+- 해당 모듈들 설정에 필요한 properties 설정을 제공한다(`Configuration Processor`를 사용하면 효과 UP)
 
 프로젝트를 진행하면서, 공통적으로 사용되는 spring 설정을 모듈로 묶어놓고 사용할 수 있다.
 또한 필요한 경우, 상위 프로젝트에서 얼마든지 설정을 덮어쓸 수 있다.
@@ -48,7 +48,7 @@ categories:
 
 ## Module Naming
 
-`starter`를 만들때는 설정을 담당하는 `autoconfigure`와 의존성을 담당하는 `starter` 모듈을 작성해야한다.
+`starter`를 만들 때는 설정을 담당하는 `autoconfigure`와 의존성을 담당하는 `starter` 모듈을 작성해야 한다.
 spring reference에서는 다음과 같이 모듈들의 명명 규칙을 정의하고 있다.
 
 - `spring-boot`로 시작하지 않을 것
@@ -56,7 +56,7 @@ spring reference에서는 다음과 같이 모듈들의 명명 규칙을 정의�
   - `autoconfigure` : `acme-spring-boot-autoconfigure`
   - `starter` : `acme-spring-boot-starter`
 
-spring의 경우를 보면 [spring-boot-autoconfigure](https://github.com/spring-projects/spring-boot/tree/master/spring-boot-project/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure)에서 모든 `spring-boot-starter-XXX`의 자동설정 사항을 들고 있다.
+spring의 경우를 보면 [spring-boot-autoconfigure](https://github.com/spring-projects/spring-boot/tree/master/spring-boot-project/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure)에서 모든 `spring-boot-starter-XXX`의 자동 설정 사항을 들고 있다.
 이를 기반으로 `spring-boot-starter-XXX`(예: [spring-boot-starter-jpa](https://github.com/spring-projects/spring-boot/blob/master/spring-boot-project/spring-boot-starters/spring-boot-starter-data-jpa/pom.xml)) 모듈에서는 의존성만 관리하고 있다.
 
 저러한 규칙을 응용해서 `{project}-spring-boot-configure`, `{project}-spring-boot-starter-{module}`로 명명을 해도 괜찮다고 생각한다.
@@ -65,7 +65,7 @@ spring의 경우를 보면 [spring-boot-autoconfigure](https://github.com/spring
 
 reference에서는 가능한 고유한 key를 사용할 것을 권고하고 있다.
 `server`, `management`, `spring` 등, spring이 이미 정의한 property key를 사용하는 경우,
-향후 spring의 수정내용이 어떠한 영향을 미칠지 알 수 없기 때문이다.
+향후 spring의 수정 내용이 어떠한 영향을 미칠지 알 수 없기 때문이다.
 
 ## autoconfigure 모듈
 
@@ -158,7 +158,7 @@ logging.level.com.parfait.study.autoconfigure.logging.filter.RequestParameterLog
 
 `application.yml`에서 설정한 key에 대한 정보를 정의할 수 있다.
 이를 Configuration Metadata라 부르며, 이 파일을 정의한 경우 IDE에서 해당 키에 대한 가이드를 보여줄 수 있다.
-가이드가 보여진 화면은 추후 첨부하겠다.
+가이드를 확인할 수 있는 화면은 추후 첨부하겠다.
 [Configuration Metadata에 대해](https://docs.spring.io/spring-boot/docs/current/reference/html/configuration-metadata.html)
 
 ```json
@@ -201,17 +201,17 @@ public class RequestParameterLoggingFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        String uri = request.getParameterMap()
+        String params = request.getParameterMap()
                             .entrySet()
                             .stream()
                             .map(entry -> entry.getKey() + "=" + String.join(",", entry.getValue()))
                             .flatMap(Stream::of)
                             .collect(Collectors.joining("&"));
-        log(uri);
+        log(params);
         chain.doFilter(request, response);
     }
     
-    // private void log(String uri) { ... }
+    // private void log(String params) { ... }
 }
 ```
 
@@ -243,7 +243,7 @@ public class SampleAutoConfiguration {
 
 #### src/main/resource/META-INF/spring.factories
 
-`.jar`파일에 포함되어, 해당 boot 모듈이 설정해야할 정보를 가지고 있다.
+`.jar`파일에 포함되어, 해당 boot 모듈이 설정해야 할 정보를 가지고 있다.
 `org.springframework.boot.autoconfigure.EnableAutoConfiguration` 키에 작성한 `@Configuration` class들을 콤마(`,`) 구분자로 넣어준다
 
 ```
@@ -313,7 +313,7 @@ org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.parfait.study
 
 ## web 모듈
 
-이제 설정한 `starter`를 써먹어보자
+이제 설정한 `starter`를 써먹어보자.
 `sample-spring-boot-starter-web`이라는 이름이지만 그냥 웹 API Application이다.
 
 #### pom.xml
@@ -401,7 +401,7 @@ spring.mvc.request-parameter-logging-filter.level=info
 
 #### 실행 결과
 
-이제 서버를 의우고 API를 실행해보자.
+이제 서버를 띄우고 API를 실행해보자.
 사용하는 소스에서는 `application.yml` 외에는 아무런 설정을 하지 않았는데 Filter가 잘 동작하는 것을 확인할 수 있다.
 
 **`GET /users/1?name=hello`**
@@ -410,11 +410,11 @@ spring.mvc.request-parameter-logging-filter.level=info
 2018-03-15 21:24:20.656  INFO 16048 --- [nio-8080-exec-1] .p.s.a.l.f.RequestParameterLoggingFilter : uri : name=hello
 ```
 
-# 또 다른 할 수 있는 일들에 대해
+# 이 외에 할 수 있는 일들에 대해
 
 `spring-boot-starter`는 협업에 있어서 강력한 자동 설정을 지원해 줄 수 있다는 점에서 매우 권장한다. boot를 사용하는 팀 간의 지원을 아주 간편하게 해줄 수 있다.
 
-예를 들어, 빅데이터 분석을 위해 정보를 수집해야하는 서비스에서는 `bigdata-spring-boot-starter-log`를 제공하여 아래와 같은 설정만으로 로그 수집 로직이 동작하게 하거나
+예를 들어, 빅데이터 분석을 위해 정보를 수집해야 하는 서비스에서는 `bigdata-spring-boot-starter-log`를 제공하여 아래와 같은 설정만으로 로그 수집 로직이 동작하게 하거나
 
 ```yml
 bigdata.log:
@@ -456,9 +456,9 @@ chained-cache-namager:
 
 # 마무리
 
-`spring-boot`로 인해 설정이 간편화되면서, 개발자는 좀 더 핵심 logic에 신경쓸 수 있게되었다.
+`spring-boot`로 인해 설정이 간편화되면서, 개발자는 좀 더 핵심 logic에 신경 쓸 수 있게 되었다.
 예전에는 상위 `pom.xml`에서 의존성 관리하랴, 개발 프로젝트에서는 일일이 설정하랴,
 한 번 프로젝트를 생성할 때마다 다시 한 번 반복하는 일들이 많았지만,
 이제는 정해진 규모의 팀에서 정해진 관례로 아주 간편하게 설정을 간소화할 수 있다.
 
-협업하는 부서에서 `boot`를 쓴다면, 살며시 `starter`를 건내보자.
+협업하는 부서에서 `boot`를 쓴다면, 살며시 `starter`를 건네보자.

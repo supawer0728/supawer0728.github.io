@@ -9,17 +9,29 @@ categories:
 
 # 서론
 
-앞 번에 개발한 소스에는 2가지 문제점이 있었다
+앞 번에 개발한 소스에는 두 가지 문제점이 있었다
 
-1. Network I/O를 순차실행
+1. Network I/O를 순차 실행
     - O(n) 시간이 걸림 : timeout * attachment 갯수
     - Async로 O(1)만에 끝내도록 튜닝 필요
 2. Failover
     - attachment는 단순 부가 정보임에도 불구하고 attachmentService에서 exception이 발생하면, 아무 정보도 내려줄 수 없음
-    - attach는 실패해도 Board 정보와 나머지 성공한 attachment는 보여줘야함
+    - attach는 실패해도 Board 정보와 나머지 성공한 attachment는 보여줘야 함
 
-이번에는 위 이슈들을 reactor를 사용해서 해결해보려 한다
+이번에는 위 이슈들을 reactor를 사용해서 해결해보려 한다.
+
+{% plantuml %}
+[Mobile] --> [BoardServer]
+[BoardServer] -up-> [Mobile] : 댓글
+[Web Browser] --> [BoardServer]
+[BoardServer] -up-> [Web Browser] : 댓글,추천,작성자
+[BoardServer] --> [CommentServer] : async
+[BoardServer] --> [RecommendServer] : async
+[BoardServer] --> [MemberServer] : async, 실패
+{% endplantuml %}
+
 <!-- more -->
+
 # Reactor
 
 우선 왜 reactor를 사용하는 가에 대해서 간략하게 정리해보자
@@ -31,8 +43,8 @@ categories:
         - rxJava는 1.6버전부터 쓸 수 있으며 자체적으로 `Function`을 구현해서 사용
         - Reactor는 Java8부터 쓸 수 있으며 Java8 Api와 Optional 등을 지원
 
-여기서 Reactor API에 대한 기초적인 사항들은 다루지 않으려한다.
-참고로 reactor는 Java버전에 영향을 받기 때문에 아래 소스를 Spring 4에 적용해도 문제없이 동작해야 한다.
+여기서 Reactor API에 대한 기초적인 사항들은 다루지 않으려 한다.
+참고로 reactor는 Java 버전에 영향을 받는다. 때문에 아래 소스를 Spring 4에 적용해도 문제없이 동작해야 한다.
 
 # AttachmentWrapperItem
 
@@ -104,6 +116,7 @@ public class AttachmentWrapper {
 **Attachable interface 변경**
 
 기존의 두 개의 파라미터를 받던 것을 하나의 파라미터를 받도록 변경한다.
+
 ```java
 // 변경 전
 default void attach(AttachmentType type, Attachment attachment) {
@@ -143,7 +156,7 @@ public Attachment getAttachment(Attachable attachment) {
 }
 // 변경 후
 @Override
-    public AttachmentWrapperItem getAttachment(Attachable attachable) {
+public AttachmentWrapperItem getAttachment(Attachable attachable) {
     BoardDto boardDto = supportType.cast(attachable);
     Attachment attachment = writerClient.getWriter(boardDto.getWriterId());
     return new AttachmentWrapperItem(supportAttachmentType, attachment);
@@ -221,8 +234,8 @@ public Mono<AttachmentWrapperItem> getAttachment(Attachable attachable) {
                .subscribeOn(Schedulers.elastic()); 
 }
 
-// 원래 getAttachment의 실행하던 부분을 가져왔습니다
-// 반환 값에 Mono.just()를 씌웠습니다
+// 원래 getAttachment의 실행하던 부분을 가져옴
+// 반환 값에 Mono.just()를 씌움
 private Mono<AttachmentWrapperItem> executeGetAttachment(Attachable attachable) {
     BoardDto boardDto = supportType.cast(attachable);
     Attachment attachment = writerClient.getWriter(boardDto.getWriterId());
@@ -452,17 +465,18 @@ feign.FeignException: status 404 reading WriterClient#getWriter(long); content: 
 
 ```json
 {
-{
-  "id": 100,
-  "title": "title100",
-  "content": "content100",
-  "comments": [
-    {
-      "id": 496,
-      "email": "Zola@lizzie.com",
-      "body": "neque unde voluptatem iure\nodio excepturi ipsam ad id\nipsa sed expedita error quam\nvoluptatem tempora necessitatibus suscipit culpa veniam porro iste vel"
-    }
-  ]
+  {
+    "id": 100,
+    "title": "title100",
+    "content": "content100",
+    "comments": [
+      {
+        "id": 496,
+        "email": "Zola@lizzie.com",
+        "body": "neque unde voluptatem iure\nodio excepturi ipsam ad id\nipsa sed expedita error quam\nvoluptatem tempora necessitatibus suscipit culpa veniam porro iste vel"
+      }
+    ]
+  }
 }
 ```
 ```
@@ -495,6 +509,3 @@ Reactor를 사용해서 비동기 프로그래밍을 하고, 장애에 대처해
 100만원짜리 서버를 써야 하던 일을, 50만원짜리 서버로 처리할 수 있다면 그렇게 해야한다.
 때문에 SpringFramework 5에서는 webflux를 사용하여 netty기반(기본설정)으로
 Non-Blocking + Async를 사용할 수 있도록 했다.
-
-추후 기회가 된다면 Spring5 webflux 모듈로 포팅해서 올리겠다.
-가능한지 불가능한지는 아직 공부를 안해서 모르겠다...
