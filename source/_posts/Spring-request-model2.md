@@ -43,37 +43,38 @@ categories:
         - rxJava는 1.6버전부터 쓸 수 있으며 자체적으로 `Function`을 구현해서 사용
         - Reactor는 Java8부터 쓸 수 있으며 Java8 Api와 Optional 등을 지원
 
-여기서 Reactor API에 대한 기초적인 사항들은 다루지 않으려 한다.
-참고로 reactor는 Java 버전에 영향을 받는다. 때문에 아래 소스를 Spring 4에 적용해도 문제없이 동작해야 한다.
+여기서 Reactor API에 대한 기초적인 사항들은 다루지 않으려 한다. 참고로 reactor는 Java 버전에 영향을 받는다. 본문의 소스는 Spring 5에서 작성되었지만 Java8을 사용한다면 아래 소스를 Spring4에 적용해도 문제없이 동작해야 한다.
 
 # AttachmentWrapperItem
 
-본격적으로 이슈를 해결하기 전에 먼저 한가지 리팩토링을 해야한다
-`AttachmentWrapper`에서 `put()`에 `AttachmentType`과 `Attachment`를 따로 받고 있다.
+본격적으로 이슈를 해결하기 전에 먼저 한가지 리팩토링을 해야한다. 이전의 내용을 잠깐 살펴보자. `BoardDto`는 아래와 같이 `AttachmentWrapper`를 가지고 있다
+
+```java
+@Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class BoardDto implements Attachable {
+    private Long id;
+    private String title;
+    private String content;
+
+    @Setter(AccessLevel.PRIVATE)
+    @JsonIgnore
+    private AttachmentWrapper attachmentWrapper = new AttachmentWrapper();
+}
+```
+
+`AttachmentWrapper`는 `AttachmentType`과 `Attachment`를 따로 받고 있다.
 
 ```java
 @ToString
 @EqualsAndHashCode
 public class AttachmentWrapper {
-
-    interface AttachmentMap {
-        void put(AttachmentType type, Attachment attachment);
-
-        void putAll(Map<? extends AttachmentType, ? extends Attachment> attachmentMap);
-
-        boolean isEmpty();
-
-        Set<Map.Entry<AttachmentType, Attachment>> entrySet();
-    }
-
-    @Delegate(types = AttachmentMap.class)
-    private Map<AttachmentType, Attachment> value = new EnumMap<>(AttachmentType.class);
+    //...
+    void put(AttachmentType type, Attachment attachment);
 }
 ```
 
-reactor를 사용하게 되면 `Mono<T>`, `Flux<T>`와 같이 Generic에 적합한 타입으로 변경을 해야하기 때문에
-`AttachmentType`과 `Attachment`를 하나로 묶는 `AttachmentWrapperItem` 클래스를 작성하고
-이를 `AttachmentWrapper`에 반영해야한다.
+reactor를 사용하게 되면 `Mono<T>`, `Flux<T>`와 같이 Generic으로 표현할 수 있도록 `AttachmentType`과 `Attachment`를 하나로 묶는 `AttachmentWrapperItem` 클래스를 작성하고 이를 `AttachmentWrapper`에 반영해야한다.
 
 **AttachmentWrapperItem**
 
@@ -93,7 +94,6 @@ public class AttachmentWrapperItem {
 @ToString
 @EqualsAndHashCode
 public class AttachmentWrapper {
-
     interface AttachmentMap {
         boolean isEmpty();
 
@@ -102,10 +102,6 @@ public class AttachmentWrapper {
 
     @Delegate(types = AttachmentMap.class)
     private Map<AttachmentType, Attachment> value = new EnumMap<>(AttachmentType.class);
-
-    public void put(AttachmentWrapperItem item) {
-        this.value.put(item.getType(), item.getAttachment());
-    }
 
     public void putAll(Collection<AttachmentWrapperItem> items) {
         this.value.putAll(items.stream().collect(Collectors.toMap(AttachmentWrapperItem::getType, AttachmentWrapperItem::getAttachment)));
@@ -119,19 +115,19 @@ public class AttachmentWrapper {
 
 ```java
 // 변경 전
-default void attach(AttachmentType type, Attachment attachment) {
-    getAttachmentWrapper().put(type, attachment);
-}
-default void attach(Map<? extends AttachmentType, ? extends Attachment> attachment) {
-    getAttachmentWrapper().putAll(attachment);
+interface Attachable {
+    //...
+    default void attach(Map<? extends AttachmentType, ? extends Attachment> attachment) {
+        getAttachmentWrapper().putAll(attachment);
+    }
 }
 
 // 변경 후
-default void attach(AttachmentWrapperItem item) {
-    getAttachmentWrapper().put(item);
-}
-default void attach(Collection<AttachmentWrapperItem> items) {
-    getAttachmentWrapper().putAll(items);
+interface Attachable {
+    //...
+    default void attach(Collection<AttachmentWrapperItem> items) {
+        getAttachmentWrapper().putAll(items);
+    }
 }
 ```
 
@@ -313,9 +309,7 @@ private Mono<AttachmentWrapperItem> executeGetAttachment(Attachable attachable) 
 
 # reactor로 실패 극복
 
-reactor로 실패를 극복하는 방법은 간단하다.
-오류가 발생하면 앞서 작성했던 `AttachmentWrapperItem.ON_ERROR`를 반환하도록 하면 된다.
-Rx는 이러한 상황을 위한 API들이 모두 정의하고 있다.
+reactor로 실패를 극복하는 방법은 간단하다. 오류가 발생하면 앞서 작성했던 `AttachmentWrapperItem.ON_ERROR`를 반환하도록 하면 된다. Rx는 이러한 상황을 위한 API들이 모두 정의하고 있다.
 
 ## AttachService에서 예외 발생시 처리
 
@@ -325,9 +319,7 @@ Rx는 이러한 상황을 위한 API들이 모두 정의하고 있다.
 @Slf4j
 @Component
 public class AttachWriterToBoardService implements AttachService<BoardDto> {
-
-    private static final AttachmentType supportAttachmentType = AttachmentType.WRITER;
-    private static final Class<BoardDto> supportType = BoardDto.class;
+    //...
     private final WriterClient writerClient;
     private final Duration timeout;
 
@@ -338,15 +330,7 @@ public class AttachWriterToBoardService implements AttachService<BoardDto> {
         this.timeout = Duration.ofMillis(timeout);
     }
 
-    @Override
-    public AttachmentType getSupportAttachmentType() {
-        return supportAttachmentType;
-    }
-
-    @Override
-    public Class<BoardDto> getSupportType() {
-        return supportType;
-    }
+    //...
 
     @Override
     public Mono<AttachmentWrapperItem> getAttachment(Attachable attachable) {
@@ -355,12 +339,6 @@ public class AttachWriterToBoardService implements AttachService<BoardDto> {
                    .timeout(timeout) // reactor에 timeout을 줘도 되고, client에서 자체적으로 timeout을 걸 수 있으면 믿고 쓰자
                    .doOnError(e -> log.warn(e.getMessage(), e)) // 오류가 발생하면 log를 남긴다. 대체 값을 반환하므로 warn으로 지정
                    .onErrorReturn(AttachmentWrapperItem.ON_ERROR); // 오류가 발생하면 ON_ERROR를 반환
-    }
-
-    private Mono<AttachmentWrapperItem> executeGetAttachment(Attachable attachable) {
-        BoardDto boardDto = supportType.cast(attachable);
-        Attachment attachment = writerClient.getWriter(boardDto.getWriterId());
-        return Mono.just(new AttachmentWrapperItem(supportAttachmentType, attachment));
     }
 }
 ```
@@ -376,50 +354,7 @@ public class AttachWriterToBoardService implements AttachService<BoardDto> {
 @Aspect
 public class AttachmentAspect {
 
-    private final AttachmentTypeHolder attachmentTypeHolder;
-    private final Map<AttachmentType, List<AttachService<? extends Attachable>>> typeToServiceMap;
-
-    @Autowired
-    public AttachmentAspect(@NonNull AttachmentTypeHolder attachmentTypeHolder,
-                            @NonNull List<AttachService<? extends Attachable>> attachService) {
-        this.attachmentTypeHolder = attachmentTypeHolder;
-        this.typeToServiceMap = attachService.stream()
-                                             .collect(Collectors.groupingBy(AttachService::getSupportAttachmentType, Collectors.toList()));
-    }
-
-    @Pointcut("@annotation(com.parfait.study.simpleattachment.attachment.Attach)")
-    private void pointcut() {
-    }
-
-    @AfterReturning(pointcut = "pointcut()", returning = "returnValue")
-    public Object afterReturning(Object returnValue) {
-
-        if (attachmentTypeHolder.isEmpty() && !(returnValue instanceof Attachable)) {
-            return returnValue;
-        }
-
-        executeAttach((Attachable) returnValue);
-
-        return returnValue;
-    }
-
-    private void executeAttach(Attachable attachable) {
-
-        List<Mono<AttachmentWrapperItem>> monoItems = createMonoList(attachable);
-
-        List<AttachmentWrapperItem> items = executeMonoAndCollectList(monoItems);
-
-        attachable.attach(items);
-    }
-
-    private List<Mono<AttachmentWrapperItem>> createMonoList(Attachable attachable) {
-        Set<AttachmentType> types = attachmentTypeHolder.getTypes();
-        return types.stream()
-                    .flatMap(type -> typeToServiceMap.get(type).stream())
-                    .filter(service -> service.getSupportType().isAssignableFrom(attachable.getClass()))
-                    .map(service -> service.getAttachment(attachable))
-                    .collect(Collectors.toList());
-    }
+    //...
 
     private List<AttachmentWrapperItem> executeMonoAndCollectList(List<Mono<AttachmentWrapperItem>> monoItems) {
         // 여기에 timeout을 주어서 모든 Mono가 실행되는 최대 시간을 지정할 수도 있다
@@ -450,7 +385,7 @@ public class AttachmentAspect {
   "status": 500,
   "error": "Internal Server Error",
   "message": "status 404 reading WriterClient#getWriter(long); content: {}",
-  "path": "\/boards\/100"
+  "path": "/boards/100"
 }
 ```
 
@@ -479,6 +414,7 @@ feign.FeignException: status 404 reading WriterClient#getWriter(long); content: 
   }
 }
 ```
+
 ```
 2018-03-08 19:59:12.056  WARN 64890 --- [      elastic-5] c.p.s.s.a.s.w.AttachWriterToBoardService : status 404 reading WriterClient#getWriter(long); content:
 {}
@@ -499,13 +435,10 @@ Reactor를 사용해서 비동기 프로그래밍을 하고, 장애에 대처해
 여전히 현재의 코드는 큰 단점이 있다.
 `AttachmentAspect`에서 reactor의 `block()`을 호출한다는 점이다.
 
-이게 왜 단점이냐는 것은 [reactor learn 페이지](https://projectreactor.io/learn)에서 가져온 사진 3장으로 설명할 수 있을 것 같다.
+이것이 단점인 이유는 [reactor learn 페이지](https://projectreactor.io/learn)에서 가져온 사진 3장으로 설명할 수 있을 것 같다.
 
 |![blocking is evil](block.PNG)|
 | - |
 | *출처 : https://projectreactor.io/learn* |
 
-단점은 Non-Blocking을 사용해서 `자원을 효율적으로` 사용하지 않았다는 것이다.
-100만원짜리 서버를 써야 하던 일을, 50만원짜리 서버로 처리할 수 있다면 그렇게 해야한다.
-때문에 SpringFramework 5에서는 webflux를 사용하여 netty기반(기본설정)으로
-Non-Blocking + Async를 사용할 수 있도록 했다.
+즉 Non-Blocking을 사용해서 `자원을 효율적으로` 사용하지 않았다는 것이다. 100만원짜리 서버를 써야 하던 일을, 50만원짜리 서버로 처리할 수 있다면 그렇게 해야한다. 때문에 SpringFramework 5에서는 webflux를 사용하여 netty기반(기본설정)으로 Non-Blocking + Async를 사용할 수 있도록 했다.

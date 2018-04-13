@@ -451,7 +451,9 @@ chained-cache-namager:
     config: classpath:/ehcache.xml
   global:
     type: REDIS
-    cluster.hosts=[10.0.0.1:6379, 10.0.0.2:6379]
+    cluster.hosts: 
+      - 10.0.0.1:6379
+      - 10.0.0.2:6379
 ```
 
 # 마무리
