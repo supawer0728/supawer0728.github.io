@@ -8,7 +8,7 @@ categories:
 
 # 서론
 
-Web Browser에서 Request를 보내면, Server는 Response를 준다. HTTP 통신의 기본적인 동작 방식이다. 하지만 Server에서 Client로 특정 동작을 알려야하는 상황도 있다. 예를 들어 Browser로 Facebook에 접속해 있다가, 누군가 친구가 글을 등록하는 경우, 혹은 Web Browser로 메신저를 구현하는 경우다. WebSocket이 있기 전에는 이를 Polling이나 Long polling 등의 방식으로 해결했었다. 하지만 WebSocket의 등장으로 Server-Client 간의 실시간 통신이 가능하게 되면서, 앞으로 Long polling은 역사의 뒤안길으로 사라질 것 같다.
+Web Browser에서 Request를 보내면 Server는 Response를 준다. HTTP 통신의 기본적인 동작 방식이다. 하지만 Server에서 Client로 특정 동작을 알려야 하는 상황도 있다. 예를 들어 Browser로 Facebook에 접속해 있다가 누군가 친구가 글을 등록하는 경우, 혹은 Web Browser로 메신저를 구현하는 경우다. WebSocket이 있기 전에는 이를 Polling이나 Long polling 등의 방식으로 해결했었다. 하지만 WebSocket의 등장으로 Server-Client 간의 실시간 통신이 가능하게 되면서, 앞으로 Long polling은 역사의 뒤안길로 사라질 것 같다.
 
 <!-- more -->
 
@@ -59,11 +59,11 @@ Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
   - 전통적인 HTTP 통신은 요청-응답이 완료되면 Connection을 close한다. 때문에 이론상 하나의 Server가 Port 수의 한계(`n<65535`)를 넘는 client의 요청을 처리할 수 있다.
   - WebSocket은 Connection을 유지하고 있으므로, 가용 Port 수만큼의 Client와 통신할 수 있다.
 
-Spring의 지원을 받아 Web Application Server에서 HTTP를 지원하면서 WebSocket도 지원할 수 있다. 하지만 HTTP와 WebSocket의 개념이 많이 상이하다보니, WebSocket을 사용해야 한다면 전용 Server를 구축하는 편이 운영하기 쉬울 것으로 판단된다.
+Spring의 지원을 받아 Web Application Server에서 HTTP를 지원하면서 WebSocket도 지원할 수 있다. 하지만 HTTP와 WebSocket의 개념이 많이 상이하다 보니, WebSocket을 사용해야 한다면 전용 Server를 구축하는 편이 운영하기 쉬울 것으로 판단된다.
 
 # 언제 쓰면 좋을까?
 
-[Spring Reference](https://docs.spring.io/spring/docs/5.0.4.RELEASE/spring-framework-reference/web.html#websocket-intro-when-to-use)을 참조하면, `자주 + 많은 양의 + 지연이 짧아야하는 통신`을 할 수록 WebSocket이 적합하다고 설명하고 있다. 주로 채팅이나 게임이 이러한 요구사항을 가질 것이다. 단순한 알림 성격의 뉴스 피드 같은 정보에는 polling이나 streaming 방식이 더욱 단순하고 효율적인 솔루션이 될 수 있다.
+[Spring Reference](https://docs.spring.io/spring/docs/5.0.4.RELEASE/spring-framework-reference/web.html#websocket-intro-when-to-use)을 참조하면, `자주 + 많은 양의 + 지연이 짧아야 하는 통신`을 할 수록 WebSocket이 적합하다고 설명하고 있다. 주로 채팅이나 게임이 이러한 요구 사항을 가질 것이다. 단순한 알림 성격의 뉴스 피드 같은 정보에는 polling이나 streaming 방식이 더욱 단순하고 효율적인 솔루션이 될 수 있다.
 
 # 지원하는 Browser
 
@@ -75,7 +75,7 @@ Spring의 지원을 받아 Web Application Server에서 HTTP를 지원하면서 
 
 # SockJS
 
-IE 8, 9는 여전히 많은 인터넷 사용자가 사용하고 있는 브라우저이나, 해당 버전에서는 WebSocket을 지원하지 않는다. Spring에서는 [sockjs-client](https://github.com/sockjs/sockjs-client/)와 합을 맞추어서, 기존 설정에 큰 변경없이, 마치 WebSocket Polyfill을 사용하는 것과 같은 효과를 낸다.
+IE 8, 9는 여전히 많은 인터넷 사용자가 사용하고 있는 브라우저이나, 해당 버전에서는 WebSocket을 지원하지 않는다. Spring에서는 [sockjs-client](https://github.com/sockjs/sockjs-client/)와 합을 맞추어서, 기존 설정에 큰 변경 없이, 마치 WebSocket Polyfill을 사용하는 것과 같은 효과를 낸다.
 
 ## Spring WebSocket 설정
 
@@ -105,11 +105,11 @@ public class WebSocketConfig implements WebSocketConfigurer {
 }
 ```
 
-`.withSockJS()`만 추가되었다. Client에서는 `GET /myHandler/info`를 호출해서 Server의 정보를 취득하며, Client의 지원 여부에 따라 Long polling이나 Polling으로 통신한다. Server 측에서는 위 설정 외에는 소스 코드의 변함 없이 운영할 수 있다.
+`.withSockJS()`만 추가되었다. Client에서는 `GET /myHandler/info`를 호출해서 Server의 정보를 취득하며, Client의 지원 여부에 따라 Long polling이나 Polling으로 통신한다. Server 측에서는 위 설정 외에는 소스 코드의 변함없이 운영할 수 있다.
 
 # SockJS 기반 채팅서버 예제
 
-서버에서 미리 정의한 채팅방(`ChatRoom`)에 들어가있는 사용자(`Session`) 간에 채팅을 지원한다.
+서버에서 미리 정의한 채팅방(`ChatRoom`)에 들어가 있는 사용자(`Session`) 간에 채팅을 지원한다.
 
 ## Gradle 설정
 
@@ -240,7 +240,7 @@ public class ChatRoomController {
 }
 ```
 
-채팅방에 진입을 하기위한 Controller다. `/chat/rooms`를 통해서 채팅방의 목록을 확인할 수 있고, `/chat/rooms/{id}`를 통해서 특정 id의 채팅방에 입장할 수 있다.
+채팅방에 진입을 하기 위한 Controller다. `/chat/rooms`를 통해서 채팅방의 목록을 확인할 수 있고, `/chat/rooms/{id}`를 통해서 특정 id의 채팅방에 입장할 수 있다.
 
 ### room-list.html
 
@@ -327,7 +327,7 @@ public class ChatMessage {
 }
 ```
 
-client와 주고 받을 모델이다.
+client와 주고받을 모델이다.
 
 ### ChatHandler
 
@@ -416,7 +416,7 @@ public class ChatRoom {
 <br>
 > 여태까지의 WebSocket Application은 잊자. STOMP를 사용하게 되면, 사실상 Application에서 직접 session을 처리하는 것이 아니라, 오히려 proxy에 가까운 역할을 하게 된다.
 
-앞서 `WebSocketHandler`에 대해서 설명하기를 message 타입이 binary 혹은 text로 나뉜다고 했었다. message가 binary거나 text이기만 하면 실제 내용물이 무엇이든지 통신이 이루어지는 것이다. 이를 sub-protocol을 사용해서 제어할 수 있다. handshake과정에서 특정 sub-protocol을 사용하기로 합의할 수 있다. sub-protocol의 하나인 STOMP를 사용하게 되면 단순한 binary, text가 아닌 규격을 갖춘(format) message를 보낼 수 있다.
+앞서 `WebSocketHandler`에 대해서 설명하기를 message 타입이 binary 혹은 text로 나뉜다고 했었다. message가 binary거나 text이기만 하면 실제 내용물이 무엇이든지 통신이 이루어지는 것이다. 이를 sub-protocol을 사용해서 제어할 수 있다. handshake 과정에서 특정 sub-protocol을 사용하기로 합의할 수 있다. sub-protocol의 하나인 STOMP를 사용하게 되면 단순한 binary, text가 아닌 규격을 갖춘(format) message를 보낼 수 있다.
 
 STOMP의 형식은 마치 HTTP와 닮아 있다.
 
@@ -449,7 +449,7 @@ destination: /publish/chat
 {"chatRoomId": 5, "type": "MESSAGE", "writer": "clientB"}
 ```
 
-이 때 Server에서는 내용을 기반(`chatRoomId`)으로 메시지를 전송할 broker에 전달한다.
+이때 Server에서는 내용을 기반(`chatRoomId`)으로 메시지를 전송할 broker에 전달한다.
 
 ```
 MESSAGE
@@ -469,7 +469,7 @@ Server -> clientA : 4. 응답
 
 # STOMP 기반 채팅서버 예제
 
-[Spring Reference](https://docs.spring.io/spring/docs/5.0.4.RELEASE/spring-framework-reference/web.html#websocket-stomp-message-flow)에서는 동작 방식을 먼저 상세히 설명한 후에 이런 저런 소스를 설명하는데, 오히려 소스를 한 번 보고 동작 방식을 설명하는 것이 이해하기 쉬울 것 같아서 예제를 먼저 소개하려고 한다.
+[Spring Reference](https://docs.spring.io/spring/docs/5.0.4.RELEASE/spring-framework-reference/web.html#websocket-stomp-message-flow)에서는 동작 방식을 먼저 상세히 설명한 후에 이런저런 소스를 설명하는데, 오히려 소스를 한 번 보고 동작 방식을 설명하는 것이 이해하기 쉬울 것 같아서 예제를 먼저 소개하려고 한다.
 
 ## Spring Application 설정
 
@@ -494,7 +494,7 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
 }
 ```
 
-구현할 interface의 대상이 `WebSocketMessageBrokerConfigurer`로 바꼈다. `registerStompEndpoints`에서 기존의 WebSocket 설정과 마찬가지로 handshake와 통신을 담당할 엔드포인트를 지정한다. `configureMessageBroker`에서 Application 내부에서 사용할 path를 지정할 수 있다.
+구현할 interface의 대상이 `WebSocketMessageBrokerConfigurer`로 바뀌었다. `registerStompEndpoints`에서 기존의 WebSocket 설정과 마찬가지로 handshake와 통신을 담당할 endpoint를 지정한다. `configureMessageBroker`에서 Application 내부에서 사용할 path를 지정할 수 있다.
 
 - `setApplicationDestinationPrefixes` : client에서 `SEND` 요청을 처리한다.
   - Spring Reference에서는 `/topic`, `/queue`가 주로 등장하는데 여기서는 이해를 돕기 위해 `/publish`로 지정하였다.
@@ -641,17 +641,17 @@ package "server3" {
 
 # 마무리
 
-WebSocket에 대해서 알아보고, Spring에서 WebSocket을 어떻게 지원하는 지 알아보았다. WebSocket 기술은 Web에서 Socket 통신을 하는 것처럼 동작하며, Spring에서는 이를 STOMP를 사용하여 고수준의 프로그래밍을 가능하게 했다. 간단한 소개가 목적이었기 때문에 Security, Load Balancing, Firewall 등의 주제는 다루지 않았다. 이러한 기술이 있음을 기억하고, 필요할 때 더 깊이 있게 파고들면 좋을 것 같다.
+WebSocket에 대해서 알아보고, Spring에서 WebSocket을 어떻게 지원하는지 알아보았다. WebSocket 기술은 Web에서 Socket 통신을 하는 것처럼 동작하며, Spring에서는 이를 STOMP를 사용하여 고수준의 프로그래밍을 가능하게 했다. 간단한 소개가 목적이었기 때문에 Security, Load Balancing, Firewall 등의 주제는 다루지 않았다. 이러한 기술이 있음을 기억하고, 필요할 때 더 깊이 있게 파고들면 좋을 것 같다.
 
-WebSocket을 사용하고자 하는 서비스가 Web과 iOS, Android 환경을 모두 지원해야하는 경우가 있을 수 있다. 이럴 때에는 Web환경에서는 SockJS를 사용하여 `/ws-sockjs`로 endpoint를 열어두고, mobile 환경에는 `/ws`로 endpoint를 열어서 endpoint를 분리해서 운용할 수 있을 것이다. Android나 iOS 둘다 STOMP를 지원하는 Library가 있는 것은 확인했다. 다만 필자가 해당 분야의 개발자가 아니기에 얼마나 사용성이 있는지는 확인하지 않았다. 가능하다면 STOMP로 동일한 sub-protocol을 운용할 수 있다면 운영하는 데에 큰 도움이 될 것 같다.
+WebSocket을 사용하고자 하는 서비스가 Web과 iOS, Android 환경을 모두 지원해야 하는 경우가 있을 수 있다. 이럴 때에는 Web 환경에서는 SockJS를 사용하여 `/ws-sockjs`로 endpoint를 열어두고, mobile 환경에는 `/ws`로 endpoint를 열어서 endpoint를 분리해서 운용할 수 있을 것이다. Android나 iOS 둘 다 STOMP를 지원하는 Library가 있는 것은 확인했다. 다만 필자가 해당 분야의 개발자가 아니기에 얼마나 사용성이 있는지는 확인하지 않았다. 가능하다면 STOMP로 동일한 sub-protocol을 운용할 수 있다면 운영하는 데에 큰 도움이 될 것 같다.
 
-WebSocket의 사용여부를 결정하는 것은 사실상 하나로 귀결되는 것 같다. Connection을 유지할 필요가 있는지를 따져보는 것이다.
+WebSocket의 사용 여부를 결정하는 것은 사실상 하나로 귀결되는 것 같다. Connection을 유지할 필요가 있는지를 따져보는 것이다.
 
 - 장점 : Handshake(TCP 상의 통신 준비)를 할 필요가 없으며, 덕분에 지연이 낮다.
   - 적은 지연, 높은 빈도, 대량의 정보 통신에 유리
 - 단점 : Connection이 유지되는 동안 항상 통신을 하는 것은 아니다(Connection 낭비)
 
-Server에서 Client로 메시지를 보낼 수 있다는 것은 하나의 기능에 불과하다. 가장 중요하게 염두해야할 사항은 Connection 유지의 필요성이라 생각한다.
+Server에서 Client로 메시지를 보낼 수 있다는 것은 하나의 기능에 불과하다. 가장 중요하게 염두에 둬야 할 사항은 Connection 유지의 필요성이라 생각한다.
 
 2011년에 작성된 [네이버 Hello Wold의 글](http://d2.naver.com/helloworld/1336)에서는 WebSocket이 한창 발전하고 있다고 시사하였다. 이제는 미래 기술로서 발전 가능성이 아니라, 요구 사항이 충족된다면 실 서비스에서 도입할만한 기술이라고 생각한다.
 
