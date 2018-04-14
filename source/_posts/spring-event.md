@@ -9,7 +9,7 @@ categories:
 
 # 서론
 
-원래 글을 쓰기 위해 준비하던 내용은 Event를 강조하는 것이었는데, 준비를 하다보니 Async와 AOP를 다 쓰게 되어버렸다.
+원래 글을 쓰기 위해 준비하던 내용은 Event를 강조하는 것이었는데, 준비를 하다 보니 Async와 AOP를 다 쓰게 되어버렸다.
 
 이번 글에서는 하나의 transaction 안에서 많은 일을 처리하는 소스 코드를 두고, 아래와 같이 점진적으로 리팩토링해나가는 과정에 대해 이야기하려고 한다. 
 
@@ -18,14 +18,14 @@ categories:
 3. Event 사용하기
 4. Event도 비동기로 처리하기
 5. AOP를 사용해서 Advisor에서 Event 발급하기
-6. 순서가 필요있나? Best Effort!
+6. 순서가 필요 있나? Best Effort!
 
 <!-- more -->
 
-본문에서는 `mybatis`를 사용하며, `@Service`에서 대부분의 로직을 처리하는 방식에 대해 다루고 있다. 도메인 주도 설계(Domain-Driven Design)으로 개발을 하는 경우에는 `Domain Event` 개념을 사용할 수 있다. 기회가 된다면 `DDD Start!(최범균 저)`라는 책을 읽어볼 것을 강력히 추천한다. 필자가 알고 있는 DDD의 지식이 대부분 저 책을 기반으로 하다보니, 현재 알고 있는 내용으로 공개 블로그를 작성하기가 어렵다.
+본문에서는 `mybatis`를 사용하며, `@Service`에서 대부분의 로직을 처리하는 방식에 대해 다루고 있다. 도메인 주도 설계(Domain-Driven Design)으로 개발을 하는 경우에는 `Domain Event` 개념을 사용할 수 있다. 기회가 된다면 `DDD Start!(최범균 저)`라는 책을 읽어볼 것을 강력히 추천한다. 필자가 알고 있는 DDD의 지식이 대부분 저 책을 기반으로 하다 보니, 현재 알고 있는 내용으로 공개 블로그를 작성하기가 어렵다.
 `Spring Framework 5.0.4.RELEASE`가 나온 현재까지, 간편하게 `Domain Event`를 사용할 수 있는 방법은 없어 보인다. `ThreadLocal`이나 `Configurable`의 힘을 빌려 자체적으로 구현해야한다. `DDD Start!`를 보고 Spring에서 `Domain Event`를 사용할 것이라면, 작가님이 운영하는 [블로그](http://javacan.tistory.com/entry/Handle-DomainEvent-with-Spring-ApplicationEventPublisher-EventListener-TransactionalEventListener)도 참조하자.
 
-여기서 `Domain Event`에 대해서 다루지는 않겠지만 힌트정도는 얻어갈 수 있다고 생각한다.
+여기서 `Domain Event`에 대해서 다루지는 않겠지만 힌트 정도는 얻어 갈 수 있다고 생각한다.
 
 # 요구 사항
 
@@ -162,8 +162,7 @@ INFO  [main] c.p.s.s.SimpleEventApplication           : member count : 0
 
 ### 설명
 
-Application을 실행시킬 때 `spring.profiles.active=simple`로 해야 정상 동작한다.
-요구 사항을 단순하게 하나의 transaction에서 구현했다. 무척이나 간단하지만 `emailService`가 실패하거나, `smsService`가 실패하면 `memberMapper.insert()`도 `rollback`된다.
+Application을 실행시킬 때 `spring.profiles.active=simple`로 해야 정상 동작한다. 요구 사항을 단순하게 하나의 transaction에서 구현했다. 무척이나 간단하지만 `emailService`가 실패하거나, `smsService`가 실패하면 `memberMapper.insert()`도 `rollback`된다. 축하 메일을 못 받았으니 회원 가입이 취소된다? 있을 수 없는 일이다.
 
 # 구현 2. transaction 내에 처리하지 않아도 될 부분은, transaction이 끝난 후에 처리하기
 
@@ -231,11 +230,11 @@ INFO  [main] c.p.s.s.SimpleEventApplication           : member count : 1
 
 `TransactionSynchronizationAdaptor`를 사용하면 위와 같이, `beforeCommit()`, `afterCommit()` 등을 구현해서 특정 로직의 실행 시점을 조절할 수 있다. `TransactionSynchronizationAdaptor`는 이름 그대로 `TransactionSynchronization`를 어댑터 패턴으로 구현해 둔 추상 클래스이다. `TransactionSynchronization`에는 각 로직이 실행될 시점이 추상화되어 있으며, 자세한 설명은 [JavaDoc](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/transaction/support/TransactionSynchronization.html)을 확인하자.
 
-`Spring Framework 4.2.x`부터는 더 좋은게 있으므로 길게 설명하지 않겠다.
+`Spring Framework 4.2.x`부터는 더 좋은 게 있으므로 길게 설명하지 않겠다.
 
 # 구현 3. Event 사용하기
 
-이 구현부터 본격적으로 본문의 주제에 가까워진다. 우선 소스 코드로 어떻게 Spring Event를 이용할 수 있는 지 확인해보자.
+이 구현부터 본격적으로 본문의 주제에 가까워진다. 우선 소스 코드로 어떻게 Spring Event를 이용할 수 있는지 확인해보자.
 
 ## Spring Application Event 사용하기
 
@@ -310,12 +309,12 @@ public class MemberJoinedEventListener {
 
 **TransactionalEventListener**
 
-| parameter | description |
-| - | - |
-| phase | transaction과 연관지어, 어느 시점에서 로직을 실행할 지 정할 수 있다.<br>- BEFORE_COMMIT<br>- AFTER_COMMIT(default)<br>- AFTER_ROLLBACK<br>- AFTER_COMPLETION |
-| fallbackExecution | 진행 중인 transaction이 없을 때에도 실행할 지 여부. 기본값은 `false` |
-| value, classes | Listener가 처리할 Event의 타입을 배열로 받는다.<br>한 종류의 타입만 지정되었을 때에는 메서드의 파라미터로 받을 수 있지만,<br>여러 타입이 선언된 경우에는 메서드의 파라미터는 비워둬야 한다. |
-| condition | SpEL을 선언하여 true인 경우에 실행된다. |
+| parameter <th colspan="3">description |
+| - | - | - | - |
+| phase <td colspan="3"> transaction과 연관지어, 어느 시점에서 로직을 실행할지 정할 수 있다.<br>- BEFORE_COMMIT<br>- AFTER_COMMIT(default)<br>- AFTER_ROLLBACK<br>- AFTER_COMPLETION |
+| fallbackExecution <td colspan="3"> 진행 중인 transaction이 없을 때에도 실행할지 여부. 기본값은 `false` |
+| value, classes <td colspan="3"> Listener가 처리할 Event의 타입을 배열로 받는다.<br>한 종류의 타입만 지정되었을 때에는 메서드의 파라미터로 받을 수 있지만,<br>여러 타입이 선언된 경우에는 메서드의 파라미터는 비워둬야 한다. |
+| condition <td colspan="3"> SpEL을 선언하여 true인 경우에 실행된다. |
 
 #### 결과
 
@@ -339,7 +338,7 @@ INFO  [main] c.p.s.s.SimpleEventApplication           : member count : 1
 
 ## ApplicationEvnetPublisher에 대해서
 
-Spring에서 지원하는 `ApplicationEvnetPublisher`를 이용한 Event처리 방식은 `ApplicationContext`를 통해서 이루어진다. `ApplicationContext`가 `ApplicationEventPublisher`를 상속하고 있다. 즉 `Publisher`와 `Listener`는 Spring에 Bean으로 등록되어야 한다. Spring이 초기화될 때 `@EventListener`, `@TransactionalEventListener`를 `ApplicationContext`에 등록을 해두고 `publishEvent()`가 실행되면 등록된 Listener에 Event를 뿌려준다.
+Spring에서 지원하는 `ApplicationEvnetPublisher`를 이용한 Event 처리 방식은 `ApplicationContext`를 통해서 이루어진다. `ApplicationContext`가 `ApplicationEventPublisher`를 상속하고 있다. 즉 `Publisher`와 `Listener`는 Spring에 Bean으로 등록되어야 한다. Spring이 초기화될 때 `@EventListener`, `@TransactionalEventListener`를 `ApplicationContext`에 등록을 해두고 `publishEvent()`가 실행되면 등록된 Listener에 Event를 뿌려준다.
 
 ## Event에 대해서
 
@@ -377,7 +376,7 @@ public class EventMemberJoinService implements ApplicationEventPublisherAware, M
 {% endplantuml %}
 
 강결합 상태의 시스템의 문제를 여기서 확인할 수 있다.
-`MemberServer`는 각 Server를 알고 있다. 호출해야할 URI를 스스로 가지고 있다. 만약 `MailServer`에서 메일을 보내기 위한 URI가 변경이 된다면, `MemberServer`도 수정을 해야한다. 메일 서버가 변경이 되었는 데, 회원 가입 로직이 변경되어야 한다.
+`MemberServer`는 각 Server를 알고 있다. 호출해야 할 URI를 스스로 가지고 있다. 만약 `MailServer`에서 메일을 보내기 위한 URI가 변경이 된다면, `MemberServer`도 수정을 해야 한다. 메일 서버가 변경이 되었는데, 회원 가입 로직이 변경되어야 한다.
 
 #### 느슨한 결합으로 : Event 방식
 
@@ -389,7 +388,7 @@ public class EventMemberJoinService implements ApplicationEventPublisherAware, M
 [EventQueue] <-- [SmsServer] : 받아가거나
 {% endplantuml %}
 
-앞선 구조와 비교해보자. `MemberServer`는 회원이 가입했을 때 `MemberJoinedEvent`를 생성해서 `EventQueue`에 넣기만 하면 끝이다. 뒤에 무슨 일이 일어나든 `관심사` 밖의 일이다. `MailServer`가 `EventQueue`에서 Event를 받아가서 처리하든, `EventQueue`가 `MailServer`에 Event를 밀어주는 방식으로 처리하든 관심 없는거다.
+앞선 구조와 비교해보자. `MemberServer`는 회원이 가입했을 때 `MemberJoinedEvent`를 생성해서 `EventQueue`에 넣기만 하면 끝이다. 뒤에 무슨 일이 일어나든 `관심사` 밖의 일이다. `MailServer`가 `EventQueue`에서 Event를 받아 가서 처리하든, `EventQueue`가 `MailServer`에 Event를 밀어주는 방식으로 처리하든 관심 없는 거다.
 
 - MailServer, SmsServer의 로직 변화가 MemberServer에 영향을 주지 않는다.
 - MemberServer는 자신의 업무(도메인) 영역만 잘 처리하면 된다.
@@ -455,10 +454,10 @@ ERROR [cTaskExecutor-1] .a.i.SimpleAsyncUncaughtExceptionHandler : Unexpected er
 
 # 구현 5. AOP를 사용해서 Advisor에서 Event 발급하기
 
-앞서 Event를 발급하였을 때 `// gray zone`의 주석을 달았다. 왜 `gray zone`이라고 했을까? `MemberJoinedEvent`를 `MemberJoinedService`에서 발급하는 것이 맞을까? 개발자 취향에 따라 나뉠 수 있을 것 같다. 만약 `DDD`를 기반으로 작성한 코드였다면 100% `NO!`라고 할 수 있다. 하지만 지금의 예제는 `Service`에서 대부분의 로직을 처리한다. 때문에 누군가는 `Service`에서 Event를 발급해도 된다고할 것이고, 누군가는 Service는 핵심 로직에만 집중했으면 좋겠다라고 할 것이다.
+앞서 Event를 발급하였을 때 `// gray zone`의 주석을 달았다. 왜 `gray zone`이라고 했을까? `MemberJoinedEvent`를 `MemberJoinedService`에서 발급하는 것이 맞을까? 개발자 취향에 따라 나뉠 수 있을 것 같다. 만약 `DDD`를 기반으로 작성한 코드였다면 100% `NO!`라고 할 수 있다. 하지만 지금의 예제는 `Service`에서 대부분의 로직을 처리한다. 때문에 누군가는 `Service`에서 Event를 발급해도 된다고 할 것이고, 누군가는 Service는 핵심 로직에만 집중했으면 좋겠다고 할 것이다.
 여기서는 후자를 지지해서 AOP로 `gray zone`의 코드를 제거해보려고 한다. Event를 발급하는 행위를 하나의 공통된 방식에 따라 처리할 수 있는 관심사로 취급하겠다.
 
-> 서비스에서 Event를 발급하겠다는 전자의 선택도 존중한다. AOP는 공통 관심사를 분리해서 더 나은 POJO를 만들 수 있게 해준다. 하지만 익숙치 않은 개발자에게는, 전체 어플리케이션 동작을 파악하는 데에 애를 먹을 수 있다. 혼자 개발하는 개발자가 아니라면, 내가 속한 팀에서 어떠한 방법의 프로그래밍이 가장 큰 효율을 낼 수 있는지 파악해봐야할 것이다.
+> 서비스에서 Event를 발급하겠다는 전자의 선택도 존중한다. AOP는 공통 관심사를 분리해서 더 나은 POJO를 만들 수 있게 해준다. 하지만 익숙하지 않은 개발자에게는, 전체 애플리케이션 동작을 파악하는 데에 애를 먹을 수 있다. 혼자 개발하는 개발자가 아니라면, 내가 속한 팀에서 어떠한 방법의 프로그래밍이 가장 큰 효율을 낼 수 있는지 파악해봐야 할 것이다.
 
 ## 의존성 설정
 
@@ -483,7 +482,7 @@ public class SimpleEventApplication implements CommandLineRunner {
 
 ## MemberJoinService
 
-최종적으로 아래 코드가 동작하도록 만들 것이다. 기존에 `eventPublisher.publishEvent(new MemberJoinedEvent(member));`가 없어졌다. 즉 `MemberJoinService`는 더이상 `ApplicationEventPublisher`에 의존하지 않으며, 그 존재를 모르게 되었다.
+최종적으로 아래 코드가 동작하도록 만들 것이다. 기존에 `eventPublisher.publishEvent(new MemberJoinedEvent(member));`가 없어졌다. 즉 `MemberJoinService`는 더 이상 `ApplicationEventPublisher`에 의존하지 않으며, 그 존재를 모르게 되었다.
 
 ```java
 @Profile("aop-async-event")
@@ -653,7 +652,7 @@ Event를 발급하는 공통된 행위를 애노테이션과 AOP를 사용해서
 
 # 구현 6. 순서가 필요있나? Best Effort!
 
-비동기를 처리하는 데 굳이 순서가 필요할까? 여태까지의 코드를 보면 `Email`이 성공해야 `Sms`가 성공한다. 실제로 우리의 로직은 이러한 순서를 필요로하지 않는다. `MemberJoinedEvent`를 발급했을 때, 이를 처리할 핸들러를 여럿 등록하고 각각의 thread를 격리해보자.
+비동기를 처리하는 데 굳이 순서가 필요할까? 여태까지의 코드를 보면 `Email`이 성공해야 `Sms`가 성공한다. 실제로 우리의 로직은 이러한 순서를 필요로 하지 않는다. `MemberJoinedEvent`를 발급했을 때, 이를 처리할 핸들러를 여럿 등록하고 각각의 thread를 격리해보자.
 
 ### 설명
 
@@ -718,9 +717,9 @@ Email과 Sms를 다른 thread에서 보내고 있는 것을 확인할 수 있다
 
 # 마무리
 
-Spring에서 지원하는 Event 처리 방법과 실제로 어떻게 사용할 수 있을지 살펴보았다. 가장 중요한 것은 Event를 사용하는 이유를 깨닫는 것이다. 가장 큰 이유는 Event 방식은 `시스템 간의 결합도를 낮춰주는 것`이다. 결합도를 낮춰서 서비스 로직에 집중하고, 장애 전파에 강한 어플리케이션을 작성할 수 있다. 비동기로 실행하는 것도 Spring의 지원을 받아 간단하게 처리할 수 있다. 
+Spring에서 지원하는 Event 처리 방법과 실제로 어떻게 사용할 수 있을지 살펴보았다. 가장 중요한 것은 Event를 사용하는 이유를 깨닫는 것이다. 가장 큰 이유는 Event 방식은 `시스템 간의 결합도를 낮춰주는 것`이다. 결합도를 낮춰서 서비스 로직에 집중하고, 장애 전파에 강한 애플리케이션을 작성할 수 있다. 비동기로 실행하는 것도 Spring의 지원을 받아 간단하게 처리할 수 있다. 
 
-물론 이러한 Event 방식도 문제는 있다. Global Transaction을 어떻게 쥐고 갈 것인지 하는 것이다. 본문에서는 하나의 Application 내에서 Event를 발생시키고 처리했는데, Event-Driven Architecture의 MSA 환경을 구성하는 경우, 어떻게 Transaction과 Latency 사이에서 타협점을 찾을 것인가는, 현재 이 업계의 큰 이슈 중 하나가 아닐까? 아직까지는 Event를 사용하면서 완벽한 Transaction을 지원하는 것은 어려워 보인다. 서비스 간의 결합도를 떨어뜨리기 위해, Event를 위한 별도의 모듈(RabbitMQ, Kafka)을 사용하는 중에 데이터 손실 등 넘어야할 난관도 많이 있다. 하지만 Event를 사용하는 구조 자체는 매우 매력적이며, 개발자에게 더 많은 선택지를 가져다 준다.
+물론 이러한 Event 방식도 문제는 있다. Global Transaction을 어떻게 쥐고 갈 것인지 하는 것이다. 본문에서는 하나의 Application 내에서 Event를 발생시키고 처리했는데, Event-Driven Architecture의 MSA 환경을 구성하는 경우, 어떻게 Transaction과 Latency 사이에서 타협점을 찾을 것인가는, 현재 이 업계의 큰 이슈 중 하나가 아닐까? 아직까지는 Event를 사용하면서 완벽한 Transaction을 지원하는 것은 어려워 보인다. 서비스 간의 결합도를 떨어뜨리기 위해, Event를 위한 별도의 모듈(RabbitMQ, Kafka)을 사용하는 중에 데이터 손실 등 넘어야 할 난관도 많이 있다. 하지만 Event를 사용하는 구조 자체는 매우 매력적이며, 개발자에게 더 많은 선택지를 가져다준다.
 
 Spring은 개발자로 하여금 POJO를 작성하여 OOP를 할 수 있도록 유도한다. Spring Event 또한 개발자가 OOP를 더 잘할 수 있도록 도와주는 장치다. 더 유연한 구조로 나아가는 방법 중의 하나로 충분히 써먹을 수 있을 것이라 믿어 의심치 않는다.
 
