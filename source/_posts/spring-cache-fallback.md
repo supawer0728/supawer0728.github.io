@@ -14,7 +14,7 @@ Spring은 [캐시 추상화](https://docs.spring.io/spring/docs/5.0.5.RELEASE/sp
 사용하는 캐시 시스템에 문제가 생겼을 때 어떻게 대처해야하는지는 어떤 정보를 캐시하느냐에 따라 다르다. 경우의 수 자체가 너무 많다. 또한 캐시 자체가 여러 용도로 쓰일 수 있다. HTTP 응답을 캐시하든지, Repository의 결과를 캐시하든지 혹은 Service의 결과를 캐시할 수도 있다. 본문에서는 아래 두 경우로 간단하게 나누고 이에 대한 해결법을 궁리해보고자 한다.
 
 - 부하가 많이 걸린다면? 2차 캐시 구성을 고려하자.(Local Cache, Global Cache 구성)
-- Global Cache에서 장애가 발생한 경우, Hystrix를 고려하자
+- Global Cache에서 장애가 발생할 경우를 대비, Hystrix를 고려하자
 
 <!-- more -->
 
@@ -24,6 +24,8 @@ MVC의 Controller에서 로직을 실행하기 위해 Service를 호출할 때 �
 
 {% plantuml %}
 [service.get()] --> [Cache] : cache를 먼저 호출
+[Cache] -right-> [RedisServer]
+[RedisServer] -left-> [Cache]
 [Cache] --> [Repository] : cache에 정보가 없으면 호출
 {% endplantuml %}
 
@@ -112,6 +114,7 @@ public class PersonService {
         return personRepository.save(person);
     }
 
+    // 캐시에 값이 없는 경우에는 로그를 남기고 repository 실행
     @Cacheable(cacheNames = "person")
     public Person get(@NonNull Long id) {
         log.info("get(Long) called");
@@ -211,16 +214,20 @@ public class SimpleCacheApplication implements CommandLineRunner {
 "{\"@class\":\"com.parfait.study.simplecache.person.domain.Person\",\"id\":1,\"name\":\"John\",\"age\":12}"
 ```
 
-> 지금까지의 소스는 https://github.com/supawer0728/simple-cache/tree/simple-cache 에서 받을 수 있다.
+> 소스코드 : https://github.com/supawer0728/simple-cache/tree/simple-cache
 
 # 2차 캐시 구성
 
 캐시에 많은 부하가 몰릴 수 있는 시스템의 경우 캐시를 수직적으로 나누어 1차, 2차 캐시를 사용하는 것이 좋을 때가 있다. 서비스 입장에서 구성을 나타내면 아래와 같다.
 
 {% plantuml %}
-[service.get()] --> [Local Cache(JVM)] : heap을 사용하는 local cache 호출
-[Local Cache(JVM)] --> [Global Cache(Remote)] : local cache에 값이 없을 때 remote cache 호출
-[Global Cache(Remote)] --> [Repository] : remote cache에 값이 없을 때 repository 호출
+[service.get()] --> [LocalCache] : heap을 사용하는 local cache 호출
+[LocalCache] -> [ehCache(Heap)]
+[ehCache(Heap)] -> [LocalCache]
+[LocalCache] --> [GlobalCache] : local cache에 값이 없을 때 remote cache 호출
+[GlobalCache] -right-> [RedisServer]
+[RedisServer] -left-> [GlobalCache]
+[GlobalCache] --> [Repository] : remote cache에 값이 없을 때 repository 호출
 {% endplantuml %}
 
 이러한 구성을 할 때 주의할 점이 있다. local cache와 global cache의 정보가 맞지 않는 기간이 발생할 수 있다는 것이다. 당연한 이야기지만 local cache의 만료 시간이 길면 길수록 그 기간은 길어진다. 때문에 일관된 데이터가 필요한 만큼 local cache의 만료 시간을 짧게 가져가야한다.
@@ -281,6 +288,8 @@ public class ChainedCacheManager implements CacheManager {
 }
 ```
 
+실제 로직을 담고 있는 `cacheManagers`를 두고 위임자 패턴으로 구현하였다. `getCache(String)` 호출이 있으면, `cacheManagers`의 순서로 해당 `CacheManager`의 `Cache`를 불러와 `ChainedCache`를 새로 생성한다.
+
 ### ChainedCache
 
 ```java
@@ -327,7 +336,7 @@ public class ChainedCache implements Cache {
 }
 ```
 
-`CacheManager`에서 실제 구현을 담고 있는 `Cache`를 저장한다. 우리가 구현할 내용은 순서를 지정해주고 순서에 따라 값을 넣는 것이다.
+`CacheManager`에서 실제 구현을 담고 있는 `Cache`를 저장한다. 우리가 구현할 내용은 순서를 지정해주고 순서에 따라 값을 넣는 것이다. 실제 동작은 `caches`에 위임하자.
 
 ### CacheConfig
 
@@ -410,9 +419,9 @@ public class CacheConfig extends CachingConfigurerSupport {
 03:24:29  INFO LoggingCache     : Local-Cache.getName() called
 03:24:29  INFO LoggingCache     : Local-Cache.get(Object) called
 03:24:29  INFO LoggingCache     : Global-Cache.get(Object) called
+03:24:29  INFO LoggingCache     : Local-Cache.put(Object, Object) called
 
 # 이후 10초간 local-cache만 호출
-03:24:29  INFO LoggingCache     : Local-Cache.put(Object, Object) called
 03:24:34  INFO LoggingCache     : Local-Cache.getName() called
 03:24:34  INFO LoggingCache     : Local-Cache.get(Object) called
 03:24:38  INFO LoggingCache     : Local-Cache.getName() called
@@ -428,3 +437,216 @@ public class CacheConfig extends CachingConfigurerSupport {
 ```
 
 원하는 대로 정상적으로 동작하고 있다.
+
+> 소스코드 : https://github.com/supawer0728/simple-cache/tree/double-cache
+
+# Hystrix 구성
+
+전역 캐시가 부하를 받아 Timeout이 발생하거나 특정 이유로 접근이 되지 않는 등의 장애가 발생한 경우, 일전에 공유했던 Hystrix를 고려해볼 수 있다. **전역 캐시에 장애를 감지한 시점부터는 요청을 보내면 안된다.** 물론 이 방법 또한 만병 통치약인 것은 아니다. 아래의 경우를 생각해보자.
+
+- 단순 네트워크 단절 : 다행이다. 1차 캐시와 repository로 2차 캐시를 복구할 때까지 운용할 수 있다.
+- 트래픽 부하로 인한 장애 : 전역 캐시에 장애를 일으켰던 트래픽을 고스란히 1차 캐시와 repository로 견뎌내어야 한다. 2차 캐시를 복구하기 위한 잠깐의 시간 벌기는 가능할 것이다.
+
+위와 같은 한계가 있음을 숙지하고, 이제 Hystirx를 어떻게 구성할 수 있을지 예제로 작성하려한다.
+
+{% plantuml %}
+[service.get()] --> [LocalCache] : heap을 사용하는 local cache 호출
+[LocalCache] -> [ehCache(Heap)]
+[ehCache(Heap)] -> [LocalCache]
+[LocalCache] --> [GlobalCache] : local cache에 값이 없을 때 remote cache 호출
+[GlobalCache] -down-> [GlobalCache] : RedisServer 장애로 인한 circuit open!
+[GlobalCache] --> [Repository] : remote cache에 값이 없을 때 repository 호출
+{% endplantuml %}
+
+## HystirxCacheManager
+
+사실상 Spring에서 캐시 추상화(`CacheManager`, `Cache`)를 제공하니 우리는 앞에서 한 작업의 반복을 할 뿐이다. 실제 구현체를 `delegate`로 잡아두고 위임자 패턴을 사용하여 구현하자.
+
+```java
+public class HystrixCacheManager implements CacheManager {
+
+    private final CacheManager delegate;
+    private final Map<String, Cache> cacheMap = new ConcurrentHashMap<>();
+
+    public HystrixCacheManager(@NonNull CacheManager delegate) {
+        this.delegate = delegate;
+    }
+
+    @Override
+    public Cache getCache(String name) {
+        return cacheMap.computeIfAbsent(name, key -> new HystrixCache(delegate.getCache(key)));
+    }
+
+    @Override
+    public Collection<String> getCacheNames() {
+        return delegate.getCacheNames();
+    }
+}
+```
+
+## HystrixCache
+
+```java
+@Slf4j
+public class HystrixCache implements Cache {
+
+    private final Cache delegate;
+
+    public HystrixCache(Cache delegate) {
+        this.delegate = delegate;
+    }
+
+    @Override
+    public ValueWrapper get(Object key) {
+        return new HystrixCacheGetCommand(delegate, key).execute();
+    }
+
+    @Override
+    public void put(Object key, Object value) {
+        new HystrixCachePutCommand(delegate, key, value).execute();
+    }
+
+    @Override
+    public void evict(Object key) {
+        new HystrixCacheEvictCommand(delegate, key).execute();
+    }
+    
+    // ...
+}
+```
+
+아쉽게도 `spring-netflix-starter-hystrix`에서 지원해주는 애노테이션들을 이용한 설정은 어렵다. 애노테이션을 사용해서 Hystirx설정을 하기 위해서는 설정할 인스턴스가 `ApplicationContext`에 Bean으로 등록되어야 한다. 때문에 여기서는 Spring의 도움 없이 직접 Hystrix API를 사용하였다. `execute()`는 HystrixCommand를 동기로 실행한다.
+
+## HystrixCacheGetCommand
+
+앞에서 get, push, evict에 대해서 모두 `HystirxCacheXXXCommand`로 작성하였으나 본문에서는 `HystrixCacheGetCommand`만 살펴보려고 한다. 나머지든 대동소이하다.
+
+```java
+@Slf4j
+public class HystrixCacheGetCommand extends HystrixCommand<ValueWrapper> {
+
+    private final Cache delegate;
+    private final Object key;
+
+    public HystrixCacheGetCommand(Cache delegate, Object key) {
+        super(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey("testGroupKey"))
+                    .andCommandKey(HystrixCommandKey.Factory.asKey("cache-get"))
+                    .andCommandPropertiesDefaults(
+                            HystrixCommandProperties.defaultSetter()
+                                                    .withExecutionTimeoutInMilliseconds(500)
+                                                    .withCircuitBreakerErrorThresholdPercentage(50)
+                                                    .withCircuitBreakerRequestVolumeThreshold(5)
+                                                    .withMetricsRollingStatisticalWindowInMilliseconds(20000)));
+        this.delegate = delegate;
+        this.key = key;
+    }
+
+    @Override
+    protected ValueWrapper run() {
+        return delegate.get(key);
+    }
+
+    @Override
+    protected ValueWrapper getFallback() {
+        log.warn("get fallback called, circuit is {}", super.circuitBreaker.isOpen() ? "opened" : "closed");
+        return null;
+    }
+}
+```
+
+20초간 API의 성공/실패 여부를 측정하며, 5번 이상 실행되고 50% 이상 실패했을 경우 회로가 열린다. Timeout은 500ms로 설정했다. `execute()`를 실행하면 `run()`이 실행되며, 실패한 경우 `getFallback()`이 실행된다.
+
+## CacheConfig
+
+```java
+@EnableCaching(proxyTargetClass = true)
+@Configuration
+public class CacheConfig extends CachingConfigurerSupport {
+
+    // ...
+
+    @Bean
+    public CacheManager redisCacheManager() {
+        RedisCacheManager.RedisCacheManagerBuilder builder = RedisCacheManager.RedisCacheManagerBuilder.fromConnectionFactory(jedisConnectionFactory());
+
+        RedisCacheConfiguration defaultConfig =
+                RedisCacheConfiguration.defaultCacheConfig()
+                                       .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()))
+                                       .entryTtl(Duration.ofSeconds(20L));
+
+        builder.cacheDefaults(defaultConfig);
+
+        return new HystrixCacheManager(new LoggingCacheManager(builder.build(), "Global-Cache"));
+    }
+    // ...
+}
+```
+
+앞서 만들었던 부분을 그대로 생성자로 주입하자.
+
+## 테스트
+
+서버를 실행 후 Redis 서버를 Down 시킨 후 `/people/1`을 호출해보았다.
+
+```
+2018-04-18 22:55:09.653  INFO LoggingCache           : Local-Cache.get(Object) called
+2018-04-18 22:55:09.653  INFO LoggingCache           : Global-Cache.get(Object) called
+2018-04-18 22:55:09.661  WARN HystrixCacheGetCommand : get fallback called, circuit is closed
+2018-04-18 22:55:09.662  INFO PersonService          : get(Long) called
+2018-04-18 22:55:09.662  INFO LoggingCache           : Local-Cache.put(Object, Object) called
+2018-04-18 22:55:09.663  INFO LoggingCache           : Global-Cache.put(Object, Object) called
+2018-04-18 22:55:10.164  WARN HystrixCachePutCommand : put fallback called, circuit is closed
+2018-04-18 22:55:14.085  INFO LoggingCache           : Local-Cache.get(Object) called
+2018-04-18 22:55:14.086  INFO LoggingCache           : Global-Cache.get(Object) called
+2018-04-18 22:55:14.588  WARN HystrixCacheGetCommand : get fallback called, circuit is closed
+2018-04-18 22:55:14.588  INFO PersonService          : get(Long) called
+2018-04-18 22:55:14.588  INFO LoggingCache           : Local-Cache.put(Object, Object) called
+2018-04-18 22:55:14.588  INFO LoggingCache           : Global-Cache.put(Object, Object) called
+2018-04-18 22:55:15.090  WARN HystrixCachePutCommand : put fallback called, circuit is closed
+2018-04-18 22:55:16.104  INFO LoggingCache           : Local-Cache.get(Object) called
+2018-04-18 22:55:16.105  INFO LoggingCache           : Global-Cache.get(Object) called
+2018-04-18 22:55:16.606  WARN HystrixCacheGetCommand : get fallback called, circuit is closed
+2018-04-18 22:55:16.606  INFO PersonService          : get(Long) called
+2018-04-18 22:55:16.606  INFO LoggingCache           : Local-Cache.put(Object, Object) called
+2018-04-18 22:55:16.607  INFO LoggingCache           : Global-Cache.put(Object, Object) called
+2018-04-18 22:55:17.108  WARN HystrixCachePutCommand : put fallback called, circuit is closed
+2018-04-18 22:55:17.973  INFO LoggingCache           : Local-Cache.get(Object) called
+2018-04-18 22:55:17.974  INFO LoggingCache           : Global-Cache.get(Object) called
+2018-04-18 22:55:18.474  WARN HystrixCacheGetCommand : get fallback called, circuit is closed
+2018-04-18 22:55:18.474  INFO PersonService          : get(Long) called
+2018-04-18 22:55:18.474  INFO LoggingCache           : Local-Cache.put(Object, Object) called
+2018-04-18 22:55:18.475  INFO LoggingCache           : Global-Cache.put(Object, Object) called
+2018-04-18 22:55:18.977  WARN HystrixCachePutCommand : put fallback called, circuit is closed
+2018-04-18 22:55:19.112  INFO LoggingCache           : Local-Cache.get(Object) called
+2018-04-18 22:55:19.112  INFO LoggingCache           : Global-Cache.get(Object) called
+2018-04-18 22:55:19.613  WARN HystrixCacheGetCommand : get fallback called, circuit is closed
+2018-04-18 22:55:19.613  INFO PersonService          : get(Long) called
+2018-04-18 22:55:19.613  INFO LoggingCache           : Local-Cache.put(Object, Object) called
+2018-04-18 22:55:19.614  INFO LoggingCache           : Global-Cache.put(Object, Object) called
+2018-04-18 22:55:20.114  WARN HystrixCachePutCommand : put fallback called, circuit is closed
+2018-04-18 22:55:20.241  INFO LoggingCache           : Local-Cache.get(Object) called
+2018-04-18 22:55:20.241  INFO LoggingCache           : Global-Cache.get(Object) called
+2018-04-18 22:55:20.742  WARN HystrixCacheGetCommand : get fallback called, circuit is closed
+2018-04-18 22:55:20.742  INFO PersonService          : get(Long) called
+2018-04-18 22:55:20.743  INFO LoggingCache           : Local-Cache.put(Object, Object) called
+
+# 일정 횟수 fallback이 호출된 후 회로 열림!
+2018-04-18 22:55:20.743  WARN HystrixCachePutCommand : put fallback called, circuit is opened
+2018-04-18 22:55:21.312  INFO LoggingCache           : Local-Cache.get(Object) called
+2018-04-18 22:55:21.312  WARN HystrixCacheGetCommand : get fallback called, circuit is opened
+2018-04-18 22:55:21.312  INFO PersonService          : get(Long) called
+2018-04-18 22:55:21.312  INFO LoggingCache           : Local-Cache.put(Object, Object) called
+2018-04-18 22:55:21.312  WARN HystrixCachePutCommand : put fallback called, circuit is opened
+2018-04-18 22:55:22.250  INFO LoggingCache           : Local-Cache.get(Object) called
+2018-04-18 22:55:22.250  WARN HystrixCacheGetCommand : get fallback called, circuit is opened
+```
+
+> 소스코드 : https://github.com/supawer0728/simple-cache/tree/hystrix-cache
+
+# 마무리
+
+Spring의 캐시 추상화를 사용하며, 부하 분산을 통해 장애에 대응할 수 있는 방안에 대해 다뤄보았다.
+
+우선 n차 캐시 구성을 통해서 Heap을 사용하여 외부 시스템의 호출을 줄여서 전역 리소스(전역 캐시, repository)의 부하를 줄였다. n차 캐시 구성을 사용하는 경우, 리소스 간의 일관성이 무너질 수 있다. 일관성이 중요할수록 로컬 캐시의 수명을 짧게해서 사용해야 한다. 
+
+원격 캐시의 경우 파티션(장애)이 발생할 수 있다. 이에 대응하기 위해 Hystrix를 활용할 수 있다. 회로를 열어 원격에 요청을 보내지 않고, 빠른 실패처리를 할 수 있다. 하지만 여기서도 유의해야할 점이 있는데. 트래픽이 몰리는 상황에서 부하를 견디지 못해 장애가 발생한 경우, 이를 1차 캐시와 repository가 받아내게 된다. 본문에서는 fallback에서 null을 던져 repository를 실행시켰다. 원격 캐시에서 장애가 발생했을 때, 사용자 정의 Exception을 던져 캐시 오류인 경우의 응답을 따로 내려줘서 repository를 지켜내는 것도 방법이 될 수 있을 것 같다.
