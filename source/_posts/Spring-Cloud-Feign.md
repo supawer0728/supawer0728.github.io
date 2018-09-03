@@ -11,7 +11,7 @@ categories:
 * REST 기반 서비스 호출을 추상화한 Spring Cloud Netflix 라이브러리
 * 선언적 방식
 * 인터페이스를 통해 클라이언트 측 프로그램 작성
-* Spring이 런타임에 구현체를 제공(RestTemplate을 사용)
+* Spring이 런타임에 구현체를 제공
 
 <!-- more -->
 
