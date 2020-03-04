@@ -258,7 +258,7 @@ management.health.status.http-mapping.UP=200
 
 이제 애플리케이션을 실행하여 `PUT /actuator/health/maintenance`를 요청한 후 `GET /actuator/health`로 확인해보자 아래와 같이 나온다.
 
-![점검중](maintenance.png)
+![점검중](/images/spring-actuator/maintenance.png)
 
 #### HealthIndicator를 구현하며, `management.endpoint.health.show-details=always`가 설정된 경우
 

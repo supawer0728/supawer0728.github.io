@@ -386,8 +386,8 @@ public class UserController {
 드디어 보여줄 수 있게 되었다.
 `src/main/resoucres/META-INF/additional-spring-configuration-metadata.json`에서 말했던 IDE의 가이드란 이런 것이다.
 
-![ide-guide](ide-guide.png)
-![ide-guide2](ide-guide2.png)
+![ide-guide](/images/create-spring-boot-starter/ide-guide.png)
+![ide-guide2](/images/create-spring-boot-starter/ide-guide2.png)
 
 값 타입을 해석해서 후보까지 보여주는 위엄!
 

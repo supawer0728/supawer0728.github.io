@@ -15,7 +15,7 @@ Spring을 익힌지 얼마 되지 않았을 때, 회원 인증 로직을 구현�
 
 # 실행 시점
 
-| ![request-lifecycle](spring-request-lifecycle.jpg) |
+| ![request-lifecycle](/images/spring-filter-interceptor/spring-request-lifecycle.jpg) |
 | - |
 | 출처 : https://justforchangesake.wordpress.com/2014/05/07/spring-mvc-request-life-cycle/ |
 

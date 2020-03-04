@@ -19,7 +19,7 @@ Spring Data REST는 도메인 모델과 repository를 분석해서, `RESTful API
 뜬금없지만 `RESTful`에 관해 좀 더 이야기를 해두고자 한다.
 아래 그림은 마틴 파울러 아저씨의 [Richardson Maturity Model](https://martinfowler.com/articles/richardsonMaturityModel.html)에 나오는 `REST의 영광`을 누리기 위한 단계를 표현하고 있다.
 
-| ![image1](hateoas.png) |
+| ![image1](/images/spring-data-rest/hateoas.png) |
 | :--: |
 | *출처: https://martinfowler.com/articles/images/richardsonMaturityModel/overview.png* |
 
@@ -435,7 +435,7 @@ interface OnlyName {
 
 projection의 목록은 `/api/profile/members`에서 조회할 수 있다.
 
-![profile1](profile1.png)
+![profile1](/images/spring-data-rest/profile1.png)
 
 ## JsonIgnore 값 보내기
 

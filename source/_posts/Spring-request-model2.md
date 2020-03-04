@@ -305,7 +305,7 @@ private Mono<AttachmentWrapperItem> executeGetAttachment(Attachable attachable) 
 
 3초 이상, 6초 이내에 요청이 오면 성공이다
 
-![스크린샷 2018-03-08 오후 7.42.16.png](success.png)
+![스크린샷 2018-03-08 오후 7.42.16.png](/images/Spring-request-model2/success.png)
 
 # reactor로 실패 극복
 
@@ -437,7 +437,7 @@ Reactor를 사용해서 비동기 프로그래밍을 하고, 장애에 대처해
 
 이것이 단점인 이유는 [reactor learn 페이지](https://projectreactor.io/learn)에서 가져온 사진 3장으로 설명할 수 있을 것 같다.
 
-|![blocking is evil](block.PNG)|
+|![blocking is evil](/images/Spring-request-model2/block.PNG)|
 | - |
 | *출처 : https://projectreactor.io/learn* |
 

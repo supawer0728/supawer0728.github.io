@@ -21,7 +21,7 @@ categories:
 
 **GET /123**
 
-![image.png](notfound.png)
+![image.png](/images/spring-error-handling/notfound.png)
 
 **GET /123 - json 응답**
 
@@ -61,7 +61,7 @@ server.error:
 
 **HTML 응답**
 
-![errorhtml](error-html.png)
+![errorhtml](/images/spring-error-handling/error-html.png)
 
 **json 응답**
 

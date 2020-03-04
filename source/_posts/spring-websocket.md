@@ -67,7 +67,7 @@ Spring의 지원을 받아 Web Application Server에서 HTTP를 지원하면서 
 
 # 지원하는 Browser
 
-| ![지원브라우저](support-browsers.png)|
+| ![지원브라우저](/images/sprnig-websocket/support-browsers.png)|
 | - |
 | https://caniuse.com/#feat=websockets |
 
@@ -406,7 +406,7 @@ public class ChatRoom {
 
 ## 실행
 
-![스크린샷1](websocket-example1.png)
+![스크린샷1](/images/spring-websocket/websocket-example1.png)
 
 ## 현재 채팅 서버의 단점
 
@@ -596,7 +596,7 @@ public class ChatMessageController {
 
 아래 그림은 [Spring Reference](https://docs.spring.io/spring/docs/5.0.4.RELEASE/spring-framework-reference/web.html#websocket-stomp-message-flow)에서 가져왔다. 이해하기 어렵다면 `/app`을 `/publish`로, `/topic`을 `/subscribe`로 치환해서 보자.
 
-| ![메시지 흐름](message-flow-simple-broker.png) |
+| ![메시지 흐름](/images/spring-websocket/message-flow-simple-broker.png) |
 | - |
 | 출처 : https://docs.spring.io/spring/docs/5.0.4.RELEASE/spring-framework-reference/web.html#websocket-stomp-message-flow |
 
