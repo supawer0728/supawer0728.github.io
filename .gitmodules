@@ -1,0 +1,4 @@
+[submodule "themes/next"]
+	path = themes/next
+	url = /Users/jihoon-jeon/blog/supawer0728/themes/next
+	branch = master
