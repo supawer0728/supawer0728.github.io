@@ -589,7 +589,7 @@ Filter와 Interceptor는 실행되는 위치가 다르다.
 Interceptor는 DispatcherServlet 내부에서 발생하기 때문에 `ControllerAdvice`를 적용할 수 있다.
 하지만 Filter는 DispatcherServlet 외부에서 발생해서 `ErrorController`에서 처리해야 한다.
 
-![image](https://supawer0728.github.io/2018/04/04/spring-filter-interceptor/spring-request-lifecycle.jpg)
+![image](/images/spring-filter-interceptor/spring-request-lifecycle.jpg)
 이미지 출처: https://justforchangesake.files.wordpress.com/2014/05/spring-request-lifecycle.jpg
 
 # 정리
