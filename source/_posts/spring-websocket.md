@@ -67,7 +67,7 @@ Spring의 지원을 받아 Web Application Server에서 HTTP를 지원하면서 
 
 # 지원하는 Browser
 
-| ![지원브라우저](/images/sprnig-websocket/support-browsers.png)|
+| ![지원브라우저](/images/spring-websocket/support-browsers.png)|
 | - |
 | https://caniuse.com/#feat=websockets |
 
