@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Nanum Gothic:300,300italic,400,400italic,700,700italic|Nanum Pen Script:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-icon-180x180.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.4">
+
+
+
+  <link rel="manifest" href="/images/manifest.json">
+
+
+  <meta name="msapplication-config" content="/images/browserconfig.xml" />
+
+
+
+  <meta name="keywords" content="spring," />
+
+
+
+
+
+  <link rel="alternate" href="/feed.xml" title="기록은 재산이다" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="서론Spring Data REST는 도메인 모델과 repository를 분석해서, RESTful API를 제공해준다.본 문서에서는 Spring Data REST에 대한 간단한 예제와 함께 사용법에 관한 소개를 하고자 한다.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="spring-data-rest 소개">
+<meta property="og:url" content="https://supawer0728.github.io/2018/03/20/spring-data-rest/index.html">
+<meta property="og:site_name" content="기록은 재산이다">
+<meta property="og:description" content="서론Spring Data REST는 도메인 모델과 repository를 분석해서, RESTful API를 제공해준다.본 문서에서는 Spring Data REST에 대한 간단한 예제와 함께 사용법에 관한 소개를 하고자 한다.">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:image" content="https://supawer0728.github.io/images/spring-data-rest/hateoas.png">
+<meta property="og:image" content="https://supawer0728.github.io/images/spring-data-rest/profile1.png">
+<meta property="article:published_time" content="2018-03-20T01:26:46.000Z">
+<meta property="article:modified_time" content="2020-03-04T08:18:02.749Z">
+<meta property="article:author" content="supawer0728">
+<meta property="article:tag" content="spring">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://supawer0728.github.io/images/spring-data-rest/hateoas.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '작성자'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://supawer0728.github.io/2018/03/20/spring-data-rest/"/>
+
+
+
+
+
+  <title>spring-data-rest 소개 | 기록은 재산이다</title>
+  
+
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-115481794-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'UA-115481794-1');
+</script>
+
+
+
+
+
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script data-ad-client="" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="ko">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">기록은 재산이다</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">To Improve Human Life</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            홈
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            태그
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            카테고리
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            아카이브
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            검색
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="Searching..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://supawer0728.github.io/2018/03/20/spring-data-rest/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="supawer0728">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="기록은 재산이다">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">spring-data-rest 소개</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">작성일&#58;</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-20T10:26:46+09:00">
+                2018-03-20
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">수정일&#58;</span>
+              
+              <time title="수정일" itemprop="dateModified" datetime="2020-03-04T17:18:02+09:00">
+              
+                2018-03-20
+              
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/" itemprop="url" rel="index">
+                    <span itemprop="name">spring</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/reference/" itemprop="url" rel="index">
+                    <span itemprop="name">reference</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/data/" itemprop="url" rel="index">
+                    <span itemprop="name">data</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/03/20/spring-data-rest/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/03/20/spring-data-rest/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="서론"><a href="#서론" class="headerlink" title="서론"></a>서론</h1><p>Spring Data REST는 도메인 모델과 repository를 분석해서, <code>RESTful API</code>를 제공해준다.<br>본 문서에서는 Spring Data REST에 대한 간단한 예제와 함께 사용법에 관한 소개를 하고자 한다.</p>
+<a id="more"></a>
+
+<h1 id="RESTful-API"><a href="#RESTful-API" class="headerlink" title="RESTful API"></a>RESTful API</h1><p>뜬금없지만 <code>RESTful</code>에 관해 좀 더 이야기를 해두고자 한다.<br>아래 그림은 마틴 파울러 아저씨의 <a href="https://martinfowler.com/articles/richardsonMaturityModel.html" target="_blank" rel="noopener">Richardson Maturity Model</a>에 나오는 <code>REST의 영광</code>을 누리기 위한 단계를 표현하고 있다.</p>
+<table>
+<thead>
+<tr>
+<th align="center"><img src="/images/spring-data-rest/hateoas.png" alt="image1"></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><em>출처: <a href="https://martinfowler.com/articles/images/richardsonMaturityModel/overview.png" target="_blank" rel="noopener">https://martinfowler.com/articles/images/richardsonMaturityModel/overview.png</a></em></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>한국어 풀이로 해둔 블로그가 있다(<a href="http://jinson.tistory.com/190" target="_blank" rel="noopener">http://jinson.tistory.com/190</a>)</p>
+</blockquote>
+<p>결국 <code>api가 RESTful하다</code>는 말을 듣기 위해서는 <code>level 3</code>를 충족시켜야 한다.<br><code>level 3</code>를 충족시키기 위해서 <code>HATEOAS(Hypertext As The Engine Of Application State)</code>개념을 도입해야 한다.<br><code>HATEOAS</code>가 어떤 것인지 상세히 설명하는 것은 본 문서에서 초점을 맞추는 부분이 아니기에, 여기서는 하지 않겠다.<br>정말 간단히 요약하자면 아래와 같다.</p>
+<ul>
+<li>Resource로 <code>무엇</code>을 할 수 있는지 알 수 있다.</li>
+<li><code>무엇</code>을 <code>어떻게</code> 해야 하는 지 알려준다.</li>
+</ul>
+<p><code>HATEOAS</code>에 대해서 궁금하다면 상기한 블로그를 읽어보자</p>
+<h1 id="간단한-예제"><a href="#간단한-예제" class="headerlink" title="간단한 예제"></a>간단한 예제</h1><p>백문이 불여일견이다.<br>우선 예제를 보며 어떻게 동작하는 것인지 알아보자.<br>여기서는 <code>spring-data-jpa</code>와 연동하여 사용한다.</p>
+<h2 id="의존성"><a href="#의존성" class="headerlink" title="의존성"></a>의존성</h2><p><code>spring-boot</code> 버전은 <code>2.0.0.RELEASE</code>다.</p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">dependencies</span> &#123;</span><br><span class="line">  <span class="keyword">compile</span>(<span class="string">'org.springframework.boot:spring-boot-starter-data-jpa'</span>)</span><br><span class="line">  <span class="keyword">compile</span>(<span class="string">'org.springframework.boot:spring-boot-starter-data-rest'</span>)</span><br><span class="line">  compileOnly(<span class="string">'org.projectlombok:lombok'</span>)</span><br><span class="line">  runtimeOnly(<span class="string">'com.h2database:h2'</span>)</span><br><span class="line">  testCompile(<span class="string">'org.springframework.boot:spring-boot-starter-test'</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Domain"><a href="#Domain" class="headerlink" title="Domain"></a>Domain</h2><p><strong>Member</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Entity</span></span><br><span class="line"><span class="meta">@Table</span>(name = <span class="string">"member"</span>)</span><br><span class="line"><span class="meta">@NoArgsConstructor</span>(access = AccessLevel.PRIVATE)</span><br><span class="line"><span class="meta">@Getter</span>(AccessLevel.PUBLIC)</span><br><span class="line"><span class="meta">@Setter</span>(AccessLevel.PRIVATE)</span><br><span class="line"><span class="meta">@EqualsAndHashCode</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Member</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Id</span></span><br><span class="line">    <span class="meta">@GeneratedValue</span></span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> Integer age;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Enumerated</span>(EnumType.STRING)</span><br><span class="line">    <span class="keyword">private</span> Grade grade;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Member</span><span class="params">(String name, Integer age, Grade grade)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.name = name;</span><br><span class="line">        <span class="keyword">this</span>.age = age;</span><br><span class="line">        <span class="keyword">this</span>.grade = grade;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Member <span class="title">join</span><span class="params">(@NonNull String name, @NonNull Integer age)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Member(name, age, Grade.BRONZE);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>Repository</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RepositoryRestResource</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">MemberRepository</span> <span class="keyword">extends</span> <span class="title">JpaRepository</span>&lt;<span class="title">Member</span>, <span class="title">Long</span>&gt; </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="application-설정"><a href="#application-설정" class="headerlink" title="application 설정"></a>application 설정</h2><p><strong>application.yml</strong></p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring.data.rest.base-path:</span> <span class="string">/api</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>SimpleDataRestApplication.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SimpleDataRestApplication</span> <span class="keyword">implements</span> <span class="title">CommandLineRunner</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> MemberRepository memberRepository;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run(SimpleDataRestApplication<span class="class">.<span class="keyword">class</span>, <span class="title">args</span>)</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">(String... args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        memberRepository.save(Member.join(<span class="string">"member1"</span>, <span class="number">20</span>));</span><br><span class="line">        memberRepository.save(Member.join(<span class="string">"member2"</span>, <span class="number">21</span>));</span><br><span class="line">        memberRepository.save(Member.join(<span class="string">"member3"</span>, <span class="number">22</span>));</span><br><span class="line">        memberRepository.save(Member.join(<span class="string">"member4"</span>, <span class="number">23</span>));</span><br><span class="line">        memberRepository.save(Member.join(<span class="string">"member5"</span>, <span class="number">24</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="실행"><a href="#실행" class="headerlink" title="실행"></a>실행</h2><p>미리 데이터를 넣거나 했지만,<br>사실 <strong>Domain</strong>영역에서 <code>entity</code>과 <code>repository</code>만 정의했다.<br>바로 실행해서 테스트해 볼 수 있다.</p>
+<p><strong><code>GET /api</code></strong></p>
+<p><code>application.yml</code>에서 <code>spring-rest-data</code>의 root를 <code>/api</code>로 잡았다.<br>root uri의 자원을 호출하면 어떻 것이 나오는 지 확인하자.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&#123;  </span><br><span class="line">   &quot;_links&quot;:&#123;  </span><br><span class="line">      &quot;members&quot;:&#123;  </span><br><span class="line">         &quot;href&quot;:&quot;http:&#x2F;&#x2F;localhost:8080&#x2F;api&#x2F;members&#123;?page,size,sort&#125;&quot;,</span><br><span class="line">         &quot;templated&quot;:true</span><br><span class="line">      &#125;,</span><br><span class="line">      &quot;profile&quot;:&#123;  </span><br><span class="line">         &quot;href&quot;:&quot;http:&#x2F;&#x2F;localhost:8080&#x2F;api&#x2F;profile&quot;</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>root 경로의 하위로 어떠한 자원들을 가지고 있는지 알려준다.<ul>
+<li>members를 가지고 있다</li>
+<li>members에 접근하려면 <code>/api/members</code>를 호출해야 한다고 알려준다(<code>HATEOAS</code>)</li>
+</ul>
+</li>
+</ul>
+<p><strong><code>GET /api/members</code></strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;_embedded&quot; : &#123;</span><br><span class="line">    &quot;members&quot; : [ &#123;</span><br><span class="line">      &quot;name&quot; : &quot;member1&quot;,</span><br><span class="line">      &quot;age&quot; : 20,</span><br><span class="line">      &quot;grade&quot; : &quot;BRONZE&quot;,</span><br><span class="line">      &quot;_links&quot; : &#123;</span><br><span class="line">        &quot;self&quot; : &#123;</span><br><span class="line">          &quot;href&quot; : &quot;http:&#x2F;&#x2F;localhost:8080&#x2F;api&#x2F;members&#x2F;1&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;member&quot; : &#123;</span><br><span class="line">          &quot;href&quot; : &quot;http:&#x2F;&#x2F;localhost:8080&#x2F;api&#x2F;members&#x2F;1&quot;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;, &#123;</span><br><span class="line">      ...</span><br><span class="line">    &#125;]</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;_links&quot; : &#123;</span><br><span class="line">    &quot;self&quot; : &#123;</span><br><span class="line">      &quot;href&quot; : &quot;http:&#x2F;&#x2F;localhost:8080&#x2F;api&#x2F;members&#123;?page,size,sort&#125;&quot;,</span><br><span class="line">      &quot;templated&quot; : true</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;profile&quot; : &#123;</span><br><span class="line">      &quot;href&quot; : &quot;http:&#x2F;&#x2F;localhost:8080&#x2F;api&#x2F;profile&#x2F;members&quot;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;page&quot; : &#123;</span><br><span class="line">    &quot;size&quot; : 20,</span><br><span class="line">    &quot;totalElements&quot; : 5,</span><br><span class="line">    &quot;totalPages&quot; : 1,</span><br><span class="line">    &quot;number&quot; : 0</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>목록 호출을 해보면</p>
+<ul>
+<li>페이징 처리를 해주고 있다.<ul>
+<li><code>MemberRepository</code>가 <code>PagingAndSortingRepository</code>를 구현하고 있기 때문이다.</li>
+<li>현재 총 5개의 요소가 있는데, 만약 <code>page=1&amp;size=2</code>라는 query를 추가했다면 <code>_links</code>에 다음 주소가 추가된다<ul>
+<li>first : <a href="http://localhost:8080/api/members?page=0&amp;size=2" target="_blank" rel="noopener">http://localhost:8080/api/members?page=0&amp;size=2</a></li>
+<li>previous : <a href="http://localhost:8080/api/members?page=0&amp;size=2" target="_blank" rel="noopener">http://localhost:8080/api/members?page=0&amp;size=2</a></li>
+<li>next : <a href="http://localhost:8080/api/members?page=2&amp;size=2" target="_blank" rel="noopener">http://localhost:8080/api/members?page=2&amp;size=2</a></li>
+<li>last : <a href="http://localhost:8080/api/members?page=2&amp;size=2" target="_blank" rel="noopener">http://localhost:8080/api/members?page=2&amp;size=2</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>목록들을 보면 ID가 없다<ul>
+<li><code>HATEOAS</code>를 써서 <code>자기 서술적(self-descriptive)</code>으로 동작한다.</li>
+<li>때문에 상세를 조회하기 위해 client는 <code>location.href = &#39;/api/members/&#39; + members[0].id</code>가 아니라,<br><code>location.href = members[0]._link.self.href</code>를 넣어주면 된다.</li>
+</ul>
+</li>
+</ul>
+<p><strong><code>GET /api/members/1</code></strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;name&quot; : &quot;member1&quot;,</span><br><span class="line">  &quot;age&quot; : 20,</span><br><span class="line">  &quot;grade&quot; : &quot;BRONZE&quot;,</span><br><span class="line">  &quot;_links&quot; : &#123;</span><br><span class="line">    &quot;self&quot; : &#123;</span><br><span class="line">      &quot;href&quot; : &quot;http:&#x2F;&#x2F;localhost:8080&#x2F;api&#x2F;members&#x2F;1&quot;</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;member&quot; : &#123;</span><br><span class="line">      &quot;href&quot; : &quot;http:&#x2F;&#x2F;localhost:8080&#x2F;api&#x2F;members&#x2F;1&quot;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong><code>POST /api/members</code></strong></p>
+<p>생성 요청을 해보자</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;name&quot; : &quot;Test Created&quot;,</span><br><span class="line">  &quot;age&quot; : 22,</span><br><span class="line">  &quot;grade&quot; : &quot;BRONZE&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>아래와 같이 <code>201 CREATED</code> 응답이 온다</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;name&quot; : &quot;Test Created&quot;,</span><br><span class="line">  &quot;age&quot; : 22,</span><br><span class="line">  &quot;grade&quot; : &quot;BRONZE&quot;,</span><br><span class="line">  &quot;_links&quot; : &#123;</span><br><span class="line">    &quot;self&quot; : &#123;</span><br><span class="line">      &quot;href&quot; : &quot;http:&#x2F;&#x2F;localhost:8080&#x2F;api&#x2F;members&#x2F;6&quot;</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;member&quot; : &#123;</span><br><span class="line">      &quot;href&quot; : &quot;http:&#x2F;&#x2F;localhost:8080&#x2F;api&#x2F;members&#x2F;6&quot;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong><code>PATCH /api/members/6</code></strong></p>
+<p>수정 요청을 해보자</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;age&quot; : 30</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>아래와 같이 응답이 온다(200 OK)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;name&quot; : &quot;Test Created&quot;,</span><br><span class="line">  &quot;age&quot; : 30,</span><br><span class="line">  &quot;grade&quot; : &quot;BRONZE&quot;,</span><br><span class="line">  &quot;_links&quot; : &#123;</span><br><span class="line">    &quot;self&quot; : &#123;</span><br><span class="line">      &quot;href&quot; : &quot;http:&#x2F;&#x2F;localhost:8080&#x2F;api&#x2F;members&#x2F;6&quot;</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;member&quot; : &#123;</span><br><span class="line">      &quot;href&quot; : &quot;http:&#x2F;&#x2F;localhost:8080&#x2F;api&#x2F;members&#x2F;6&quot;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>PUT</code>이나 <code>DELETE</code>도 당연히 동작을 하기 때문에 굳이 설명하지 않겠다.</p>
+<h1 id="기본-설정"><a href="#기본-설정" class="headerlink" title="기본 설정"></a>기본 설정</h1><p>앞서 예제를 통해 기본적인 동작을 살펴보았다.<br>이번에는 <code>spring-data-rest</code>가 어떠한 기본 설정으로 동작하는 지를 설명하겠다.<br><a href="https://docs.spring.io/spring-data/rest/docs/3.0.5.RELEASE/reference/html/#getting-started.basic-settings" target="_blank" rel="noopener">Spring Data REST Reference</a>에서 Java 설정의 예제가 있다.<br>여기서는 <code>spring-boot</code>에서 지원해주는 properties를 사용하여 설정하는 것을 예로 들겠다.</p>
+<p><strong>Prefix는 <code>spring.data.rest.</code></strong></p>
+<table>
+<thead>
+<tr>
+<th>property</th>
+<th>default</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>base-path</td>
+<td></td>
+<td>repository resource를 노출할 기본 경로</td>
+</tr>
+<tr>
+<td>default-media-type</td>
+<td><code>application/hal+json;charset=UTF-8</code></td>
+<td>개별 설정이 없을 때 사용할 <code>Content-Type</code></td>
+</tr>
+<tr>
+<td>default-page-size</td>
+<td></td>
+<td>기본 페이지 사이즈</td>
+</tr>
+<tr>
+<td>detection-strategy</td>
+<td>default</td>
+<td>api로 만들 repository를 찾는 전략<br>- <code>default</code> : 모든 public repository. <code>@RestResource</code>의 <code>exported</code>가 <code>false</code>인 경우 제외<br>- <code>all</code> : 가시성, annotation과 상관 없이 모든 repository 노출<br>- <code>annoation</code> : <code>exported</code>가 <code>true</code>이며 <code>@RepositoryRestResource</code>, <code>@RestResource</code>가 달린 자원들을 노출<br>- <code>visibility</code> : public interface만 노출</td>
+</tr>
+<tr>
+<td>limit-param-name</td>
+<td>size</td>
+<td>한 번에 반환되는 결과 갯수를 받을 query string 이름<br><code>/api/members?size=10</code></td>
+</tr>
+<tr>
+<td>max-page-size</td>
+<td>20</td>
+<td>페이지당 항목 수</td>
+</tr>
+<tr>
+<td>page-param-name</td>
+<td>page</td>
+<td>페이지 번호를 받을 query string 이름<br><code>/api/members?page=2</code></td>
+</tr>
+<tr>
+<td>return-body-on-create</td>
+<td>true</td>
+<td>요청에 의해 생성된 엔티티를 응답으로 내려줄 지 여부</td>
+</tr>
+<tr>
+<td>return-body-on-update</td>
+<td>true</td>
+<td>요청에 의해 수정된 엔티티를 응답으로 내려줄 지 여부</td>
+</tr>
+<tr>
+<td>sort-param-name</td>
+<td>sort</td>
+<td>정렬 요청을 받을 query string 이름<br><code>/api/members?sort=name,desc</code></td>
+</tr>
+</tbody></table>
+<h1 id="지원하는-저장소"><a href="#지원하는-저장소" class="headerlink" title="지원하는 저장소"></a>지원하는 저장소</h1><ul>
+<li>Spring Data JPA</li>
+<li>Spring Data MongoDB</li>
+<li>Spring Data Neo4j</li>
+<li>Spring Data GemFire</li>
+<li>Spring Data Cassandra</li>
+</ul>
+<h1 id="Search-API"><a href="#Search-API" class="headerlink" title="Search API"></a>Search API</h1><p>repository에 <a href="https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#repositories.query-methods" target="_blank" rel="noopener">query method</a>를 추가해보자.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RepositoryRestResource</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">MemberRepository</span> <span class="keyword">extends</span> <span class="title">JpaRepository</span>&lt;<span class="title">Member</span>, <span class="title">Long</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function">Member <span class="title">findByName</span><span class="params">(@Param(<span class="string">"name"</span>)</span> String name)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong><code>GET /api/members</code>*</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;_embedded&quot; : &#123; ... &#125;,</span><br><span class="line">  &quot;_links&quot; : &#123;</span><br><span class="line">    &quot;self&quot; : &#123; ... &#125;,</span><br><span class="line">    &quot;profile&quot; : &#123; ... &#125;,</span><br><span class="line">    &quot;search&quot; : &#123;</span><br><span class="line">      &quot;href&quot; : &quot;http:&#x2F;&#x2F;localhost:8080&#x2F;api&#x2F;members&#x2F;search&quot;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;page&quot; : &#123; ... &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>links에 search가 추가되었다.<br>search를 확인해보자.</p>
+<p><strong><code>GET /api/members/search</code></strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;_links&quot; : &#123;</span><br><span class="line">    &quot;findByName&quot; : &#123;</span><br><span class="line">      &quot;href&quot; : &quot;http:&#x2F;&#x2F;localhost:8080&#x2F;api&#x2F;members&#x2F;search&#x2F;findByName&#123;?name&#125;&quot;,</span><br><span class="line">      &quot;templated&quot; : true</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;self&quot; : &#123;</span><br><span class="line">      &quot;href&quot; : &quot;http:&#x2F;&#x2F;localhost:8080&#x2F;api&#x2F;members&#x2F;search&quot;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>사용법에 대한 설명이 나온다</p>
+<p>**<code>GET /api/members/search/findByName?name=member1</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;name&quot; : &quot;member1&quot;,</span><br><span class="line">  &quot;age&quot; : 20,</span><br><span class="line">  &quot;grade&quot; : &quot;BRONZE&quot;,</span><br><span class="line">  &quot;_links&quot; : &#123;</span><br><span class="line">    &quot;self&quot; : &#123;</span><br><span class="line">      &quot;href&quot; : &quot;http:&#x2F;&#x2F;localhost:8080&#x2F;api&#x2F;members&#x2F;1&quot;</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;member&quot; : &#123;</span><br><span class="line">      &quot;href&quot; : &quot;http:&#x2F;&#x2F;localhost:8080&#x2F;api&#x2F;members&#x2F;1&quot;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Paging-처리"><a href="#Paging-처리" class="headerlink" title="Paging 처리"></a>Paging 처리</h2><p><code>query method</code>에 <code>Pageable</code>를 파라미터로 줘서, Paging처리를 시킬 수 있다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RepositoryRestResource</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">MemberRepository</span> <span class="keyword">extends</span> <span class="title">JpaRepository</span>&lt;<span class="title">Member</span>, <span class="title">Long</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function">Page&lt;Member&gt; <span class="title">findByName</span><span class="params">(@Param(<span class="string">"name"</span>)</span> String name, Pageable pageable)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="Projection"><a href="#Projection" class="headerlink" title="Projection"></a>Projection</h1><p>interface와 annotation의 조합으로 projection 할 수 있다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RepositoryRestResource</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">MemberRepository</span> <span class="keyword">extends</span> <span class="title">JpaRepository</span>&lt;<span class="title">Member</span>, <span class="title">Long</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function">Member <span class="title">findByName</span><span class="params">(@Param(<span class="string">"name"</span>)</span> String name)</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Projection</span>(name = <span class="string">"only-name"</span>, types = &#123;Member<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line"><span class="class"><span class="title">interface</span> <span class="title">OnlyName</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function">String <span class="title">getName</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong><code>GET /api/members/1?projection=only-name</code></strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;name&quot; : &quot;member1&quot;,</span><br><span class="line">  &quot;_links&quot; : &#123;</span><br><span class="line">    &quot;self&quot; : &#123;</span><br><span class="line">      &quot;href&quot; : &quot;http:&#x2F;&#x2F;localhost:8080&#x2F;api&#x2F;members&#x2F;1&quot;</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;member&quot; : &#123;</span><br><span class="line">      &quot;href&quot; : &quot;http:&#x2F;&#x2F;localhost:8080&#x2F;api&#x2F;members&#x2F;1&#123;?projection&#125;&quot;,</span><br><span class="line">      &quot;templated&quot; : true</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>projection의 목록은 <code>/api/profile/members</code>에서 조회할 수 있다.</p>
+<p><img src="/images/spring-data-rest/profile1.png" alt="profile1"></p>
+<h2 id="JsonIgnore-값-보내기"><a href="#JsonIgnore-값-보내기" class="headerlink" title="JsonIgnore 값 보내기"></a>JsonIgnore 값 보내기</h2><p>회원의 연령 정보에 <code>@JsonIgnore</code>가 걸린 상황이라도,</p>
+<p><strong>Member.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> String name;</span><br><span class="line"><span class="meta">@JsonIgnore</span></span><br><span class="line"><span class="keyword">private</span> Integer age;</span><br></pre></td></tr></table></figure>
+
+<p><code>@Projection</code>을 사용하면 노출시킬 수 있다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Projection</span>(name = <span class="string">"how-old"</span>, types = &#123; Member<span class="class">.<span class="keyword">class</span> &#125;)</span></span><br><span class="line"><span class="class"><span class="title">interface</span> <span class="title">HowOldProjection</span> </span>&#123;</span><br><span class="line">  <span class="function">Integer <span class="title">getAge</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="SpEL"><a href="#SpEL" class="headerlink" title="SpEL"></a>SpEL</h2><p><code>@Projection</code> 내의 메서드에 <a href="https://docs.spring.io/spring/docs/5.0.4.RELEASE/spring-framework-reference/core.html#expressions" target="_blank" rel="noopener">SpEL</a>을 적용할 수 있다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Projection</span>(name = <span class="string">"brief"</span>, types = &#123; Member<span class="class">.<span class="keyword">class</span> &#125;)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">interface</span> <span class="title">BriefProjection</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Value</span>(<span class="string">"#&#123;target.name&#125; : #&#123;target.age&#125;"</span>) </span><br><span class="line">  <span class="function">String <span class="title">getBrief</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="엔티티-조합에서-Projection"><a href="#엔티티-조합에서-Projection" class="headerlink" title="엔티티 조합에서 Projection"></a>엔티티 조합에서 Projection</h2><p><code>Board</code> 엔티티가 <code>Member</code> 엔티티를 <code>writer</code>로서 가지고 있다고 가정하자.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Entity</span></span><br><span class="line"><span class="meta">@Table</span>(name = <span class="string">"board"</span>)</span><br><span class="line"><span class="meta">@NoArgsConstructor</span>(access = AccessLevel.PROTECTED)</span><br><span class="line"><span class="meta">@Getter</span>(AccessLevel.PUBLIC)</span><br><span class="line"><span class="meta">@Setter</span>(AccessLevel.PRIVATE)</span><br><span class="line"><span class="meta">@EqualsAndHashCode</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Board</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Id</span></span><br><span class="line">    <span class="meta">@GeneratedValue</span></span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String title;</span><br><span class="line">    <span class="keyword">private</span> String content;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ManyToOne</span></span><br><span class="line">    <span class="meta">@JoinColumn</span>(name = <span class="string">"writer_id"</span>)</span><br><span class="line">    <span class="keyword">private</span> Member writer;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>이 경우 writer는 어떻게 참조될까?</p>
+<p><strong><code>GET /api/boards/1</code></strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;title&quot; : &quot;title1&quot;,</span><br><span class="line">  &quot;content&quot; : &quot;content1&quot;,</span><br><span class="line">  &quot;_links&quot; : &#123;</span><br><span class="line">    ... ,</span><br><span class="line">    &quot;writer&quot; : &#123;</span><br><span class="line">      &quot;href&quot; : &quot;http:&#x2F;&#x2F;localhost:8080&#x2F;api&#x2F;boards&#x2F;6&#x2F;writer&quot;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>보다시피 <code>writer</code> 정보를 얻기 위해서 <code>/api/boards/6/writer</code>를 호출해야 한다.<br><code>writer</code>정보를 한 번에 얻을 수 있도록 <code>@Projection</code> 설정을 할 수 있다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Projection</span>(name = <span class="string">"with-writer"</span>, types = &#123;Board<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line"><span class="class"><span class="title">interface</span> <span class="title">WithWriterProjection</span> </span>&#123;</span><br><span class="line">    <span class="function">String <span class="title">getTitle</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">String <span class="title">getContent</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">Member <span class="title">getWriter</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong><code>GET /api/boards/6?projection=with-writer</code></strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;content&quot; : &quot;content1&quot;,</span><br><span class="line">  &quot;title&quot; : &quot;title1&quot;,</span><br><span class="line">  &quot;writer&quot; : &#123;</span><br><span class="line">    &quot;name&quot; : &quot;member1&quot;,</span><br><span class="line">    &quot;age&quot; : 20,</span><br><span class="line">    &quot;grade&quot; : &quot;BRONZE&quot;</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;_links&quot; : &#123; ... &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="엔티티-조합-Projection-상시-설정"><a href="#엔티티-조합-Projection-상시-설정" class="headerlink" title="엔티티 조합 Projection 상시 설정"></a>엔티티 조합 Projection 상시 설정</h3><p><code>@RepositoryRestResource</code>의 <code>excerptProjection</code>으로 상시 설정할 <code>Projection</code>을 걸어 둘 수 있다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RepositoryRestResource</span>(excerptProjection = WithWriterProjection<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">interface</span> <span class="title">BoardRepository</span> <span class="keyword">extends</span> <span class="title">JpaRepository</span>&lt;<span class="title">Board</span>, <span class="title">Long</span>&gt; </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="Header와의-연계"><a href="#Header와의-연계" class="headerlink" title="Header와의 연계"></a>Header와의 연계</h1><h2 id="ETag-If-Match-If-None-Match"><a href="#ETag-If-Match-If-None-Match" class="headerlink" title="ETag, If-Match, If-None-Match"></a>ETag, If-Match, If-None-Match</h2><p><code>spring-data-commons</code>에는 <code>@Version</code>이라는 애노테이션이 있다.</p>
+<blockquote>
+<p>JPA에서는 이 Version으로 낙관적 락을 구현하기도 한다.</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Member</span> </span>&#123;</span><br><span class="line">  <span class="meta">@Version</span> Long version</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Spring Data REST에서는 위와 같이 <code>@Version</code> 주석이 달린 객체를 응답할 때, <code>ETag</code> 헤더를 추가한다.</p>
+<p><strong><code>GET /api/members/1</code></strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ETag: &quot;0&quot;</span><br><span class="line">Content-Type: application&#x2F;hal+json;charset&#x3D;UTF-8</span><br><span class="line">Transfer-Encoding: chunked</span><br><span class="line">Date: Tue, 20 Mar 2018 05:50:15 GMT</span><br></pre></td></tr></table></figure>
+
+<p><code>ETag</code> 헤더를 획득하였으니 이제 <code>If-Match</code>, <code>If-Non-Match</code> 등의 헤더를 추가해서 사용할 수 있다.</p>
+<p><strong>If-Match</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -v -X PATCH -H &#39;If-Match: &lt;value of previous ETag&gt;&#39; ...</span><br></pre></td></tr></table></figure>
+
+<p><strong>If-None-Match</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -v -H &#39;If-None-Match: &lt;value of previous etag&gt;&#39; ...</span><br></pre></td></tr></table></figure>
+
+<h2 id="If-Modified-Since"><a href="#If-Modified-Since" class="headerlink" title="If-Modified-Since"></a>If-Modified-Since</h2><p><code>@LastModifiedDate</code> 애노테이션을 사용하여 <code>Last-Modified</code> 응답 헤더를 줄 수 있다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Member</span> </span>&#123;</span><br><span class="line">  <span class="meta">@LastModified</span></span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>이를 이용해 <code>If-Modified-Since</code> 헤더를 추가해서 요청할 수 있다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -H &quot;If-Modified-Since: Wed, 24 Jun 2015 20:28:15 GMT&quot; ...</span><br></pre></td></tr></table></figure>
+
+<p><strong><code>GET /api/members/1</code></strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Last-Modified: Tue, 20 Mar 2018 05:57:01 GMT-4s</span><br><span class="line">Date: Tue, 20 Mar 2018 05:57:05 GMT</span><br><span class="line">ETag: &quot;0&quot;</span><br><span class="line">Content-Type: application&#x2F;hal+json;charset&#x3D;UTF-8</span><br></pre></td></tr></table></figure>
+
+<h1 id="Events"><a href="#Events" class="headerlink" title="Events"></a>Events</h1><p>엔티티를 처리하는 중에 아래의 이벤트들이 발생하며, 이를 처리할 수 있다.</p>
+<ul>
+<li>BeforeCreateEvent</li>
+<li>AfterCreateEvent</li>
+<li>BeforeSaveEvent</li>
+<li>AfterSaveEvent</li>
+<li>BeforeLinkSaveEvent</li>
+<li>AfterLinkSaveEvent</li>
+<li>BeforeDeleteEvent</li>
+<li>AfterDeleteEvent</li>
+</ul>
+<h2 id="AbstractRepositoryEventListener를-상속"><a href="#AbstractRepositoryEventListener를-상속" class="headerlink" title="AbstractRepositoryEventListener를 상속"></a>AbstractRepositoryEventListener를 상속</h2><p><code>AbstractRepositoryEventListener</code>에는 각 이벤트별로 처리하기 위한 메서드들이 <code>protected</code>로 정의되어 있다.<br>필요한 메서드를 재정의하여 사용한다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MemberEventListener</span> <span class="keyword">extends</span> <span class="title">AbstractRepositoryEventListener</span>&lt;<span class="title">Member</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBeforeSave</span><span class="params">(Member member)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onAfterDelete</span><span class="params">(Member member)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Annotated-Handler"><a href="#Annotated-Handler" class="headerlink" title="Annotated Handler"></a>Annotated Handler</h2><p><code>@RepositoryEventHandler</code> 등의 애노테이션으로 이벤트 핸들러를 등록할 수 있다.<br>이 때 핸들러는 spring에 bean으로 등록되어야 한다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RepositoryEventHandler</span> </span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MemberEventHandler</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@HandleBeforeSave</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleMemberSave</span><span class="params">(Member p)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@HandleBeforeSave</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleAddressSave</span><span class="params">(Address p)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="Security"><a href="#Security" class="headerlink" title="Security"></a>Security</h1><p><code>spring-security</code>와 연동하여 권한에 따른 연산을 수행할도록 설정할 수 있다.</p>
+<h2 id="PreAuthorize"><a href="#PreAuthorize" class="headerlink" title="@PreAuthorize"></a>@PreAuthorize</h2><p><code>MemberRepository</code>의 <code>findByName</code>은 <code>ADMIN</code> 권한의 사용자만 사용할 수 있고,<br>나머지는 <code>USER</code> 권한의 사용자도 사용할 수 있다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@PreAuthorize</span>(<span class="string">"hasRole('USER')"</span>)</span><br><span class="line"><span class="meta">@RepositoryRestResource</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">MemberRepository</span> <span class="keyword">extends</span> <span class="title">JpaRepository</span>&lt;<span class="title">Member</span>, <span class="title">Long</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PreAuthorize</span>(<span class="string">"hasRole('ADMIN')"</span>)</span><br><span class="line">    <span class="function">Member <span class="title">findByName</span><span class="params">(@Param(<span class="string">"name"</span>)</span> String name)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="마무리"><a href="#마무리" class="headerlink" title="마무리"></a>마무리</h1><p>Spring Data REST에 대해서 알아보았다.<br>Repository와 Entity의 내용을 기반으로 간편히 RESTful API를 제공해주기는 하지만,<br>DDD에 적용할 정도의 정교함을 보여주지는 않는 것 같다.<br><code>board</code> 엔티티에 <code>public void like()</code> 메서드를 <code>/api/boards/1/like</code>를 통해 실행할 수 있다면 좋을 것 같다.<br>생각해보면 <code>spring-data</code>의 하위 라이브러리들은 <code>repository</code>에 필요한 기능들을 추상화하는 것들이니, 일부러 굳이 서비스 로직까지 건들지는 않는 것 같다.<br>위에서 말한 것도, 결국 커스텀 설정으로 가능하게 만들 수 있다.</p>
+<p>client에서 <code>HATEOAS</code>를 적용하여 개발을 한다면 충분히 사용할 만한 기술이라고 생각한다.</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>작성자:</strong>
+    supawer0728
+  </li>
+  <li class="post-copyright-link">
+    <strong>원본링크:</strong>
+    <a href="https://supawer0728.github.io/2018/03/20/spring-data-rest/" title="spring-data-rest 소개">https://supawer0728.github.io/2018/03/20/spring-data-rest/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>라이센스: </strong>
+    <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a>
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/spring/" rel="tag"># spring</a>
+          
+        </div>
+      
+
+      
+      
+        <div class="post-widgets">
+        
+
+        
+
+        
+          
+          <div id="needsharebutton-postbottom">
+            <span class="btn">
+              <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </span>
+          </div>
+        
+        </div>
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/15/brief-of-spring-boot/" rel="next" title="spring-boot에 관해서">
+                <i class="fa fa-chevron-left"></i> spring-boot에 관해서
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/22/spring-multi-transaction/" rel="prev" title="(Spring)다중 DataSource 처리">
+                (Spring)다중 DataSource 처리 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript" target="_blank" rel="noopener">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            목차
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            흝어보기
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="supawer0728" />
+            
+              <p class="site-author-name" itemprop="name">supawer0728</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">32</span>
+                  <span class="site-state-item-name">포스트</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">카테고리</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">50</span>
+                  <span class="site-state-item-name">태그</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/feed.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/supawer0728" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#서론"><span class="nav-number">1.</span> <span class="nav-text">서론</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#RESTful-API"><span class="nav-number">2.</span> <span class="nav-text">RESTful API</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#간단한-예제"><span class="nav-number">3.</span> <span class="nav-text">간단한 예제</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#의존성"><span class="nav-number">3.1.</span> <span class="nav-text">의존성</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Domain"><span class="nav-number">3.2.</span> <span class="nav-text">Domain</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#application-설정"><span class="nav-number">3.3.</span> <span class="nav-text">application 설정</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#실행"><span class="nav-number">3.4.</span> <span class="nav-text">실행</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#기본-설정"><span class="nav-number">4.</span> <span class="nav-text">기본 설정</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#지원하는-저장소"><span class="nav-number">5.</span> <span class="nav-text">지원하는 저장소</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Search-API"><span class="nav-number">6.</span> <span class="nav-text">Search API</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Paging-처리"><span class="nav-number">6.1.</span> <span class="nav-text">Paging 처리</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Projection"><span class="nav-number">7.</span> <span class="nav-text">Projection</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#JsonIgnore-값-보내기"><span class="nav-number">7.1.</span> <span class="nav-text">JsonIgnore 값 보내기</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SpEL"><span class="nav-number">7.2.</span> <span class="nav-text">SpEL</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#엔티티-조합에서-Projection"><span class="nav-number">7.3.</span> <span class="nav-text">엔티티 조합에서 Projection</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#엔티티-조합-Projection-상시-설정"><span class="nav-number">7.3.1.</span> <span class="nav-text">엔티티 조합 Projection 상시 설정</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Header와의-연계"><span class="nav-number">8.</span> <span class="nav-text">Header와의 연계</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ETag-If-Match-If-None-Match"><span class="nav-number">8.1.</span> <span class="nav-text">ETag, If-Match, If-None-Match</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#If-Modified-Since"><span class="nav-number">8.2.</span> <span class="nav-text">If-Modified-Since</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Events"><span class="nav-number">9.</span> <span class="nav-text">Events</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#AbstractRepositoryEventListener를-상속"><span class="nav-number">9.1.</span> <span class="nav-text">AbstractRepositoryEventListener를 상속</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Annotated-Handler"><span class="nav-number">9.2.</span> <span class="nav-text">Annotated Handler</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Security"><span class="nav-number">10.</span> <span class="nav-text">Security</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#PreAuthorize"><span class="nav-number">10.1.</span> <span class="nav-text">@PreAuthorize</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#마무리"><span class="nav-number">11.</span> <span class="nav-text">마무리</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">supawer0728</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+  <div class="footer-custom">To Improve Human Life</div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://supawer0728-github-com.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://supawer0728.github.io/2018/03/20/spring-data-rest/';
+          this.page.identifier = '2018/03/20/spring-data-rest/';
+          this.page.title = 'spring-data-rest 소개';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://supawer0728-github-com.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('-1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/needsharebutton/needsharebutton.css">
+
+  
+  
+  <script src="/lib/needsharebutton/needsharebutton.js"></script>
+
+  <script>
+    
+      pbOptions = {};
+      
+          pbOptions.iconStyle = "box";
+      
+          pbOptions.boxForm = "horizontal";
+      
+          pbOptions.position = "bottomCenter";
+      
+          pbOptions.networks = "Twitter,Facebook,GooglePlus,Evernote";
+      
+      new needShareButton('#needsharebutton-postbottom', pbOptions);
+    
+    
+  </script>
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

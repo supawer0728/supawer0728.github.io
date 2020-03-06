@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Nanum Gothic:300,300italic,400,400italic,700,700italic|Nanum Pen Script:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-icon-180x180.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.4">
+
+
+
+  <link rel="manifest" href="/images/manifest.json">
+
+
+  <meta name="msapplication-config" content="/images/browserconfig.xml" />
+
+
+
+  <meta name="keywords" content="spring,streaming," />
+
+
+
+
+
+  <link rel="alternate" href="/feed.xml" title="기록은 재산이다" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="서론Spring의 Stream이라고 하면, 가장 먼저 떠오르는 것은 websocket일 것 같다.websocket은 full-duplex communication(전 이중 통신)을 표방하고 있으며, 별도의 프로토콜을 공부해야하는 등, web상의 양방향 통신을 복잡하다고 느낄 수 있을 것 같다. 때문에 다음의 조건들을 충족시킬 Http Streaming 기법">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring5에서 HTTP Streaming">
+<meta property="og:url" content="https://supawer0728.github.io/2018/03/15/spring-http-stereamings/index.html">
+<meta property="og:site_name" content="기록은 재산이다">
+<meta property="og:description" content="서론Spring의 Stream이라고 하면, 가장 먼저 떠오르는 것은 websocket일 것 같다.websocket은 full-duplex communication(전 이중 통신)을 표방하고 있으며, 별도의 프로토콜을 공부해야하는 등, web상의 양방향 통신을 복잡하다고 느낄 수 있을 것 같다. 때문에 다음의 조건들을 충족시킬 Http Streaming 기법">
+<meta property="og:locale" content="ko_KR">
+<meta property="article:published_time" content="2018-03-15T06:30:19.000Z">
+<meta property="article:modified_time" content="2020-03-04T08:18:02.751Z">
+<meta property="article:author" content="supawer0728">
+<meta property="article:tag" content="spring">
+<meta property="article:tag" content="streaming">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '작성자'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://supawer0728.github.io/2018/03/15/spring-http-stereamings/"/>
+
+
+
+
+
+  <title>Spring5에서 HTTP Streaming | 기록은 재산이다</title>
+  
+
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-115481794-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'UA-115481794-1');
+</script>
+
+
+
+
+
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script data-ad-client="" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="ko">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">기록은 재산이다</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">To Improve Human Life</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            홈
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            태그
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            카테고리
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            아카이브
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            검색
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="Searching..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://supawer0728.github.io/2018/03/15/spring-http-stereamings/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="supawer0728">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="기록은 재산이다">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Spring5에서 HTTP Streaming</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">작성일&#58;</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-15T15:30:19+09:00">
+                2018-03-15
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">수정일&#58;</span>
+              
+              <time title="수정일" itemprop="dateModified" datetime="2020-03-04T17:18:02+09:00">
+              
+                2018-03-15
+              
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/" itemprop="url" rel="index">
+                    <span itemprop="name">spring</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/practice/" itemprop="url" rel="index">
+                    <span itemprop="name">practice</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/practice/" itemprop="url" rel="index">
+                    <span itemprop="name">practice</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/03/15/spring-http-stereamings/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/03/15/spring-http-stereamings/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="서론"><a href="#서론" class="headerlink" title="서론"></a>서론</h1><p>Spring의 Stream이라고 하면, 가장 먼저 떠오르는 것은 websocket일 것 같다.<br>websocket은 full-duplex communication(전 이중 통신)을 표방하고 있으며, 별도의 프로토콜을 공부해야하는 등, web상의 양방향 통신을 복잡하다고 느낄 수 있을 것 같다.</p>
+<p>때문에 다음의 조건들을 충족시킬 Http Streaming 기법에 대해, <code>spring-webmvc</code>와 <code>spring-webflux</code> 별로 하나씩 공유하려한다.</p>
+<ul>
+<li>Spring5에서 지원</li>
+<li>구현 난이도가 낮음</li>
+<li>기존의 Http 통신을 기반</li>
+</ul>
+<a id="more"></a>
+
+<h1 id="spring-webmvc-SSE"><a href="#spring-webmvc-SSE" class="headerlink" title="spring-webmvc : SSE"></a>spring-webmvc : SSE</h1><p><code>spring-webmvc</code>에서 HTTP Streaming을 하는 가장 간단한 방법은 <a href="https://www.w3.org/TR/eventsource/" target="_blank" rel="noopener">SSE(Server-Sent Event)</a>를 사용하는 것이다.(<a href="https://www.w3schools.com/html/tryit.asp?filename=tryhtml5_sse" target="_blank" rel="noopener">예제</a>)</p>
+<h2 id="장점"><a href="#장점" class="headerlink" title="장점"></a>장점</h2><ul>
+<li>spring에서 서버측 구현이 간편하다</li>
+<li>표준 기술이므로 javascript에서 구현이 간편하다</li>
+<li>Android, iOS에서도 관련 라이브러리가 있다</li>
+<li>자동으로 재접속을 시도한다</li>
+</ul>
+<h2 id="단점"><a href="#단점" class="headerlink" title="단점"></a>단점</h2><ul>
+<li>Native Javascript로는 Header를 추가하는 등의 세밀한 조정을 할 수 없다<ul>
+<li>Polyfill로 대체 가능</li>
+</ul>
+</li>
+<li>표준 기술이지만 IE(edge 포함)에서 지원하지 않는다<ul>
+<li>Polyfill로 대체 가능</li>
+</ul>
+</li>
+<li>client 측에서 연결을 끊은 경우를 감지하지 못한다</li>
+</ul>
+<h2 id="구현"><a href="#구현" class="headerlink" title="구현"></a>구현</h2><p><strong>spring reference에 나와있는 간단한 소스</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@GetMapping</span>(path=<span class="string">"/events"</span>, produces=MediaType.TEXT_EVENT_STREAM_VALUE)</span><br><span class="line"><span class="function"><span class="keyword">public</span> SseEmitter <span class="title">handle</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    SseEmitter emitter = <span class="keyword">new</span> SseEmitter();</span><br><span class="line">    <span class="comment">// Save the emitter somewhere..</span></span><br><span class="line">    <span class="keyword">return</span> emitter;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// In some other thread</span></span><br><span class="line">emitter.send(<span class="string">"Hello once"</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// and again later on</span></span><br><span class="line">emitter.send(<span class="string">"Hello again"</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// and done at some point</span></span><br><span class="line">emitter.complete();</span><br></pre></td></tr></table></figure>
+
+<p><code>SseEmitter</code>를 반환하고, 별도의 thread에서 <code>emmiter.send()</code>를 호출하면 된다.</p>
+<h3 id="구현할-예제"><a href="#구현할-예제" class="headerlink" title="구현할 예제"></a>구현할 예제</h3><p><code>GET /users</code>로 요청시, 1초 간격으로<br><code>https://jsonplaceholder.typicode.com/users/{id}</code>의 1,2,3을 차례로 호출해서 응답</p>
+<h3 id="의존성"><a href="#의존성" class="headerlink" title="의존성"></a>의존성</h3><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">dependencies</span> &#123;</span><br><span class="line">    <span class="keyword">compile</span>(<span class="string">'org.springframework.boot:spring-boot-starter-web'</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Controller"><a href="#Controller" class="headerlink" title="Controller"></a>Controller</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Slf</span>4j</span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping</span>(<span class="string">"/users"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> UserEmitService service;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping</span>(produces = MediaType.TEXT_EVENT_STREAM_VALUE)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> ResponseBodyEmitter <span class="title">users</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        SseEmitter emitter = <span class="keyword">new</span> SseEmitter();</span><br><span class="line">        service.add(emitter);</span><br><span class="line">        <span class="keyword">return</span> emitter;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Service"><a href="#Service" class="headerlink" title="Service"></a>Service</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Slf</span>4j</span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserEmitService</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> REPEAT = <span class="number">3</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;ResponseBodyEmitter, AtomicInteger&gt; emitterCountMap = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">add</span><span class="params">(ResponseBodyEmitter emitter)</span> </span>&#123;</span><br><span class="line">        emitterCountMap.put(emitter, <span class="keyword">new</span> AtomicInteger(<span class="number">0</span>));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Scheduled</span>(fixedRate = <span class="number">1000L</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">emit</span><span class="params">()</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        List&lt;ResponseBodyEmitter&gt; toBeRemoved = <span class="keyword">new</span> ArrayList&lt;&gt;(emitterCountMap.size());</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (Map.Entry&lt;ResponseBodyEmitter, AtomicInteger&gt; entry : emitterCountMap.entrySet()) &#123;</span><br><span class="line"></span><br><span class="line">            Integer count = entry.getValue().incrementAndGet();</span><br><span class="line">            User user = <span class="keyword">new</span> RestTemplate().getForObject(<span class="string">"https://jsonplaceholder.typicode.com/users/&#123;id&#125;"</span>, User<span class="class">.<span class="keyword">class</span>, <span class="title">count</span>)</span>;</span><br><span class="line"></span><br><span class="line">            ResponseBodyEmitter emitter = entry.getKey();</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                emitter.send(user);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                log.error(e.getMessage(), e);</span><br><span class="line">                toBeRemoved.add(emitter);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (count &gt;= REPEAT) &#123;</span><br><span class="line">                toBeRemoved.add(emitter);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (ResponseBodyEmitter emitter : toBeRemoved) &#123;</span><br><span class="line">            emitterCountMap.remove(emitter);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="실행-결과"><a href="#실행-결과" class="headerlink" title="실행 결과"></a>실행 결과</h3><p>브라우저에서 <code>GET /users</code>를 호출 해보면, 아래 결과가 한 줄마다 1초 간격으로 표시된다.<br><code>data</code>라고 하는 key에 json value가 붙어있는 형태다.</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">data:&#123;"id":1,"name":"Leanne Graham","email":"Sincere@april.biz","phone":"1-770-736-8031 x56442","website":"hildegard.org"&#125;</span><br><span class="line"></span><br><span class="line">data:&#123;"id":2,"name":"Ervin Howell","email":"Shanna@melissa.tv","phone":"010-692-6593 x09125","website":"anastasia.net"&#125;</span><br><span class="line"></span><br><span class="line">data:&#123;"id":3,"name":"Clementine Bauch","email":"Nathan@yesenia.net","phone":"1-463-123-4447","website":"ramiro.info"&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="동작-방식"><a href="#동작-방식" class="headerlink" title="동작 방식"></a>동작 방식</h2><p>Spring에서 지원하는 Async 응답 방식인 <code>DeferredResult</code>, <code>Callable</code>과 같다</p>
+<p><strong>Spring Async 응답 방식 개요</strong></p>
+<ul>
+<li>반환형이 Async 응답을 필요로하는 경우, Spring MVC는 <code>request.startAsync()</code>를 호출하여 <code>AsyncContext</code>를 획득하여 저장해둔다.<ul>
+<li><code>AsyncContext</code>는 비동기 처리를 제어할 수 있도록 해준다.</li>
+<li>ex) Sevrlet container thread에서 요청 처리를 재개시키며, 기존의 <code>forward</code>와 같은 동작을 하는 <code>dispatch</code> 메서드를 제공한다.</li>
+<li>이로 인해 응답을 별도의 thread에서 비동기로 처리할 수 있다.</li>
+</ul>
+</li>
+<li>요청 thread를 종료시키되, response는 열어둔다</li>
+<li>다른 thread에서 <code>AsyncContext</code>를 사용해서 response를 완성시킨다.<ul>
+<li>Spring MVC는 Servlet container로 다시 요청을 보내고(dispatch), client로 응답한다.</li>
+</ul>
+</li>
+</ul>
+<h2 id="주의-사항"><a href="#주의-사항" class="headerlink" title="주의 사항"></a>주의 사항</h2><p>boot를 사용하는 경우, <code>spring.mvc.async.request-timeout: 1000</code>로 timeout 설정을 할 수 있다.<br><code>new SseEmitter(int timeout)</code>으로 개별로 사용할 수 있으며, 우선 설정된다.</p>
+<h1 id="spring-webflux-Flux-lt-T-gt"><a href="#spring-webflux-Flux-lt-T-gt" class="headerlink" title="spring-webflux : Flux&lt;T&gt;"></a>spring-webflux : <code>Flux&lt;T&gt;</code></h1><p><code>reactor</code>에서 <code>Flux&lt;T&gt;</code>는 <code>T</code>의 stream을 의미한다.<br><code>Controller</code>에서 <code>Flux&lt;T&gt;</code>를 반환하는 경우, <code>application/stream+json</code>으로 객체를 json 형식으로 받을 수 있다.</p>
+<blockquote>
+<p><code>Flux&lt;ServerSentEvent&gt;</code> 방식으로 SSE를 사용할 수도 있다.</p>
+</blockquote>
+<h2 id="장점-1"><a href="#장점-1" class="headerlink" title="장점"></a>장점</h2><ul>
+<li>reactive의 장점을 살릴 수 있다.</li>
+<li>reactor를 알고 있으면 구현하기 쉽다.</li>
+</ul>
+<h2 id="단점-1"><a href="#단점-1" class="headerlink" title="단점"></a>단점</h2><ul>
+<li>client 측에서 지원해주는 라이브러리는 적은 듯하다.</li>
+</ul>
+<h2 id="구현-예제"><a href="#구현-예제" class="headerlink" title="구현 예제"></a>구현 예제</h2><p>요구 사항은 위 예제와 동일하다.<br>1초마다 User를 불러온다.</p>
+<h3 id="의존성-1"><a href="#의존성-1" class="headerlink" title="의존성"></a>의존성</h3><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">dependencies</span> &#123;</span><br><span class="line">    <span class="keyword">compile</span>(<span class="string">'org.springframework.boot:spring-boot-starter-webflux'</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Controller-1"><a href="#Controller-1" class="headerlink" title="Controller"></a>Controller</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping</span>(<span class="string">"/users"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> UserClient userClient;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">UserController</span><span class="params">(@NonNull UserClient userClient)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.userClient = userClient;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 1초마다 User 발생</span></span><br><span class="line">    <span class="meta">@GetMapping</span>(produces = <span class="string">"application/stream+json"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Flux&lt;User&gt; <span class="title">users</span><span class="params">()</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> Flux.interval(Duration.ofSeconds(<span class="number">1L</span>))</span><br><span class="line">                   .take(<span class="number">3</span>)</span><br><span class="line">                   .flatMap(number -&gt; userClient.get(number + <span class="number">1L</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="UserClient"><a href="#UserClient" class="headerlink" title="UserClient"></a>UserClient</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Slf</span>4j</span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserClient</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Flux&lt;User&gt; <span class="title">get</span><span class="params">(<span class="keyword">long</span> id)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> WebClient.create(<span class="string">"https://jsonplaceholder.typicode.com"</span>)</span><br><span class="line">                        .get()</span><br><span class="line">                        .uri(<span class="string">"/users/&#123;id&#125;"</span>, id)</span><br><span class="line">                        .retrieve()</span><br><span class="line">                        .bodyToFlux(User<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="실행-결과-1"><a href="#실행-결과-1" class="headerlink" title="실행 결과"></a>실행 결과</h3><p>브라우저에서 실행해보면 1초마다 한 줄씩 표시된다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;&quot;id&quot;:1,&quot;name&quot;:&quot;Leanne Graham&quot;,&quot;email&quot;:&quot;Sincere@april.biz&quot;,&quot;phone&quot;:&quot;1-770-736-8031 x56442&quot;,&quot;website&quot;:&quot;hildegard.org&quot;&#125;</span><br><span class="line">&#123;&quot;id&quot;:2,&quot;name&quot;:&quot;Ervin Howell&quot;,&quot;email&quot;:&quot;Shanna@melissa.tv&quot;,&quot;phone&quot;:&quot;010-692-6593 x09125&quot;,&quot;website&quot;:&quot;anastasia.net&quot;&#125;</span><br><span class="line">&#123;&quot;id&quot;:3,&quot;name&quot;:&quot;Clementine Bauch&quot;,&quot;email&quot;:&quot;Nathan@yesenia.net&quot;,&quot;phone&quot;:&quot;1-463-123-4447&quot;,&quot;website&quot;:&quot;ramiro.info&quot;&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="마무리"><a href="#마무리" class="headerlink" title="마무리"></a>마무리</h1><p>Spring5에서 지원해주는 Http Streaming에 대해서 <code>webmvc</code>, <code>webflux</code> 라이브러리 별로 하나씩 알아보았다.</p>
+<p>아무래도 <code>websocket</code>과 비교를 할 수 밖에 없는데,</p>
+<p><code>websocket</code>과 비교했을 때의 장점은 <code>구현하기 쉽다</code>는 것이다.<br>이것도 좀 애매한데 <code>구현하기 쉽다</code>는 상대적인 것이어서 이미 <code>websocket</code>을 경험해본 사람들은,<br>오히려 더 많은 기능을 지원해주는 <code>websocket</code>을 선호할 것 같다.<br><code>websocket</code>의 경우에는 <code>Sse</code>보다 오히려 client에서 많은 지원을 해주며(<code>SockJs</code> 등), reference도 다양하다.<br><code>Flux&lt;T&gt;</code>는 spring5로 넘어오면서 <code>websocket</code>에서도 반환할 수 있다.</p>
+<p>다른 장점은 전통적인 Http 방식이므로 infra를 건들 일이 없다는 것이다.<br><code>websocket</code>은 몇몇 구식 load balancer나 proxy에서는 지원을 하지 않거나, 미미한 경우가 있다.</p>
+<p>어떠한 서비스를 구현해야 하느냐에 따라서 다르겠지만, 대부분의 경우에는 <code>websocket</code>을 상위호환으로 볼 수 있을 것 같다.</p>
+<p>소스코드 : <a href="https://github.com/supawer0728/simple-streaming" target="_blank" rel="noopener">https://github.com/supawer0728/simple-streaming</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>작성자:</strong>
+    supawer0728
+  </li>
+  <li class="post-copyright-link">
+    <strong>원본링크:</strong>
+    <a href="https://supawer0728.github.io/2018/03/15/spring-http-stereamings/" title="Spring5에서 HTTP Streaming">https://supawer0728.github.io/2018/03/15/spring-http-stereamings/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>라이센스: </strong>
+    <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a>
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/spring/" rel="tag"># spring</a>
+          
+            <a href="/tags/streaming/" rel="tag"># streaming</a>
+          
+        </div>
+      
+
+      
+      
+        <div class="post-widgets">
+        
+
+        
+
+        
+          
+          <div id="needsharebutton-postbottom">
+            <span class="btn">
+              <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </span>
+          </div>
+        
+        </div>
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/15/Java-Server-Socket-Programming-Base/" rel="next" title="가끔 복기할 만한 TCP Socket Programming 기초">
+                <i class="fa fa-chevron-left"></i> 가끔 복기할 만한 TCP Socket Programming 기초
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/15/create-spring-boot-starter/" rel="prev" title="spring-boot-starter 작성하기">
+                spring-boot-starter 작성하기 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript" target="_blank" rel="noopener">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            목차
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            흝어보기
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="supawer0728" />
+            
+              <p class="site-author-name" itemprop="name">supawer0728</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">32</span>
+                  <span class="site-state-item-name">포스트</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">카테고리</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">50</span>
+                  <span class="site-state-item-name">태그</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/feed.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/supawer0728" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#서론"><span class="nav-number">1.</span> <span class="nav-text">서론</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#spring-webmvc-SSE"><span class="nav-number">2.</span> <span class="nav-text">spring-webmvc : SSE</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#장점"><span class="nav-number">2.1.</span> <span class="nav-text">장점</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#단점"><span class="nav-number">2.2.</span> <span class="nav-text">단점</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#구현"><span class="nav-number">2.3.</span> <span class="nav-text">구현</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#구현할-예제"><span class="nav-number">2.3.1.</span> <span class="nav-text">구현할 예제</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#의존성"><span class="nav-number">2.3.2.</span> <span class="nav-text">의존성</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Controller"><span class="nav-number">2.3.3.</span> <span class="nav-text">Controller</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Service"><span class="nav-number">2.3.4.</span> <span class="nav-text">Service</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#실행-결과"><span class="nav-number">2.3.5.</span> <span class="nav-text">실행 결과</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#동작-방식"><span class="nav-number">2.4.</span> <span class="nav-text">동작 방식</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#주의-사항"><span class="nav-number">2.5.</span> <span class="nav-text">주의 사항</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#spring-webflux-Flux-lt-T-gt"><span class="nav-number">3.</span> <span class="nav-text">spring-webflux : Flux&lt;T&gt;</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#장점-1"><span class="nav-number">3.1.</span> <span class="nav-text">장점</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#단점-1"><span class="nav-number">3.2.</span> <span class="nav-text">단점</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#구현-예제"><span class="nav-number">3.3.</span> <span class="nav-text">구현 예제</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#의존성-1"><span class="nav-number">3.3.1.</span> <span class="nav-text">의존성</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Controller-1"><span class="nav-number">3.3.2.</span> <span class="nav-text">Controller</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#UserClient"><span class="nav-number">3.3.3.</span> <span class="nav-text">UserClient</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#실행-결과-1"><span class="nav-number">3.3.4.</span> <span class="nav-text">실행 결과</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#마무리"><span class="nav-number">4.</span> <span class="nav-text">마무리</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">supawer0728</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+  <div class="footer-custom">To Improve Human Life</div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://supawer0728-github-com.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://supawer0728.github.io/2018/03/15/spring-http-stereamings/';
+          this.page.identifier = '2018/03/15/spring-http-stereamings/';
+          this.page.title = 'Spring5에서 HTTP Streaming';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://supawer0728-github-com.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('-1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/needsharebutton/needsharebutton.css">
+
+  
+  
+  <script src="/lib/needsharebutton/needsharebutton.js"></script>
+
+  <script>
+    
+      pbOptions = {};
+      
+          pbOptions.iconStyle = "box";
+      
+          pbOptions.boxForm = "horizontal";
+      
+          pbOptions.position = "bottomCenter";
+      
+          pbOptions.networks = "Twitter,Facebook,GooglePlus,Evernote";
+      
+      new needShareButton('#needsharebutton-postbottom', pbOptions);
+    
+    
+  </script>
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

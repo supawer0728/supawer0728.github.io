@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Nanum Gothic:300,300italic,400,400italic,700,700italic|Nanum Pen Script:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-icon-180x180.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.4">
+
+
+
+  <link rel="manifest" href="/images/manifest.json">
+
+
+  <meta name="msapplication-config" content="/images/browserconfig.xml" />
+
+
+
+  <meta name="keywords" content="spring,json,bindingresult," />
+
+
+
+
+
+  <link rel="alternate" href="/feed.xml" title="기록은 재산이다" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="서론Spring은 Controller에서 Validation을 한 후, 유효하지 못한 값이 존재할 때, Error(BindingResult)에 그 내용을 담아서, JSP, FreeMarker 등의 View Template Engine으로 오류 내용을 MessageSource로 국제화하여 보여줄 수 있도록 지원을 하고 있다. 하지만 의외로 그러한 국제화 메시">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring BindingResult를 json으로 받기">
+<meta property="og:url" content="https://supawer0728.github.io/2018/03/10/Spring-BindingResult-json/index.html">
+<meta property="og:site_name" content="기록은 재산이다">
+<meta property="og:description" content="서론Spring은 Controller에서 Validation을 한 후, 유효하지 못한 값이 존재할 때, Error(BindingResult)에 그 내용을 담아서, JSP, FreeMarker 등의 View Template Engine으로 오류 내용을 MessageSource로 국제화하여 보여줄 수 있도록 지원을 하고 있다. 하지만 의외로 그러한 국제화 메시">
+<meta property="og:locale" content="ko_KR">
+<meta property="article:published_time" content="2018-03-09T23:58:29.000Z">
+<meta property="article:modified_time" content="2020-03-04T08:18:02.741Z">
+<meta property="article:author" content="supawer0728">
+<meta property="article:tag" content="spring">
+<meta property="article:tag" content="json">
+<meta property="article:tag" content="bindingresult">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '작성자'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://supawer0728.github.io/2018/03/10/Spring-BindingResult-json/"/>
+
+
+
+
+
+  <title>Spring BindingResult를 json으로 받기 | 기록은 재산이다</title>
+  
+
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-115481794-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'UA-115481794-1');
+</script>
+
+
+
+
+
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script data-ad-client="" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="ko">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">기록은 재산이다</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">To Improve Human Life</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            홈
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            태그
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            카테고리
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            아카이브
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            검색
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="Searching..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://supawer0728.github.io/2018/03/10/Spring-BindingResult-json/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="supawer0728">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="기록은 재산이다">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Spring BindingResult를 json으로 받기</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">작성일&#58;</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-10T08:58:29+09:00">
+                2018-03-10
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">수정일&#58;</span>
+              
+              <time title="수정일" itemprop="dateModified" datetime="2020-03-04T17:18:02+09:00">
+              
+                2018-03-10
+              
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/" itemprop="url" rel="index">
+                    <span itemprop="name">spring</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/practice/" itemprop="url" rel="index">
+                    <span itemprop="name">practice</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/03/10/Spring-BindingResult-json/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/03/10/Spring-BindingResult-json/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="서론"><a href="#서론" class="headerlink" title="서론"></a>서론</h1><p>Spring은 Controller에서 Validation을 한 후, 유효하지 못한 값이 존재할 때, Error(BindingResult)에 그 내용을 담아서, JSP, FreeMarker 등의 View Template Engine으로 오류 내용을 MessageSource로 국제화하여 보여줄 수 있도록 지원을 하고 있다.</p>
+<p>하지만 의외로 그러한 국제화 메시지 지원을 Json 응답으로 보여주려고 할 때에는 편리한 수단이 잘 보이지 않고, Reference를 뒤져봐도 딱 맘에 드는 방법을 알려주고 있지 않는다. 때문에 Json으로 국제화된 오류 내용을 받을 수 있도록, View의 내용을 커스터마이징 하는 방법에 대해 알아보려 한다.</p>
+<a id="more"></a>
+
+<h1 id="기본-동작-소스-코드"><a href="#기본-동작-소스-코드" class="headerlink" title="기본 동작 소스 코드"></a>기본 동작 소스 코드</h1><p><strong>의존성</strong></p>
+<p>spring-boot : 2.0.0.RELEASE<br>lombok : 1.16.18</p>
+<p><strong>AdderController.java</strong></p>
+<p>아래는 <code>POST /add?a=1&amp;b=2</code>를 요청했을 때, 유효성 검사를 한 후 <code>{&quot;result&quot;:3}</code>를 반환하는 소스이다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping</span>(<span class="string">"/add"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AdderController</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Validator adderRequestValidator;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">AdderController</span><span class="params">(@Qualifier(<span class="string">"adderRequestValidator"</span>)</span> Validator adderRequestValidator) </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.adderRequestValidator = adderRequestValidator;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@PostMapping</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> AdderResult <span class="title">add</span><span class="params">(AdderRequest request, BindingResult bindingResult)</span> <span class="keyword">throws</span> BindException </span>&#123;</span><br><span class="line">        adderRequestValidator.validate(request, bindingResult);</span><br><span class="line">        <span class="keyword">if</span> (bindingResult.hasErrors()) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> BindException(bindingResult);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> AdderResult(request.getA() + request.getB());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>AdderRequestValidator.java</strong></p>
+<p>검증에 대한 구현이다. <code>a</code>나 <code>b</code>가 비어있으면 <code>field.required</code> 코드 값으로 <code>errors</code>의 <code>filedErrors</code>에 오류 내용이 추가된다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AdderRequestValidator</span> <span class="keyword">implements</span> <span class="title">Validator</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">supports</span><span class="params">(Class&lt;?&gt; clazz)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> AdderRequest<span class="class">.<span class="keyword">class</span>.<span class="title">isAssignableFrom</span>(<span class="title">clazz</span>)</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">validate</span><span class="params">(Object o, Errors errors)</span> </span>&#123;</span><br><span class="line">        AdderRequest request = AdderRequest<span class="class">.<span class="keyword">class</span>.<span class="title">cast</span>(<span class="title">o</span>)</span>;</span><br><span class="line">        <span class="keyword">if</span> (request.getA() == <span class="keyword">null</span>) &#123;</span><br><span class="line">            errors.rejectValue(<span class="string">"a"</span>, <span class="string">"field.required"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (request.getB() == <span class="keyword">null</span>) &#123;</span><br><span class="line">            errors.rejectValue(<span class="string">"b"</span>, <span class="string">"field.required"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>error.xml</strong></p>
+<p><code>field.required</code>의 내용을 해석하여, 국제화할 xml property를 정의했다.</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="UTF-8" standalone="no"?&gt;</span></span><br><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">properties</span> <span class="meta-keyword">SYSTEM</span> <span class="meta-string">"http://java.sun.com/dtd/properties.dtd"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">properties</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">entry</span> <span class="attr">key</span>=<span class="string">"field.required.adderRequest.a"</span>&gt;</span>a를 입력해주세요<span class="tag">&lt;/<span class="name">entry</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">entry</span> <span class="attr">key</span>=<span class="string">"field.required.adderRequest.b"</span>&gt;</span>b를 입력해주세요<span class="tag">&lt;/<span class="name">entry</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">properties</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="유효하지-못한-요청이-있을-때"><a href="#유효하지-못한-요청이-있을-때" class="headerlink" title="유효하지 못한 요청이 있을 때"></a>유효하지 못한 요청이 있을 때</h2><p>아무런 커스터마이징 없이 <code>POST /add?a=1</code>로 요청을 보내면, <code>BindException</code>의 내용을 View로 응답한다.<br>그 내용은 아래와 같다.</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"timestamp"</span>: <span class="number">1519659376474</span>,</span><br><span class="line">  <span class="attr">"status"</span>: <span class="number">400</span>,</span><br><span class="line">  <span class="attr">"error"</span>: <span class="string">"Bad Request"</span>,</span><br><span class="line">  <span class="attr">"exception"</span>: <span class="string">"org.springframework.validation.BindException"</span>,</span><br><span class="line">  <span class="attr">"errors"</span>:[&#123;</span><br><span class="line">    <span class="attr">"codes"</span>:[</span><br><span class="line">      <span class="string">"field.required.adderRequest.b"</span>,</span><br><span class="line">      <span class="string">"field.required.b"</span>,</span><br><span class="line">      <span class="string">"field.required.java.lang.Integer"</span>,</span><br><span class="line">      <span class="string">"field.required"</span></span><br><span class="line">    ],</span><br><span class="line">    <span class="attr">"arguments"</span>: <span class="literal">null</span>,</span><br><span class="line">    <span class="attr">"defaultMessage"</span>: <span class="literal">null</span>,</span><br><span class="line">    <span class="attr">"objectName"</span>: <span class="string">"adderRequest"</span>,</span><br><span class="line">    <span class="attr">"field"</span>: <span class="string">"b"</span>,</span><br><span class="line">    <span class="attr">"rejectedValue"</span>: <span class="literal">null</span>,</span><br><span class="line">    <span class="attr">"bindingFailure"</span>: <span class="literal">false</span>,</span><br><span class="line">    <span class="attr">"code"</span>: <span class="string">"field.required"</span></span><br><span class="line">  &#125;],</span><br><span class="line">  <span class="attr">"message"</span>: <span class="string">"Validation failed for object='adderRequest'. Error count: 1"</span>,</span><br><span class="line">  <span class="attr">"path"</span>: <span class="string">"/add"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>응답 내용에 <code>error.xml</code>에서 정의한 메시지 내용이 내려가지 않고 있다.<br>(defaultMessage를 정의하면 해당 값은 채워져 가겠지만, 국제화가 적용되지 않는다)</p>
+<p>클라이언트에서 언어 관련 resource를 들고 있고 codes를 적절히 대조해서 가져올 수 있다면 다행이다.<br>하지만 클라이언트가 하나가 아니라면 국제화 처리하는 로직에 중복이 발생하므로 서버에서 내려주는 것이 효율적일 것 같다.</p>
+<h1 id="서버에서-국제화-메시지로-변경하여-내려주기"><a href="#서버에서-국제화-메시지로-변경하여-내려주기" class="headerlink" title="서버에서 국제화 메시지로 변경하여 내려주기"></a>서버에서 국제화 메시지로 변경하여 내려주기</h1><p><strong>응답모델 정의</strong></p>
+<p>모델은 어떤 자료구조로 하든 상관없다. 각자 팀의 혹은 Client의 취향에 맞추어 개발하자.<br>여기서는 아래와 같은 json이 나오도록 정의한다.</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"errors"</span>:[&#123;</span><br><span class="line">   <span class="attr">"objectName"</span>: <span class="string">"adderRequest"</span>,</span><br><span class="line">    <span class="attr">"field"</span>: <span class="string">"b"</span>,</span><br><span class="line">    <span class="attr">"code"</span>: <span class="string">"field.required"</span>,</span><br><span class="line">    <span class="attr">"message"</span>: <span class="string">"b를 입력해주세요"</span></span><br><span class="line">  &#125;]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>ValidationResult</strong></p>
+<p>오류의 목록(<code>errors</code>)를 가지고 있다. 필요하다면 공통된 속성을 추가로 정의할 수 있다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Value</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span>(access = AccessLevel.PRIVATE)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ValidationResult</span> </span>&#123;</span><br><span class="line">   <span class="keyword">private</span> List&lt;FieldErrorDetail&gt; errors;</span><br><span class="line"></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ValidationResult <span class="title">create</span><span class="params">(Errors errors, MessageSource messageSource, Locale locale)</span> </span>&#123;</span><br><span class="line">      List&lt;FieldErrorDetail&gt; details =</span><br><span class="line">            errors.getFieldErrors()</span><br><span class="line">               .stream()</span><br><span class="line">               .map(error -&gt; FieldErrorDetail.create(error, messageSource, locale))</span><br><span class="line">               .collect(Collectors.toList());</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">new</span> ValidationResult(details);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>FieldErrorDetail</strong></p>
+<p><code>FieldError</code>의 상세를 기술하는 클래스다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Value</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span>(access = AccessLevel.PRIVATE)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FieldErrorDetail</span> </span>&#123;</span><br><span class="line">   <span class="keyword">private</span> String objectName;</span><br><span class="line">   <span class="keyword">private</span> String field;</span><br><span class="line">   <span class="keyword">private</span> String code;</span><br><span class="line">   <span class="keyword">private</span> String message;</span><br><span class="line"></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> FieldErrorDetail <span class="title">create</span><span class="params">(FieldError fieldError, MessageSource messageSource, Locale locale)</span> </span>&#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">new</span> FieldErrorDetail(</span><br><span class="line">         fieldError.getObjectName(),</span><br><span class="line">         fieldError.getField(),</span><br><span class="line">         fieldError.getCode(),</span><br><span class="line">         messageSource.getMessage(fieldError, locale)); <span class="comment">// 이 부분이 포인트</span></span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>messageSource.getMessage(MessageSourceResolvable, Locale)</code>를 사용해서 xml에 정의한 국제화 메시지를 가져올 수 있다.<br>이것이 가능한 이유는 <a href="https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/validation/FieldError.html" target="_blank" rel="noopener">FieldError</a>가 <code>MessageSourceResolvable</code>을 구현하고 있기 때문이다.</p>
+<h2 id="ExceptionHandler-정의"><a href="#ExceptionHandler-정의" class="headerlink" title="ExceptionHandler 정의"></a>ExceptionHandler 정의</h2><p>API서버라면 <code>@RestControllerAdvice</code> 등을 써서 컨트롤러 어드바이스에 등록시키는 것도 좋은 방법이다</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@ExceptionHandler</span>(BindException<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">ResponseStatus</span>(<span class="title">HttpStatus</span>.<span class="title">BAD_REQUEST</span>)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">ValidationResult</span> <span class="title">handleBindException</span>(<span class="title">BindException</span> <span class="title">bindException</span>, <span class="title">Locale</span> <span class="title">locale</span>) </span>&#123;</span><br><span class="line">   <span class="keyword">return</span> ValidationResult.create(bindException, messageSource, locale);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>응답</strong></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"errors"</span>:[&#123;</span><br><span class="line">   <span class="attr">"objectName"</span>: <span class="string">"adderRequest"</span>,</span><br><span class="line">    <span class="attr">"field"</span>: <span class="string">"b"</span>,</span><br><span class="line">    <span class="attr">"code"</span>: <span class="string">"field.required"</span>,</span><br><span class="line">    <span class="attr">"message"</span>: <span class="string">"b를 입력해주세요"</span></span><br><span class="line">  &#125;]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="결론"><a href="#결론" class="headerlink" title="결론"></a>결론</h2><p>기본적으로 Spring은 <code>BindException</code>에 대해서 Exception의 내용을 json으로 보여주기만 한다. 때문에 code값만 찍혀서 나오는데, 결국 code에 대응하는 국제화 메시지를 클라이언트에서 해석해야한다. 하지만 여러 클라이언트에 대응하기 위해서는 서버에서 국제화 코드를 해석해서 주는 것이 낫다.<br>국제화된 메시지를 가져오기 위해서는 <code>BindException</code>에서 <code>FieldError</code>들을 가져와 messageSource를 이용해야 한다. 위에서 설명한 커스터마이징을 거쳐야 원하는 국제화 메시지를 가져올 수 있다는 점이 조금 아쉽다.</p>
+<p>소스 : <a href="https://github.com/supawer0728/spring-bindingresult-json" target="_blank" rel="noopener">https://github.com/supawer0728/spring-bindingresult-json</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>작성자:</strong>
+    supawer0728
+  </li>
+  <li class="post-copyright-link">
+    <strong>원본링크:</strong>
+    <a href="https://supawer0728.github.io/2018/03/10/Spring-BindingResult-json/" title="Spring BindingResult를 json으로 받기">https://supawer0728.github.io/2018/03/10/Spring-BindingResult-json/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>라이센스: </strong>
+    <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a>
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/spring/" rel="tag"># spring</a>
+          
+            <a href="/tags/json/" rel="tag"># json</a>
+          
+            <a href="/tags/bindingresult/" rel="tag"># bindingresult</a>
+          
+        </div>
+      
+
+      
+      
+        <div class="post-widgets">
+        
+
+        
+
+        
+          
+          <div id="needsharebutton-postbottom">
+            <span class="btn">
+              <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </span>
+          </div>
+        
+        </div>
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/10/webserveless/" rel="next" title="HAProxy를 이용한 WebServer-less 구조">
+                <i class="fa fa-chevron-left"></i> HAProxy를 이용한 WebServer-less 구조
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/11/hazelcast/" rel="prev" title="Hazelcast 공유">
+                Hazelcast 공유 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript" target="_blank" rel="noopener">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            목차
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            흝어보기
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="supawer0728" />
+            
+              <p class="site-author-name" itemprop="name">supawer0728</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">32</span>
+                  <span class="site-state-item-name">포스트</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">카테고리</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">50</span>
+                  <span class="site-state-item-name">태그</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/feed.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/supawer0728" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#서론"><span class="nav-number">1.</span> <span class="nav-text">서론</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#기본-동작-소스-코드"><span class="nav-number">2.</span> <span class="nav-text">기본 동작 소스 코드</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#유효하지-못한-요청이-있을-때"><span class="nav-number">2.1.</span> <span class="nav-text">유효하지 못한 요청이 있을 때</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#서버에서-국제화-메시지로-변경하여-내려주기"><span class="nav-number">3.</span> <span class="nav-text">서버에서 국제화 메시지로 변경하여 내려주기</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ExceptionHandler-정의"><span class="nav-number">3.1.</span> <span class="nav-text">ExceptionHandler 정의</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#결론"><span class="nav-number">3.2.</span> <span class="nav-text">결론</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">supawer0728</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+  <div class="footer-custom">To Improve Human Life</div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://supawer0728-github-com.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://supawer0728.github.io/2018/03/10/Spring-BindingResult-json/';
+          this.page.identifier = '2018/03/10/Spring-BindingResult-json/';
+          this.page.title = 'Spring BindingResult를 json으로 받기';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://supawer0728-github-com.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('-1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/needsharebutton/needsharebutton.css">
+
+  
+  
+  <script src="/lib/needsharebutton/needsharebutton.js"></script>
+
+  <script>
+    
+      pbOptions = {};
+      
+          pbOptions.iconStyle = "box";
+      
+          pbOptions.boxForm = "horizontal";
+      
+          pbOptions.position = "bottomCenter";
+      
+          pbOptions.networks = "Twitter,Facebook,GooglePlus,Evernote";
+      
+      new needShareButton('#needsharebutton-postbottom', pbOptions);
+    
+    
+  </script>
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

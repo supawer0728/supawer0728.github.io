@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Nanum Gothic:300,300italic,400,400italic,700,700italic|Nanum Pen Script:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-icon-180x180.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.4">
+
+
+
+  <link rel="manifest" href="/images/manifest.json">
+
+
+  <meta name="msapplication-config" content="/images/browserconfig.xml" />
+
+
+
+  <meta name="keywords" content="spring,spring-boot,spring-boot-actuator," />
+
+
+
+
+
+  <link rel="alternate" href="/feed.xml" title="기록은 재산이다" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="서론웹 개발자로서 웹 애플리케이션을 만들 때 신경써야할 것은 서비스 로직 뿐만이 아니다. 웹 애플리케이션의 사용자는 누구인지(일반인? 외부시스템?), 어떤 경로로 애플리케이션에 요청을 할 지(Load Balancing, Fire Wall), 요청 수나 TPS 등 많은 것들을 고려해야한다. 이번에 소개할 spring-boot-actuator라는 모듈은 애플리">
+<meta property="og:type" content="article">
+<meta property="og:title" content="(Spring Boot)Spring Boot Actuator 소개">
+<meta property="og:url" content="https://supawer0728.github.io/2018/05/12/spring-actuator/index.html">
+<meta property="og:site_name" content="기록은 재산이다">
+<meta property="og:description" content="서론웹 개발자로서 웹 애플리케이션을 만들 때 신경써야할 것은 서비스 로직 뿐만이 아니다. 웹 애플리케이션의 사용자는 누구인지(일반인? 외부시스템?), 어떤 경로로 애플리케이션에 요청을 할 지(Load Balancing, Fire Wall), 요청 수나 TPS 등 많은 것들을 고려해야한다. 이번에 소개할 spring-boot-actuator라는 모듈은 애플리">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:image" content="https://supawer0728.github.io/images/spring-actuator/maintenance.png">
+<meta property="article:published_time" content="2018-05-12T08:33:26.000Z">
+<meta property="article:modified_time" content="2020-03-04T08:18:02.747Z">
+<meta property="article:author" content="supawer0728">
+<meta property="article:tag" content="spring">
+<meta property="article:tag" content="spring-boot">
+<meta property="article:tag" content="spring-boot-actuator">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://supawer0728.github.io/images/spring-actuator/maintenance.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '작성자'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://supawer0728.github.io/2018/05/12/spring-actuator/"/>
+
+
+
+
+
+  <title>(Spring Boot)Spring Boot Actuator 소개 | 기록은 재산이다</title>
+  
+
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-115481794-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'UA-115481794-1');
+</script>
+
+
+
+
+
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script data-ad-client="" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="ko">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">기록은 재산이다</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">To Improve Human Life</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            홈
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            태그
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            카테고리
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            아카이브
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            검색
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="Searching..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://supawer0728.github.io/2018/05/12/spring-actuator/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="supawer0728">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="기록은 재산이다">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">(Spring Boot)Spring Boot Actuator 소개</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">작성일&#58;</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-05-12T17:33:26+09:00">
+                2018-05-12
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">수정일&#58;</span>
+              
+              <time title="수정일" itemprop="dateModified" datetime="2020-03-04T17:18:02+09:00">
+              
+                2018-05-12
+              
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/" itemprop="url" rel="index">
+                    <span itemprop="name">spring</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/boot/" itemprop="url" rel="index">
+                    <span itemprop="name">boot</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/boot/actuator/" itemprop="url" rel="index">
+                    <span itemprop="name">actuator</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/05/12/spring-actuator/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/05/12/spring-actuator/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="서론"><a href="#서론" class="headerlink" title="서론"></a>서론</h1><p>웹 개발자로서 웹 애플리케이션을 만들 때 신경써야할 것은 서비스 로직 뿐만이 아니다. 웹 애플리케이션의 사용자는 누구인지(일반인? 외부시스템?), 어떤 경로로 애플리케이션에 요청을 할 지(Load Balancing, Fire Wall), 요청 수나 TPS 등 많은 것들을 고려해야한다. 이번에 소개할 <code>spring-boot-actuator</code>라는 모듈은 <strong>애플리케이션의 상태</strong>를 종합적으로 정리하여 우리에게 제공해준다. 본문에서는 <a href="https://github.com/spring-projects/spring-boot/tree/master/spring-boot-samples" target="_blank" rel="noopener">Spring Boot Samples</a>에 있는 프로젝트 중에서 <code>spring-boot-sample-actuator-ui</code>를 가져와 살짝 소스를 수정하여 actuator가 무엇이고 어떤 일 해주는지 알아보려한다.</p>
+<a id="more"></a>
+
+<h1 id="샘플-프로젝트로-Actuator-체험해보기"><a href="#샘플-프로젝트로-Actuator-체험해보기" class="headerlink" title="샘플 프로젝트로 Actuator 체험해보기"></a>샘플 프로젝트로 Actuator 체험해보기</h1><h2 id="소스-수정"><a href="#소스-수정" class="headerlink" title="소스 수정"></a>소스 수정</h2><p><a href="https://github.com/spring-projects/spring-boot/tree/master/spring-boot-samples/spring-boot-sample-actuator-ui" target="_blank" rel="noopener">spring-boot-sample-actuator-ui</a>에서 소스를 다운받아 <code>pom.xml</code> 파일의 <code>parent</code>를 수정하여 바로 실행해볼 수 있다. 여기서는 <code>sprint-boot-starter-security</code>도 제외시키겠다.</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- parent를 spring-boot-starter-parent로 수정 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">parent</span>&gt;</span></span><br><span class="line">  <span class="comment">&lt;!-- Your own application should inherit from spring-boot-starter-parent --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-parent<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.0.2.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">parent</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!-- spring-security 주석처리 --&gt;</span></span><br><span class="line"><span class="comment">&lt;!--&lt;dependency&gt;--&gt;</span></span><br><span class="line"><span class="comment">&lt;!--&lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;--&gt;</span></span><br><span class="line"><span class="comment">&lt;!--&lt;artifactId&gt;spring-boot-starter-security&lt;/artifactId&gt;--&gt;</span></span><br><span class="line"><span class="comment">&lt;!--&lt;/dependency&gt;--&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="applcation-properties"><a href="#applcation-properties" class="headerlink" title="applcation.properties"></a>applcation.properties</h2><figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">spring.security.user.name</span>=<span class="string">user</span></span><br><span class="line"><span class="meta">spring.security.user.password</span>=<span class="string">password</span></span><br><span class="line"><span class="meta">management.health.diskspace.enabled</span>=<span class="string">false</span></span><br><span class="line"><span class="meta">management.endpoints.web.exposure.include</span>=<span class="string">*</span></span><br></pre></td></tr></table></figure>
+
+<p>앞서 security 의존성을 없앴기 때문에 <code>spring-security</code>가 동작하지는 않는다.</p>
+<h2 id="실행"><a href="#실행" class="headerlink" title="실행"></a>실행</h2><p>maven의 <code>spring-boot:run</code>이나 직접 <code>SampleActuatorUiApplication</code>의 <code>main()</code>을 호출하여 서버를 띄운 후 <code>GET /actuator</code>를 실행해보자. 아래와 같은 json 정보를 얻을 수 있다.(몇몇 부분은 생략했다) </p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">   <span class="attr">"_links"</span>:&#123;</span><br><span class="line">      <span class="attr">"self"</span>:&#123;<span class="attr">"href"</span>:<span class="string">"http://localhost:8080/actuator"</span>&#125;,</span><br><span class="line">      <span class="attr">"auditevents"</span>:&#123;<span class="attr">"href"</span>:<span class="string">"http://localhost:8080/actuator/auditevents"</span>&#125;,</span><br><span class="line">      <span class="attr">"beans"</span>:&#123;<span class="attr">"href"</span>:<span class="string">"http://localhost:8080/actuator/beans"</span>&#125;,</span><br><span class="line">      <span class="attr">"health"</span>:&#123;<span class="attr">"href"</span>:<span class="string">"http://localhost:8080/actuator/health"</span>&#125;,</span><br><span class="line">      <span class="attr">"conditions"</span>:&#123;<span class="attr">"href"</span>:<span class="string">"http://localhost:8080/actuator/conditions"</span>&#125;,</span><br><span class="line">      <span class="attr">"configprops"</span>:&#123;<span class="attr">"href"</span>:<span class="string">"http://localhost:8080/actuator/configprops"</span>&#125;,</span><br><span class="line">      <span class="attr">"env"</span>:&#123;<span class="attr">"href"</span>:<span class="string">"http://localhost:8080/actuator/env"</span>&#125;,</span><br><span class="line">      <span class="attr">"env-toMatch"</span>:&#123;<span class="attr">"href"</span>:<span class="string">"http://localhost:8080/actuator/env/&#123;toMatch&#125;"</span>&#125;,</span><br><span class="line">      <span class="attr">"info"</span>:&#123;<span class="attr">"href"</span>:<span class="string">"http://localhost:8080/actuator/info"</span>&#125;,</span><br><span class="line">      <span class="attr">"loggers"</span>:&#123;<span class="attr">"href"</span>:<span class="string">"http://localhost:8080/actuator/loggers"</span>&#125;,</span><br><span class="line">      <span class="attr">"loggers-name"</span>:&#123;<span class="attr">"href"</span>:<span class="string">"http://localhost:8080/actuator/loggers/&#123;name&#125;"</span>&#125;,</span><br><span class="line">      <span class="attr">"heapdump"</span>:&#123;<span class="attr">"href"</span>:<span class="string">"http://localhost:8080/actuator/heapdump"</span>&#125;,</span><br><span class="line">      <span class="attr">"threaddump"</span>:&#123;<span class="attr">"href"</span>:<span class="string">"http://localhost:8080/actuator/threaddump"</span>&#125;,</span><br><span class="line">      <span class="attr">"metrics-requiredMetricName"</span>:&#123;<span class="attr">"href"</span>:<span class="string">"http://localhost:8080/actuator/metrics/&#123;requiredMetricName&#125;"</span>&#125;,</span><br><span class="line">      <span class="attr">"metrics"</span>:&#123;<span class="attr">"href"</span>:<span class="string">"http://localhost:8080/actuator/metrics"</span>&#125;,</span><br><span class="line">      <span class="attr">"scheduledtasks"</span>:&#123;<span class="attr">"href"</span>:<span class="string">"http://localhost:8080/actuator/scheduledtasks"</span>&#125;,</span><br><span class="line">      <span class="attr">"httptrace"</span>:&#123;<span class="attr">"href"</span>:<span class="string">"http://localhost:8080/actuator/httptrace"</span>&#125;,</span><br><span class="line">      <span class="attr">"mappings"</span>:&#123;<span class="attr">"href"</span>:<span class="string">"http://localhost:8080/actuator/mappings"</span>&#125;,</span><br><span class="line">      <span class="attr">"jolokia"</span>:&#123;<span class="attr">"href"</span>:<span class="string">"http://localhost:8080/actuator/jolokia"</span>&#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>위와 같은 내용의 애플리케이션의 상태를 확인할 수 있다. 예를 들어 <code>GET /actuator/health</code>를 실행해보자. 아래와 같이 현재 애플리케이션의 health 상태를 알 수 있다.</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="attr">"status"</span>: <span class="string">"UP"</span>&#125;</span><br></pre></td></tr></table></figure>
+
+<p>혹은 <code>GET /actuator/metrics/jvm.threads.live</code>를 요청해보자. 현재 JVM의 활성화된 Thread의 정보를 가져올 수 있다.</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&#123;  </span><br><span class="line">   <span class="attr">"name"</span>:<span class="string">"jvm.threads.live"</span>,</span><br><span class="line">   <span class="attr">"measurements"</span>:[  </span><br><span class="line">      &#123;  </span><br><span class="line">         <span class="attr">"statistic"</span>:<span class="string">"VALUE"</span>,</span><br><span class="line">         <span class="attr">"value"</span>:<span class="number">23</span></span><br><span class="line">      &#125;</span><br><span class="line">   ],</span><br><span class="line">   <span class="attr">"availableTags"</span>: []</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>GET /actuator/heapdump</code>나 <code>GET /actuator/threaddump</code>를 요청하면 dump 파일을 받을 수도 있다.</p>
+<p>이러한 애플리케이션의 상태 정보를 아무에게나 노출하면 안될 것 같다. 확인된 사용자에게만 actuator 정보를 노출하고자 할 때에는 간단하게 두 가지 방법을 고려할 수 있다.</p>
+<ol>
+<li><code>management.server.port</code>, <code>management.server.address</code> 값을 수정해서 해당 ip, address에 한해 ACL를 걺</li>
+<li><code>spring-security</code>를 이용하여 <code>management.endpoints.web.base-path(기본값 /actuator)</code>에 대해 권한을 확인</li>
+</ol>
+<p>물론 두 방법을 동시에 사용할 수도 있다.</p>
+<h1 id="그래서-Spring-Boot-Actuator란"><a href="#그래서-Spring-Boot-Actuator란" class="headerlink" title="그래서 Spring Boot Actuator란"></a>그래서 Spring Boot Actuator란</h1><p>간단히 말하자면 Spring Boot Application의 상태를 관리해준다.</p>
+<ul>
+<li>Spring Boot Application의 상태 정보(health, properties, beans, 구동된 AutoConfiguration 목록 등)를 다룰 수 있도록 자동 설정.</li>
+<li>각종 추상화 클래스(HealthIndicator 등)을 제공하여, 상태 정보를 변경할 수 있도록 Service를 제공.</li>
+</ul>
+<h1 id="써먹을-만한-설정과-사용자화-가능한-것들"><a href="#써먹을-만한-설정과-사용자화-가능한-것들" class="headerlink" title="써먹을 만한 설정과 사용자화 가능한 것들"></a>써먹을 만한 설정과 사용자화 가능한 것들</h1><h2 id="노출할-항목-설정"><a href="#노출할-항목-설정" class="headerlink" title="노출할 항목 설정"></a>노출할 항목 설정</h2><p>앞서 본 샘플에서는 많은 정보들이 노출되고 있었다. <code>auditevents</code>, <code>beans</code>, <code>health</code>, <code>env</code> 등등, 필요해 보이는 것부터 T.M.I.까지 있다. <code>application.properties</code>에서 <code>management.endpoints.web.exposure.include</code>에 필요한 endpoint의 id를 설정할 수 있다. endpoint의 목록은 <a href="https://docs.spring.io/spring-boot/docs/2.0.2.RELEASE/reference/htmlsingle/#production-ready-endpoints" target="_blank" rel="noopener">레퍼런스 문서</a>를 참고하자.</p>
+<p><strong>예제: health와 metrics 정보만 노출</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">management.endpoints.web.exposure.include&#x3D;health,metrics</span><br></pre></td></tr></table></figure>
+
+<h2 id="Endpoint-경로-설정"><a href="#Endpoint-경로-설정" class="headerlink" title="Endpoint 경로 설정"></a>Endpoint 경로 설정</h2><p>앞에서 소개한 것과 같이 <code>management.endpoint.web.base-path(기본값 /actuator)</code>를 수정하여 base-path를 수정할 수 있다. 그 외에도 <code>management.endpoints.web.path-mapping.&lt;id&gt;</code>값을 수정하여, 특정 id의 endpoint의 경로를 수정할 수 있다.</p>
+<p><strong>예제: health의 경로를 /monitor/healthcheck로 변경</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">management.endpoints.web.base-path&#x3D;&#x2F;monitor</span><br><span class="line">management.endpoints.web.path-mapping.health&#x3D;healthcheck</span><br></pre></td></tr></table></figure>
+
+<h2 id="CORS"><a href="#CORS" class="headerlink" title="CORS"></a>CORS</h2><p><code>spring-boot-actuator</code>는 기본적으로 <strong>클라우드 환경에서 관리자가 각종 애플리케이션의 상태를 파악하기 쉽도록 설계되어 있다.</strong> 때문에 필요한 경우 외부 UI를 구성한 다른 도메인명을 가진 Web Application에서 각각의 서비스 애플리케이션의 상태를 파악하기 위해서 actuator 정보를 요청할 수도 있다. 이럴때 CORS를 설정하여 사용할 수 있다.</p>
+<p><strong>예제: <a href="http://other-domain.com" target="_blank" rel="noopener">http://other-domain.com</a> 의 GET, POST요청을 허용</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">management.endpoints.web.cors.allowed-origins&#x3D;http:&#x2F;&#x2F;other-domain.com</span><br><span class="line">management.endpoints.web.cors.allowed-methods&#x3D;GET,POST</span><br></pre></td></tr></table></figure>
+
+<h2 id="Health-Endpoint"><a href="#Health-Endpoint" class="headerlink" title="Health Endpoint"></a>Health Endpoint</h2><h3 id="Details"><a href="#Details" class="headerlink" title="Details"></a>Details</h3><p>Health Endpoint는 위 샘플에서 소개된 것 외에도 사실상 많은 정보들을 내보일 수 있다. 이전의 샘플 소스로 돌아가서 <code>pom.xml</code>과 <code>application.properties</code>를 아래와 같이 수정해보자.</p>
+<p><strong>pom.xml: jpa와 h2 database 의존성 추가</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">  &lt;groupId&gt;org.springframework.boot&lt;&#x2F;groupId&gt;</span><br><span class="line">  &lt;artifactId&gt;spring-boot-starter-data-jpa&lt;&#x2F;artifactId&gt;</span><br><span class="line">&lt;&#x2F;dependency&gt;</span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">  &lt;groupId&gt;com.h2database&lt;&#x2F;groupId&gt;</span><br><span class="line">  &lt;artifactId&gt;h2&lt;&#x2F;artifactId&gt;</span><br><span class="line">&lt;&#x2F;dependency&gt;</span><br></pre></td></tr></table></figure>
+
+<p><strong>application.properties: 상세 정보를 노출하도록 변경</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">management.endpoint.health.show-details&#x3D;always</span><br></pre></td></tr></table></figure>
+
+<p>다시 애플리케이션을 실행시킨 후 <code>GET /actuator/health</code> 요청을 보내보면 아래와 같이 응답이 온다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#123;  </span><br><span class="line">   &quot;status&quot;:&quot;UP&quot;,</span><br><span class="line">   &quot;details&quot;:&#123;  </span><br><span class="line">      &quot;db&quot;:&#123;  </span><br><span class="line">         &quot;status&quot;:&quot;UP&quot;,</span><br><span class="line">         &quot;details&quot;:&#123;  </span><br><span class="line">            &quot;database&quot;:&quot;H2&quot;,</span><br><span class="line">            &quot;hello&quot;:1</span><br><span class="line">         &#125;</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>애플리케이션에서 의존하고 있는 시스템의 Health check도 함께 파악할 수 있다. <code>DataSource</code> 외에도 <code>Disk</code>, <code>Cassandra</code>, <code>ElasticSearch</code>, <code>Redis</code> 등의 health check를 확인할 수 있다.</p>
+<h3 id="사용자-정의-Health-Indicator"><a href="#사용자-정의-Health-Indicator" class="headerlink" title="사용자 정의 Health Indicator"></a>사용자 정의 Health Indicator</h3><p>Health Endpoint의 내용은 <code>HealthIndicator</code>를 구현하여 정의할 수 있다.</p>
+<p><strong>HealthIndicator</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@FunctionalInterface</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">HealthIndicator</span> </span>&#123;</span><br><span class="line">    <span class="function">Health <span class="title">health</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>아래는 간단하게 health indicator를 구현한 예제이다.</p>
+<ul>
+<li><code>PUT /actuator/health/up</code> : UP 상태로 변경</li>
+<li><code>PUT /actuator/health/down</code> : DOWN 상태로 변경</li>
+<li><code>PUT /actuator/health/maintenance</code> : 점검 상태로 변경</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping</span>(<span class="string">"$&#123;management.endpoints.web.base-path:/actuator&#125;"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CustomHealthIndicator</span> <span class="keyword">implements</span> <span class="title">HealthIndicator</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> AtomicReference&lt;Health&gt; health = <span class="keyword">new</span> AtomicReference&lt;&gt;(Health.up().build());</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Health <span class="title">health</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> health.get();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PutMapping</span>(<span class="string">"$&#123;management.endpoints.web.path-mapping.health:health&#125;/up"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Health <span class="title">up</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        Health up = Health.up().build();</span><br><span class="line">        <span class="keyword">this</span>.health.set(up);</span><br><span class="line">        <span class="keyword">return</span> up;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PutMapping</span>(<span class="string">"$&#123;management.endpoints.web.path-mapping.health:health&#125;/down"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Health <span class="title">down</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        Health down = Health.down().build();</span><br><span class="line">        <span class="keyword">this</span>.health.set(down);</span><br><span class="line">        <span class="keyword">return</span> down;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PutMapping</span>(<span class="string">"$&#123;management.endpoints.web.path-mapping.health:health&#125;/maintenance"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Health <span class="title">maintenance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        Health maintenance = Health.status(<span class="keyword">new</span> Status(<span class="string">"MAINTENANCE"</span>, <span class="string">"점검중"</span>)).build();</span><br><span class="line">        <span class="keyword">this</span>.health.set(maintenance);</span><br><span class="line">        <span class="keyword">return</span> maintenance;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>각 URL에 맞춰서 <code>health</code>의 값을 변경한다. 기본적으로 <code>up</code>, <code>down</code>, <code>out-of-service</code>, <code>unkwon</code>의 상태값이 존재하지만 <code>maintenance</code>의 상태값은 없다. 사실 의미상 <code>out-of-service</code>와 동일하지만, 사용자화를 할 수 있다는 걸 보이기 위해서 새로 만들었다. 새로운 상태값을 만들어 actuator에서 인식하도록 만들려면 <code>application.properties</code>를 수정해야한다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># 심각도에 따른 순서</span><br><span class="line">management.health.status.order&#x3D;DOWN, MAINTENANCE, UNKOWN, UP</span><br><span class="line"></span><br><span class="line"># 각 상태별 Http 응답 코드</span><br><span class="line">management.health.status.http-mapping.DOWN&#x3D;503</span><br><span class="line">management.health.status.http-mapping.MAINTENANCE&#x3D;503</span><br><span class="line">management.health.status.http-mapping.UNKNOWN&#x3D;200</span><br><span class="line">management.health.status.http-mapping.UP&#x3D;200</span><br></pre></td></tr></table></figure>
+
+<p>이제 애플리케이션을 실행하여 <code>PUT /actuator/health/maintenance</code>를 요청한 후 <code>GET /actuator/health</code>로 확인해보자 아래와 같이 나온다.</p>
+<p><img src="/images/spring-actuator/maintenance.png" alt="점검중"></p>
+<h4 id="HealthIndicator를-구현하며-management-endpoint-health-show-details-always가-설정된-경우"><a href="#HealthIndicator를-구현하며-management-endpoint-health-show-details-always가-설정된-경우" class="headerlink" title="HealthIndicator를 구현하며, management.endpoint.health.show-details=always가 설정된 경우"></a>HealthIndicator를 구현하며, <code>management.endpoint.health.show-details=always</code>가 설정된 경우</h4><p>사용자화한 항목을 하나의 상세로 표시해준다.</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;  </span><br><span class="line">   <span class="attr">"status"</span>:<span class="string">"UP"</span>,</span><br><span class="line">   <span class="attr">"details"</span>:&#123;  </span><br><span class="line">      <span class="attr">"custom"</span>:&#123;  </span><br><span class="line">         <span class="attr">"status"</span>:<span class="string">"UP"</span></span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Metrics"><a href="#Metrics" class="headerlink" title="Metrics"></a>Metrics</h2><p>간단히 말하자면 시계열 지표로 활용할 수 있는 정보를 관리한다. 아래는 그 일부이다.</p>
+<ul>
+<li>JVM 정보<ul>
+<li>thread 수</li>
+<li>GC 정보</li>
+<li>heap 정보</li>
+</ul>
+</li>
+<li>DBCP 정보</li>
+<li>PROCESS 관련 정보</li>
+<li>CPU<ul>
+<li>USAGE</li>
+<li>LOAD</li>
+</ul>
+</li>
+<li>FILE<ul>
+<li>최대 사용가능한 File Descriptor 수</li>
+<li>현재 사용중인 File Descriptor 수</li>
+</ul>
+</li>
+</ul>
+<h3 id="사용자-정의-Metircs"><a href="#사용자-정의-Metircs" class="headerlink" title="사용자 정의 Metircs"></a>사용자 정의 Metircs</h3><p>Metrics의 정보도 사용자 정의할 수 있다. 예를 들어 현재 처리중인 동시 요청 수나 분당 요청 처리량 등을 표시할 수 있다. 방법은 간단하다. <code>MeterRegistry</code>를 주입받아 사용하면 된다.  아래는 처리중인 동시 요청 수에 대한 예제이다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">public class ConcurrentTransactionCountInterceptor extends HandlerInterceptorAdapter &#123;</span><br><span class="line"></span><br><span class="line">    private final Counter counter;</span><br><span class="line"></span><br><span class="line">    public ConcurrentTransactionCountInterceptor(MeterRegistry meterRegistry) &#123;</span><br><span class="line">        this.counter &#x3D; meterRegistry.counter(&quot;transaction.current.count&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception &#123;</span><br><span class="line">        counter.increment();</span><br><span class="line">        return true;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception &#123;</span><br><span class="line">        counter.increment(-1d);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>GET /actuator/metrics/transaction.current.count</code>를 호출하면 아래와 같이 나온다.</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"name"</span>: <span class="string">"transaction.current.count"</span>,</span><br><span class="line">  <span class="attr">"measurements"</span>:[</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">"statistic"</span>: <span class="string">"COUNT"</span>,</span><br><span class="line">      <span class="attr">"value"</span>: <span class="number">0</span></span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="마무리"><a href="#마무리" class="headerlink" title="마무리"></a>마무리</h1><p>Spring Boot Actuator에 대해서 간략하게 살펴보았다. actuator에서는 이외에도 많은 기능을 제공해주지만, 자주 사용할 것 같은 기능 위주로 살펴봤다.</p>
+<p>actuator는 기본적으로 애플리케이션의 상태를 조회하고, 변경할 수 있도록 기능을 추상화하여 정의하고 있다. 추상화된 기능들에 대한 간단한 구현체들을 제공해주며, 개발자로 하여금 사용자 정의를 통해 더욱 상세한 설정을 할 수 있도록 가능성을 열어두었다. actuator로 인해 프로젝트 내에서 애플리케이션 관리를 통합해서 사용할 수 있으며, 이는 클라우드 환경에서 애플리케이션을 관리하는 데 매우 유용하게 사용할 수 있다. Load Balancing은 물론이거니와 필요시 Instance를 자동으로 배포, 제거하는 데에 유용한 정보들을 제공해줄 수 있다.</p>
+<p>애플리케이션 개발팀과 인프라스트럭처 관리팀이 나누어진 경우, 인프라스트럭처 관리팀에서 정해둔 정책이 있다면 <code>spring-boot-starter</code>를 사용자 정의하여 <code>actuator</code>를 회사, 혹은 팀 단위에 맞춰서 미리 정의해서 사용해보자. 그렇게 되면 개발팀은 서비스 로직에만 신경쓸 수 있게 될 것이다.</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>작성자:</strong>
+    supawer0728
+  </li>
+  <li class="post-copyright-link">
+    <strong>원본링크:</strong>
+    <a href="https://supawer0728.github.io/2018/05/12/spring-actuator/" title="(Spring Boot)Spring Boot Actuator 소개">https://supawer0728.github.io/2018/05/12/spring-actuator/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>라이센스: </strong>
+    <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a>
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/spring/" rel="tag"># spring</a>
+          
+            <a href="/tags/spring-boot/" rel="tag"># spring-boot</a>
+          
+            <a href="/tags/spring-boot-actuator/" rel="tag"># spring-boot-actuator</a>
+          
+        </div>
+      
+
+      
+      
+        <div class="post-widgets">
+        
+
+        
+
+        
+          
+          <div id="needsharebutton-postbottom">
+            <span class="btn">
+              <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </span>
+          </div>
+        
+        </div>
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/06/spring-boot-multiple-datasource/" rel="next" title="(Spring Boot) 다중 DataSource 사용하기 with Sharding">
+                <i class="fa fa-chevron-left"></i> (Spring Boot) 다중 DataSource 사용하기 with Sharding
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/04/04/spring-error-handling/" rel="prev" title="(Spring Boot)오류 처리에 대해">
+                (Spring Boot)오류 처리에 대해 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript" target="_blank" rel="noopener">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            목차
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            흝어보기
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="supawer0728" />
+            
+              <p class="site-author-name" itemprop="name">supawer0728</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">32</span>
+                  <span class="site-state-item-name">포스트</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">카테고리</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">50</span>
+                  <span class="site-state-item-name">태그</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/feed.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/supawer0728" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#서론"><span class="nav-number">1.</span> <span class="nav-text">서론</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#샘플-프로젝트로-Actuator-체험해보기"><span class="nav-number">2.</span> <span class="nav-text">샘플 프로젝트로 Actuator 체험해보기</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#소스-수정"><span class="nav-number">2.1.</span> <span class="nav-text">소스 수정</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#applcation-properties"><span class="nav-number">2.2.</span> <span class="nav-text">applcation.properties</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#실행"><span class="nav-number">2.3.</span> <span class="nav-text">실행</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#그래서-Spring-Boot-Actuator란"><span class="nav-number">3.</span> <span class="nav-text">그래서 Spring Boot Actuator란</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#써먹을-만한-설정과-사용자화-가능한-것들"><span class="nav-number">4.</span> <span class="nav-text">써먹을 만한 설정과 사용자화 가능한 것들</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#노출할-항목-설정"><span class="nav-number">4.1.</span> <span class="nav-text">노출할 항목 설정</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Endpoint-경로-설정"><span class="nav-number">4.2.</span> <span class="nav-text">Endpoint 경로 설정</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CORS"><span class="nav-number">4.3.</span> <span class="nav-text">CORS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Health-Endpoint"><span class="nav-number">4.4.</span> <span class="nav-text">Health Endpoint</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Details"><span class="nav-number">4.4.1.</span> <span class="nav-text">Details</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#사용자-정의-Health-Indicator"><span class="nav-number">4.4.2.</span> <span class="nav-text">사용자 정의 Health Indicator</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#HealthIndicator를-구현하며-management-endpoint-health-show-details-always가-설정된-경우"><span class="nav-number">4.4.2.1.</span> <span class="nav-text">HealthIndicator를 구현하며, management.endpoint.health.show-details&#x3D;always가 설정된 경우</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Metrics"><span class="nav-number">4.5.</span> <span class="nav-text">Metrics</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#사용자-정의-Metircs"><span class="nav-number">4.5.1.</span> <span class="nav-text">사용자 정의 Metircs</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#마무리"><span class="nav-number">5.</span> <span class="nav-text">마무리</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">supawer0728</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+  <div class="footer-custom">To Improve Human Life</div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://supawer0728-github-com.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://supawer0728.github.io/2018/05/12/spring-actuator/';
+          this.page.identifier = '2018/05/12/spring-actuator/';
+          this.page.title = '(Spring Boot)Spring Boot Actuator 소개';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://supawer0728-github-com.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('-1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/needsharebutton/needsharebutton.css">
+
+  
+  
+  <script src="/lib/needsharebutton/needsharebutton.js"></script>
+
+  <script>
+    
+      pbOptions = {};
+      
+          pbOptions.iconStyle = "box";
+      
+          pbOptions.boxForm = "horizontal";
+      
+          pbOptions.position = "bottomCenter";
+      
+          pbOptions.networks = "Twitter,Facebook,GooglePlus,Evernote";
+      
+      new needShareButton('#needsharebutton-postbottom', pbOptions);
+    
+    
+  </script>
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

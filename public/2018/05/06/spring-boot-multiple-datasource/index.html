@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Nanum Gothic:300,300italic,400,400italic,700,700italic|Nanum Pen Script:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-icon-180x180.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.4">
+
+
+
+  <link rel="manifest" href="/images/manifest.json">
+
+
+  <meta name="msapplication-config" content="/images/browserconfig.xml" />
+
+
+
+  <meta name="keywords" content="spring,spring-boot,sharding," />
+
+
+
+
+
+  <link rel="alternate" href="/feed.xml" title="기록은 재산이다" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="서론Spring Boot를 사용해서 Database Sharding을 처리할 수 있을까?요즘 NoSQL에서는 Sharding과 관련해서 많은 편의를 제공한다. 알아서 Sharding을 제공해주고, 클러스터에 노드가 추가되면 Shard key를 기반으로 자동으로 새로운 노드로 값들을 분배해주거나, 노드를 제거하면 대상 노드에 있던 값들을 Shard Key에">
+<meta property="og:type" content="article">
+<meta property="og:title" content="(Spring Boot) 다중 DataSource 사용하기 with Sharding">
+<meta property="og:url" content="https://supawer0728.github.io/2018/05/06/spring-boot-multiple-datasource/index.html">
+<meta property="og:site_name" content="기록은 재산이다">
+<meta property="og:description" content="서론Spring Boot를 사용해서 Database Sharding을 처리할 수 있을까?요즘 NoSQL에서는 Sharding과 관련해서 많은 편의를 제공한다. 알아서 Sharding을 제공해주고, 클러스터에 노드가 추가되면 Shard key를 기반으로 자동으로 새로운 노드로 값들을 분배해주거나, 노드를 제거하면 대상 노드에 있던 값들을 Shard Key에">
+<meta property="og:locale" content="ko_KR">
+<meta property="article:published_time" content="2018-05-06T14:34:38.000Z">
+<meta property="article:modified_time" content="2020-03-04T08:18:02.748Z">
+<meta property="article:author" content="supawer0728">
+<meta property="article:tag" content="spring">
+<meta property="article:tag" content="spring-boot">
+<meta property="article:tag" content="sharding">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '작성자'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://supawer0728.github.io/2018/05/06/spring-boot-multiple-datasource/"/>
+
+
+
+
+
+  <title>(Spring Boot) 다중 DataSource 사용하기 with Sharding | 기록은 재산이다</title>
+  
+
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-115481794-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'UA-115481794-1');
+</script>
+
+
+
+
+
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script data-ad-client="" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="ko">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">기록은 재산이다</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">To Improve Human Life</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            홈
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            태그
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            카테고리
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            아카이브
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            검색
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="Searching..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://supawer0728.github.io/2018/05/06/spring-boot-multiple-datasource/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="supawer0728">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="기록은 재산이다">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">(Spring Boot) 다중 DataSource 사용하기 with Sharding</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">작성일&#58;</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-05-06T23:34:38+09:00">
+                2018-05-06
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">수정일&#58;</span>
+              
+              <time title="수정일" itemprop="dateModified" datetime="2020-03-04T17:18:02+09:00">
+              
+                2018-05-06
+              
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/" itemprop="url" rel="index">
+                    <span itemprop="name">spring</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/practice/" itemprop="url" rel="index">
+                    <span itemprop="name">practice</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/practice/" itemprop="url" rel="index">
+                    <span itemprop="name">practice</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/spring-boot/" itemprop="url" rel="index">
+                    <span itemprop="name">spring-boot</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/05/06/spring-boot-multiple-datasource/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/05/06/spring-boot-multiple-datasource/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="서론"><a href="#서론" class="headerlink" title="서론"></a>서론</h1><p>Spring Boot를 사용해서 Database Sharding을 처리할 수 있을까?<br>요즘 NoSQL에서는 Sharding과 관련해서 많은 편의를 제공한다. 알아서 Sharding을 제공해주고, 클러스터에 노드가 추가되면 Shard key를 기반으로 자동으로 새로운 노드로 값들을 분배해주거나, 노드를 제거하면 대상 노드에 있던 값들을 Shard Key에 맞추어 남은 노드로 분배해준다. 자세히 알아보지는 않았지만 RDBMS 측의 각종 벤더들도 이러한 아키텍처를 구현기위한 방법을 제공할 것이라 생각된다.(예를 들어 MySQL의 Fabric - 현재 MySQL Utilities에 통합)</p>
+<p>이번 포스트에서는 RDBMS Sharding을 각 벤더에 의존해서 구현하지 않고, Spring Boot로 편리하게 설정을 추상화하여 사용할 방법에 대해 공유하려 한다. 앞서 Sharding에 대해서 거창하게 이야기를 했지만, 본문에서 다루고자 하는 영역은 아래의 두 가지 기능이다.</p>
+<ul>
+<li>이름 기반으로 다중 DataSource 정보를 등록 : AbstractRoutingDataSource</li>
+<li>특정 값을 기반으로 대상 DataSource를 사용 : Spring AOP</li>
+</ul>
+<a id="more"></a>
+
+<h1 id="이름-기반으로-다중-DataSource-정보-등록하기"><a href="#이름-기반으로-다중-DataSource-정보-등록하기" class="headerlink" title="이름 기반으로 다중 DataSource 정보 등록하기"></a>이름 기반으로 다중 DataSource 정보 등록하기</h1><h2 id="AbstractRoutingDataSource"><a href="#AbstractRoutingDataSource" class="headerlink" title="AbstractRoutingDataSource"></a>AbstractRoutingDataSource</h2><p>우선 <code>spring-jdbc</code> 모듈에 있는 <a href="https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/jdbc/datasource/lookup/AbstractRoutingDataSource.html" target="_blank" rel="noopener">AbstractRoutingDataSource</a>에 대해서 먼저 소개를 해야할 것 같다. 여러 DataSource를 등록하고, 특정 상황에 맞게 원하는 DataSource를 사용할 수 있도록 추상화한 클래스다. 이 클래스의 <code>public void setTargetDataSources(Map&lt;Object, Object&gt; targetDataSource)</code>를 호출하여 <code>String:DataSource</code>을 <code>키:값</code>으로하는 <code>Map</code>을 저장할 수 있다. 또한 <code>Object determineCurrentLooupKey()</code>를 오버라이드해서 상황에 맞게 Key를 반환하도록 구현할 수 있다.</p>
+<p>예시로 MyBatis의 <a href="https://github.com/hatunet/spring-data-mybatis/blob/master/src/main/java/org/springframework/data/mybatis/replication/datasource/ReplicationRoutingDataSource.java" target="_blank" rel="noopener">ReplicationRoutingDataSource</a>를 살펴보자.</p>
+<p>아래 소스는 <code>ReplicationRoutingDataSource</code>의 내용을 간략화한 것이다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ReplicationRoutingDataSource</span> <span class="keyword">extends</span> <span class="title">AbstractRoutingDataSource</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 1</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="title">ReplicationRoutingDataSource</span><span class="params">(DataSource master, List&lt;DataSource&gt; slaves)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="keyword">super</span>.setDefaultTargetDataSource(master);</span><br><span class="line">    Map&lt;Object, Object&gt; targetDataSources =</span><br><span class="line">      IntStream.range(<span class="number">0</span>, slaves.size)</span><br><span class="line">               .boxed()</span><br><span class="line">               .collect(toMap(n -&gt; <span class="string">"slave_"</span> + n, n -&gt; slaves.get(n));</span><br><span class="line">    targetDataSources.put(<span class="string">"master"</span>, master);</span><br><span class="line">    <span class="keyword">super</span>.setTargetDataSources(targetDataSources);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 2</span></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">protected</span> Object <span class="title">determineCurrentLookupKey</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">boolean</span> transactionActive = TransactionSynchronizationManager.isActualTransactionActive();</span><br><span class="line">    <span class="keyword">if</span> (transactionActive) &#123;</span><br><span class="line">      <span class="keyword">boolean</span> readOnly = TransactionSynchronizationManager.isCurrentTransactionReadOnly();</span><br><span class="line">      <span class="keyword">if</span> (readOnly) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"slave_"</span> + dataSourceSelectPolicy.select(slaves);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">"master"</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>1: 생성자를 통해서 <code>master</code>로 사용할 <code>DataSource</code>와 <code>slave</code>로 사용할 <code>DataSource</code> 목록을 받고 있다.<br>2: 현재 트랜잭션이 활성화되어 있고, 읽기 전용이면 <code>slave</code> 중에 하나를 선택해서 반환하도록 되어 있다.</p>
+<p>이를 응용해서 이름 기반으로 동작하는 <code>AbstractRoutingDataSource</code>를 구현할 수 있다.</p>
+<h2 id="application-yml을-이용해서-구현해보기"><a href="#application-yml을-이용해서-구현해보기" class="headerlink" title="application.yml을 이용해서 구현해보기"></a>application.yml을 이용해서 구현해보기</h2><p>아래와 같은 구조로 RDBMS가 구성되어 있다고 가정해보자.</p>
+<img  src=http://www.plantuml.com/plantuml/svg/IqaiIKnAB4vLo4qiBaajqiZ9JqxCoSWlBh4oDZOmqrIevb9GY4xEBqgD1J6ACnABKWmHJADOhbekhXIO6SKvYMMfg4QO8ncX0PRNH389GyG8Bb8B0000>
+
+<p>이러한 구조를 아래와 같은 property를 등록하여 설정되도록 하려고 한다.</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">named-routing-data-source:</span></span><br><span class="line">  <span class="attr">enabled:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">slave-suffix:</span> <span class="string">-slave</span></span><br><span class="line">  <span class="attr">default-data-source:</span> <span class="string">default</span></span><br><span class="line">  <span class="attr">data-sources:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">core</span></span><br><span class="line">      <span class="attr">hikari:</span></span><br><span class="line">        <span class="attr">username:</span> <span class="string">root</span></span><br><span class="line">        <span class="attr">password:</span> <span class="string">root</span></span><br><span class="line">        <span class="attr">jdbc-url:</span> <span class="string">jdbc:mysql://localhost:3306/core?useSSL=false</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">slave-of:</span> <span class="string">core</span> <span class="comment"># slave의 경우에는 `slave-of`로 등록한다</span></span><br><span class="line">      <span class="attr">hikari:</span></span><br><span class="line">        <span class="attr">username:</span> <span class="string">root</span></span><br><span class="line">        <span class="attr">password:</span> <span class="string">root</span></span><br><span class="line">        <span class="attr">jdbc-url:</span> <span class="string">jdbc:mysql://localhost:3307/core?useSSL=false</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">shard1</span></span><br><span class="line">      <span class="attr">hikari:</span></span><br><span class="line">        <span class="attr">username:</span> <span class="string">root</span></span><br><span class="line">        <span class="attr">password:</span> <span class="string">root</span></span><br><span class="line">        <span class="attr">jdbc-url:</span> <span class="string">jdbc:mysql://localhost:3306/shard1?useSSL=false</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">slave-of:</span> <span class="string">shard1</span></span><br><span class="line">      <span class="attr">hikari:</span></span><br><span class="line">        <span class="attr">username:</span> <span class="string">root</span></span><br><span class="line">        <span class="attr">password:</span> <span class="string">root</span></span><br><span class="line">        <span class="attr">jdbc-url:</span> <span class="string">jdbc:mysql://localhost:3307/shard1?useSSL=false</span> </span><br><span class="line">    <span class="bullet">-</span> <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">shard2</span></span><br><span class="line">      <span class="attr">hikari:</span></span><br><span class="line">        <span class="attr">username:</span> <span class="string">root</span></span><br><span class="line">        <span class="attr">password:</span> <span class="string">root</span></span><br><span class="line">        <span class="attr">jdbc-url:</span> <span class="string">jdbc:mysql://localhost:3306/shard2?useSSL=false</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">slave-of:</span> <span class="string">shard2</span></span><br><span class="line">      <span class="attr">hikari:</span></span><br><span class="line">        <span class="attr">username:</span> <span class="string">root</span></span><br><span class="line">        <span class="attr">password:</span> <span class="string">root</span></span><br><span class="line">        <span class="attr">jdbc-url:</span> <span class="string">jdbc:mysql://localhost:3307/shard2?useSSL=false</span></span><br></pre></td></tr></table></figure>
+
+<p>위 properties는 java로 아래와 같이 나타낼 수 있다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 전역 설정</span></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@ConfigurationProperties</span>(prefix = <span class="string">"named-routing-data-source"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NamedRoutingDataSourceGlobalProperties</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> Boolean enabled;</span><br><span class="line">  <span class="keyword">private</span> String slaveSuffix = <span class="string">"-slave"</span>;</span><br><span class="line">  <span class="keyword">private</span> String defaultDataSource = <span class="string">"default"</span>;</span><br><span class="line">  <span class="keyword">private</span> List&lt;NamedRoutingDataSourceTargetProperties&gt; dataSources;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// DataSource 항목 설정</span></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NamedRoutingDataSourceTargetProperties</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> String name;</span><br><span class="line">  <span class="keyword">private</span> String slaveOf;</span><br><span class="line">  <span class="keyword">private</span> HikariConfig hikari;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isSlave</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> !StringUtils.isEmpty(slaveOf);</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">check</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">boolean</span> hasName = !StringUtils.isEmpty(name);</span><br><span class="line">    <span class="keyword">if</span> (hasName == isSlave) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"name 혹은 slaveOf 둘 중 하나만 있어야 합니다"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>NamedRoutingDataSourceTargetProperties</code>에서 <code>name</code>이나 <code>slaveOf</code> 둘 중 하나만 값이 있어야 한다.<ul>
+<li><code>slaveOf</code>가 <code>a</code>인 경우 <code>name</code>은 <code>&quot;a&quot; + slaveSuffix</code>가 된다.</li>
+</ul>
+</li>
+</ul>
+<h2 id="NamedRoutingDataSource와-NamedDataSource"><a href="#NamedRoutingDataSource와-NamedDataSource" class="headerlink" title="NamedRoutingDataSource와 NamedDataSource"></a>NamedRoutingDataSource와 NamedDataSource</h2><p><code>NamedRoutingDataSource</code>는 <code>AbstractRoutingDataSource</code>를 구현하였다.  <code>NamedDataSource</code>는 <code>NamedRoutingDataSource</code>에서 들고 있을 대상이다. 먼저 <code>NamedDataSource</code>부터 살펴보자.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Value</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span>(access = AccessLevel.PRIVATE)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NamedDataSource</span> <span class="keyword">implements</span> <span class="title">DataSource</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> String name;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> String slaveOf;</span><br><span class="line">  <span class="meta">@Delegate</span>(types = DataSource<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">  <span class="title">private</span> <span class="title">final</span> <span class="title">DataSource</span> <span class="title">delegate</span></span>;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> NamedDataSource <span class="title">slaveOf</span><span class="params">(String slaveOf, String slaveSuffix, DataSource delegate)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> NamedDataSource(slaveOf + slaveSuffix, slaveOf, delegate);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> NamedDataSource <span class="title">asMaster</span><span class="params">(String name, DataSource delegate)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> NamedDataSource(name, <span class="keyword">null</span>, delegate);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isSlave</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> !StringUtils.isEmpty(slaveOf);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>NamedDataSource</code>는 slave(<code>slaveOf()</code>)로, 혹은 master(<code>asMaster()</code>)로 생성된다. 그리고 <code>DataSource</code>를 구현하고 있는데, 구현에 필요한 메서드는 모두 <code>delegate</code>에 위임하였다.</p>
+<p>다음은 이 <code>NamedDataSource</code>를 가지고 routing 처리를 할 <code>NamedRoutingDataSource</code>를 살펴보자.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NamedRoutingDataSource</span> <span class="keyword">extends</span> <span class="title">AbstractRoutingDataSource</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> String defaultDataSource;</span><br><span class="line">  <span class="comment">// 이름을 key로 하여 실제 대상을 메모리로 들고 있는다</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;String, NamedDataSource&gt; dataSourceMap;</span><br><span class="line">  <span class="comment">// master key에 대한 slave key를 들고 있는다.</span></span><br><span class="line">  <span class="comment">// 여러 slave를 등록할 수 있도록 구현하고 싶다면 Map&lt;String, List&lt;String&gt;&gt;으로 구현할 수 있다.</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;String, String&gt; masterSlaveMap;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="title">NamedRoutingDataSource</span><span class="params">(String defaultDataSource, List&lt;NamedDataSource&gt; dataSources)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">this</span>.defaultDataSource = defaultDataSource;</span><br><span class="line">    <span class="keyword">this</span>.dataSourceMap = createDataSourceMap(dataSources);</span><br><span class="line">    <span class="keyword">this</span>.masterSlaveMap = dataSourceMap.values()</span><br><span class="line">                                       .stream()</span><br><span class="line">                                       .filter(NamedDataSource::isSlave)</span><br><span class="line">                                       .collect(toMap(NamedDataSource::getSlaveOf, NamedDataSource::getName));</span><br><span class="line">   </span><br><span class="line">    <span class="comment">// AbstractRoutingDataSource에 등록</span></span><br><span class="line">    <span class="keyword">super</span>.setTargetDataSources(dataSourceMap.entrySet().stream().collect(toMap(Entry::getKey, Entry::getValue)));</span><br><span class="line">    <span class="keyword">super</span>.setDefaultTargetDataSource(dataSourceMap.get(defaultDataSource));</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">private</span> Map&lt;String, NamedDataSource&gt; <span class="title">createDataSourceMap</span><span class="params">(List&lt;NamedDataSource&gt; dataSources)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> dataSources.stream().collect(toMap(NamedDataSource::getName, Function.identity()));</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// routing 로직</span></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">protected</span> Object <span class="title">determineCurrentLookupKey</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    String dataSourceName = NamedRoutingDataSourceManager.getCurrentDataSourceName();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (dataSourceName == <span class="keyword">null</span>) &#123;</span><br><span class="line">      dataSourceName = defaultDataSource;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">boolean</span> transactionActive = TransactionSynchronizationManager.isActualTransactionActive();</span><br><span class="line">    <span class="keyword">if</span> (transactionActive) &#123;</span><br><span class="line">      <span class="keyword">boolean</span> readOnly = TransactionSynchronizationManager.isCurrentTransactionReadOnly();</span><br><span class="line">      <span class="keyword">if</span> (readOnly) &#123;</span><br><span class="line">        dataSourceName = masterSlaveMap.getOrDefault(dataSourceName, dataSourceName);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    log.debug(<span class="string">"dataSourceName: &#123;&#125;"</span>, dataSourceName);</span><br><span class="line">    <span class="keyword">return</span> dataSourceName;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> List&lt;NamedDataSource&gt; <span class="title">masters</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> dataSourceMap.values().stream().filter(dataSource -&gt; !dataSource.isSlave()).collect(Collectors.toList());</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>NamedRoutingDataSourceManager</code>에서 현재 사용할 DataSource의 이름을 가지고 올 수 있다(<code>getDataSourceName()</code>). <code>NamedRoutingDataSourceManager</code>의 구현은 아래와 같다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NamedRoutingDataSourceManager</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> ThreadLocal&lt;String&gt; currentDataSourceName = <span class="keyword">new</span> NamedThreadLocal&lt;&gt;(<span class="string">"name of DataSource selected in this thread"</span>);</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">private</span> <span class="title">NamedRoutingDataSourceManager</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> UnsupportedOperationException(<span class="string">"this class can't be instance"</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title">getCurrentDataSourceName</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> currentDataSourceName.get();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">setCurrentDataSourceName</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">    currentDataSourceName.set(name);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">removeCurrentDataSourceName</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    currentDataSourceName.remove();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>ThreadLocal</code>로 현재 사용할 DataSource의 이름을 설정할 수 있다. 어디선가는 이 이름을 설정해줘야 <code>Sharding</code>이 제대로 동작할 것이다. 만약 이름이 없다면 <code>NamedRoutingDataSource</code>는 항상 <code>defaultDataSource</code>만 반환할 것이다.</p>
+<h2 id="Spring-AOP를-활용해서-DataSource-이름-설정하기"><a href="#Spring-AOP를-활용해서-DataSource-이름-설정하기" class="headerlink" title="Spring AOP를 활용해서 DataSource 이름 설정하기"></a>Spring AOP를 활용해서 DataSource 이름 설정하기</h2><p>긴 설명보다는 아래 소스를 보고 어떻게 동작할 지 설명하는게 빠를 것 같다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Repository</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BoardRepository</span> </span>&#123;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 1</span></span><br><span class="line">  <span class="meta">@SetDataSourceName</span>(getterType = HashModularDataSourceNameGetter<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">  <span class="title">public</span> <span class="title">List</span>&lt;<span class="title">Board</span>&gt; <span class="title">findByWriterId</span>(<span class="title">String</span> <span class="title">id</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 2</span></span><br><span class="line">  <span class="meta">@SetDataSourceName</span>(spel = <span class="string">"#this[0].id"</span>, getterType = HashModularDataSourceNameGetter<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">  <span class="title">public</span> <span class="title">List</span>&lt;<span class="title">Board</span>&gt; <span class="title">findByWriter</span>(<span class="title">Writer</span> <span class="title">writer</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Retention</span>(RetentionPolicy.RUNTIME)</span><br><span class="line"><span class="meta">@Target</span>(ElementType.METHOD)</span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> SetDataSourceName &#123;</span><br><span class="line"></span><br><span class="line">  <span class="function">String <span class="title">spel</span><span class="params">()</span> <span class="keyword">default</span> "#<span class="keyword">this</span>[0]"</span>;</span><br><span class="line">  Class&lt;? extends DataSourceNameGetter&gt; getterType();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">DataSourceNameGetter</span> </span>&#123;</span><br><span class="line">  <span class="function">String <span class="title">getDataSourceName</span><span class="params">(Object object)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HashModularDataSourceNameGetter</span> <span class="keyword">implements</span> <span class="title">DataSourceNameGetter</span> </span>&#123;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> modValue;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="title">HashModularDataSourceNameGetter</span><span class="params">(NamedRoutingDataSource dataSource)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.modValue = dataSource.masters().size();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> String <span class="title">getDataSourceName</span><span class="params">(Object object)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">"shard"</span> + (object.hashCode % modValue + <span class="number">1</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>1: <code>findByWriterId</code>의 <code>id</code>값의 <code>hashCode()</code> 결과에 modular 연산을 수행하여 대상 DataSource의 이름을 설정할 수 있다.<br>2: <a href="https://docs.spring.io/spring/docs/5.0.5.RELEASE/spring-framework-reference/core.html#expressions" target="_blank" rel="noopener">SpEL</a>를 적용하여 메서드의 특정 argument를 대상으로 DataSource의 이름을 설정할 수 있다.</p>
+<p>이를 가능하게 하는 <code>SetDataSourceNameAspect</code> 클래스는 다음과 같이 정의할 수 있다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RequiredArgsConstructor</span></span><br><span class="line"><span class="meta">@Aspect</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SetDataSourceNameAspect</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> ExpressionParser parser = <span class="keyword">new</span> SpelExpressionParser();</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> BeanFactory factory;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Pointcut</span>(<span class="string">"@annotation(setDataSourceName)"</span>)</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">hasAnnotation</span><span class="params">(SetDataSourceName setDataSourceName)</span> </span>&#123;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Around</span>(<span class="string">"hasAnnotation(setDataSourceName)"</span>)</span><br><span class="line">  <span class="function"><span class="keyword">public</span> Object <span class="title">around</span><span class="params">(ProceedingJoinPoint joinPoint, SetDataSourceName setDataSourceName)</span> <span class="keyword">throws</span> Throwable </span>&#123;</span><br><span class="line"></span><br><span class="line">    Object getterKey = parser.parseExpression(setDataSourceName.spel()).getValue(joinPoint.getArgs());</span><br><span class="line">    <span class="comment">// Spring Context에 등록되어 있는 Bean 중에서 Type을 기반으로 검색</span></span><br><span class="line">    DataSourceNameGetter getter = factory.getBean(setDataSourceName.getterType());</span><br><span class="line">    String dataSourceName = getter.getDataSourceName(getterKey);</span><br><span class="line">    <span class="comment">// NamedRoutingDataSourceManager에 사용할 DataSource의 이름 등록</span></span><br><span class="line">    NamedRoutingDataSourceManager.setCurrentDataSourceName(dataSourceName);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> joinPoint.proceed();</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">      <span class="comment">// ThreadLocal을 사용하므로 반드시 `remove()`를 실행할 것</span></span><br><span class="line">      NamedRoutingDataSourceManager.removeCurrentDataSourceName();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="결론"><a href="#결론" class="headerlink" title="결론"></a>결론</h1><p>여러 DataSource를 이름 기반으로 등록하고, Spring AOP를 통해서 사용할 DataSource의 이름을 정하도록 소스를 작성해보았다. <code>AbstractRoutingDataSource</code>와 Spring AOP의 원리를 이용해 간단하게 추상화해보고 구현까지 해보았다. 해당 소스에서는 복잡성을 증가시키지 않기 위해 <code>slave</code>는 하나라고 단정하고 진행하였는데, 필요하다면 <code>slave</code> 용도의 DataSource를 따로 <code>SlaveNamedRoutingDataSource</code>같은 클래스로 묶어서 단순한 round-robin 정도라면 간단히 load balancing까지 쉽게 할 수 있을 것이다.<br>한 가지 애매한 것이 DataSource의 이름은 무슨 기준으로 정하느냐 하는 것이다. String으로 되어 있어, 등록하는 부분(<code>NamedDataSource</code>)과 실제로 값을 가져오는 부분(<code>DataSourceNameGetter</code>)에서 문자열을 잘못 입력하여 런타임 오류가 발생하는 가능성도 있는데, 이 부분에 있어서 좋은 해결책이 딱히 떠오르지는 않았다. 만약 강한 제약을 넣고 싶다면 <code>NamedDataSource</code>가 아니라 <code>EnumedDataSource</code>를 사용하는 것도 하나의 옵션으로 고려할 수 있지 않을까 생각된다.</p>
+<p>위에서 소개한 내용 중에 <code>application.yml</code>에 설정된 property를 기반으로 <code>NamedRoutingDataSource</code>를 생성하는 소스는 빠져있다. property와 java 소스가 대칭을 이루기에 굳이 구현 소스를 넣지는 않았다. 상세한 구현이 궁금하다면 github 소스를 참고하자.</p>
+<p>Github 소스 : <a href="https://github.com/supawer0728/parfait-spring-boot-starter-sharding" target="_blank" rel="noopener">https://github.com/supawer0728/parfait-spring-boot-starter-sharding</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>작성자:</strong>
+    supawer0728
+  </li>
+  <li class="post-copyright-link">
+    <strong>원본링크:</strong>
+    <a href="https://supawer0728.github.io/2018/05/06/spring-boot-multiple-datasource/" title="(Spring Boot) 다중 DataSource 사용하기 with Sharding">https://supawer0728.github.io/2018/05/06/spring-boot-multiple-datasource/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>라이센스: </strong>
+    <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a>
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/spring/" rel="tag"># spring</a>
+          
+            <a href="/tags/spring-boot/" rel="tag"># spring-boot</a>
+          
+            <a href="/tags/sharding/" rel="tag"># sharding</a>
+          
+        </div>
+      
+
+      
+      
+        <div class="post-widgets">
+        
+
+        
+
+        
+          
+          <div id="needsharebutton-postbottom">
+            <span class="btn">
+              <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </span>
+          </div>
+        
+        </div>
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/04/18/spring-cache-fallback/" rel="next" title="Spring Cache 장애 대응 방안">
+                <i class="fa fa-chevron-left"></i> Spring Cache 장애 대응 방안
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/12/spring-actuator/" rel="prev" title="(Spring Boot)Spring Boot Actuator 소개">
+                (Spring Boot)Spring Boot Actuator 소개 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript" target="_blank" rel="noopener">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            목차
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            흝어보기
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="supawer0728" />
+            
+              <p class="site-author-name" itemprop="name">supawer0728</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">32</span>
+                  <span class="site-state-item-name">포스트</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">카테고리</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">50</span>
+                  <span class="site-state-item-name">태그</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/feed.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/supawer0728" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#서론"><span class="nav-number">1.</span> <span class="nav-text">서론</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#이름-기반으로-다중-DataSource-정보-등록하기"><span class="nav-number">2.</span> <span class="nav-text">이름 기반으로 다중 DataSource 정보 등록하기</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#AbstractRoutingDataSource"><span class="nav-number">2.1.</span> <span class="nav-text">AbstractRoutingDataSource</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#application-yml을-이용해서-구현해보기"><span class="nav-number">2.2.</span> <span class="nav-text">application.yml을 이용해서 구현해보기</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NamedRoutingDataSource와-NamedDataSource"><span class="nav-number">2.3.</span> <span class="nav-text">NamedRoutingDataSource와 NamedDataSource</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Spring-AOP를-활용해서-DataSource-이름-설정하기"><span class="nav-number">2.4.</span> <span class="nav-text">Spring AOP를 활용해서 DataSource 이름 설정하기</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#결론"><span class="nav-number">3.</span> <span class="nav-text">결론</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">supawer0728</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+  <div class="footer-custom">To Improve Human Life</div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://supawer0728-github-com.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://supawer0728.github.io/2018/05/06/spring-boot-multiple-datasource/';
+          this.page.identifier = '2018/05/06/spring-boot-multiple-datasource/';
+          this.page.title = '(Spring Boot) 다중 DataSource 사용하기 with Sharding';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://supawer0728-github-com.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('-1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/needsharebutton/needsharebutton.css">
+
+  
+  
+  <script src="/lib/needsharebutton/needsharebutton.js"></script>
+
+  <script>
+    
+      pbOptions = {};
+      
+          pbOptions.iconStyle = "box";
+      
+          pbOptions.boxForm = "horizontal";
+      
+          pbOptions.position = "bottomCenter";
+      
+          pbOptions.networks = "Twitter,Facebook,GooglePlus,Evernote";
+      
+      new needShareButton('#needsharebutton-postbottom', pbOptions);
+    
+    
+  </script>
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

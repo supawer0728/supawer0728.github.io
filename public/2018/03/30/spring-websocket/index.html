@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Nanum Gothic:300,300italic,400,400italic,700,700italic|Nanum Pen Script:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-icon-180x180.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.4">
+
+
+
+  <link rel="manifest" href="/images/manifest.json">
+
+
+  <meta name="msapplication-config" content="/images/browserconfig.xml" />
+
+
+
+  <meta name="keywords" content="spring,websocket," />
+
+
+
+
+
+  <link rel="alternate" href="/feed.xml" title="기록은 재산이다" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="서론Web Browser에서 Request를 보내면 Server는 Response를 준다. HTTP 통신의 기본적인 동작 방식이다. 하지만 Server에서 Client로 특정 동작을 알려야 하는 상황도 있다. 예를 들어 Browser로 Facebook에 접속해 있다가 누군가 친구가 글을 등록하는 경우, 혹은 Web Browser로 메신저를 구현하는 경우다.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring WebSocket 소개">
+<meta property="og:url" content="https://supawer0728.github.io/2018/03/30/spring-websocket/index.html">
+<meta property="og:site_name" content="기록은 재산이다">
+<meta property="og:description" content="서론Web Browser에서 Request를 보내면 Server는 Response를 준다. HTTP 통신의 기본적인 동작 방식이다. 하지만 Server에서 Client로 특정 동작을 알려야 하는 상황도 있다. 예를 들어 Browser로 Facebook에 접속해 있다가 누군가 친구가 글을 등록하는 경우, 혹은 Web Browser로 메신저를 구현하는 경우다.">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:image" content="https://supawer0728.github.io/images/spring-websocket/support-browsers.png">
+<meta property="og:image" content="https://supawer0728.github.io/images/spring-websocket/websocket-example1.png">
+<meta property="og:image" content="https://supawer0728.github.io/images/spring-websocket/message-flow-simple-broker.png">
+<meta property="article:published_time" content="2018-03-29T15:29:13.000Z">
+<meta property="article:modified_time" content="2020-03-06T04:31:43.910Z">
+<meta property="article:author" content="supawer0728">
+<meta property="article:tag" content="spring">
+<meta property="article:tag" content="websocket">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://supawer0728.github.io/images/spring-websocket/support-browsers.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '작성자'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://supawer0728.github.io/2018/03/30/spring-websocket/"/>
+
+
+
+
+
+  <title>Spring WebSocket 소개 | 기록은 재산이다</title>
+  
+
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-115481794-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'UA-115481794-1');
+</script>
+
+
+
+
+
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script data-ad-client="" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="ko">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">기록은 재산이다</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">To Improve Human Life</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            홈
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            태그
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            카테고리
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            아카이브
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            검색
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="Searching..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://supawer0728.github.io/2018/03/30/spring-websocket/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="supawer0728">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="기록은 재산이다">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Spring WebSocket 소개</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">작성일&#58;</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-30T00:29:13+09:00">
+                2018-03-30
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">수정일&#58;</span>
+              
+              <time title="수정일" itemprop="dateModified" datetime="2020-03-06T13:31:43+09:00">
+              
+                2018-03-30
+              
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/" itemprop="url" rel="index">
+                    <span itemprop="name">spring</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/03/30/spring-websocket/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/03/30/spring-websocket/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="서론"><a href="#서론" class="headerlink" title="서론"></a>서론</h1><p>Web Browser에서 Request를 보내면 Server는 Response를 준다. HTTP 통신의 기본적인 동작 방식이다. 하지만 Server에서 Client로 특정 동작을 알려야 하는 상황도 있다. 예를 들어 Browser로 Facebook에 접속해 있다가 누군가 친구가 글을 등록하는 경우, 혹은 Web Browser로 메신저를 구현하는 경우다. WebSocket이 있기 전에는 이를 Polling이나 Long polling 등의 방식으로 해결했었다. 하지만 WebSocket의 등장으로 Server-Client 간의 실시간 통신이 가능하게 되면서, 앞으로 Long polling은 역사의 뒤안길로 사라질 것 같다.</p>
+<a id="more"></a>
+
+<p>WebSocket이란 HTTP 환경에서 전이중 통신(full duplex, 2-way communication)을 지원하기 위한 프로토콜로, <a href="https://tools.ietf.org/html/rfc6455" target="_blank" rel="noopener">RFC 6455</a>에 정의되어 있다. HTTP 프로토콜에서 Handshaking을 완료한 후, HTTP로 동작을 하지만, HTTP와는 다른 방식으로 통신을 한다.</p>
+<p>본 문서는 WebSocket을 소개하며, 간단하게 Web Chatting을 지원하는 Application을 작성하여 Spring에서 어떻게 WebSocket을 사용할 수 있도록 지원하는지 소개한다.</p>
+<h1 id="Handshake"><a href="#Handshake" class="headerlink" title="Handshake"></a>Handshake</h1><p>WebSocket은 HTTP 기반으로 Handshaking을 한다. 어떠한 방식인지 잠깐 훑어보자.</p>
+<h2 id="Handshake-요청"><a href="#Handshake-요청" class="headerlink" title="Handshake 요청"></a>Handshake 요청</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">GET &#x2F;chat HTTP&#x2F;1.1</span><br><span class="line">Host: server.example.com</span><br><span class="line">Upgrade: websocket</span><br><span class="line">Connection: Upgrade</span><br><span class="line">Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ&#x3D;&#x3D;</span><br><span class="line">Origin: http:&#x2F;&#x2F;example.com</span><br><span class="line">Sec-WebSocket-Protocol: v10.stomp, v11.stomp, my-team-custom</span><br><span class="line">Sec-WebSocket-Version: 13</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>Connection: Upgrade</code> : HTTP 사용 방식을 변경하자.</li>
+<li><code>Upgrade : websocket</code> : WebSocket을 사용하자.</li>
+<li><code>Sec-WebSocket-Protocol: xxx, yyy, zzz</code> : WebSocket을 쓰면서 이 중에서 protocol을 골라서 쓰자.</li>
+<li><code>Sec-WebSocket-Key</code> : 보안을 위한 요청 키.</li>
+</ul>
+<h2 id="Handshake-응답"><a href="#Handshake-응답" class="headerlink" title="Handshake 응답"></a>Handshake 응답</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">HTTP&#x2F;1.1 101 Switching Protocols</span><br><span class="line">Upgrade: websocket</span><br><span class="line">Connection: Upgrade</span><br><span class="line">Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo&#x3D;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>101 Switching Protocols</code> : Handshake 요청 내용을 기반으로 다음부터 WebSocket으로 통신할 수 있다.</li>
+<li><code>Sec-WebSocket-Accept</code> : 보안을 위한 응답 키 - <code>base64.encode(Sec-WebSocket-Key.concat(GUID))</code></li>
+</ul>
+<h1 id="WebSocket-Sevrer를-운용할-때의-유의사항"><a href="#WebSocket-Sevrer를-운용할-때의-유의사항" class="headerlink" title="WebSocket Sevrer를 운용할 때의 유의사항"></a>WebSocket Sevrer를 운용할 때의 유의사항</h1><ul>
+<li>HTTP에서 동작하나, 그 방식이 HTTP와는 많이 상이하다.<ul>
+<li>REST한 방식의 HTTP 통신에서는 많은 URI를 통해 application이 설계된다.</li>
+<li>WebSocket은 하나의 URL을 통해 Connection이 맺어지고, 후에는 해당 Connection으로만 통신한다.</li>
+</ul>
+</li>
+<li>Handshake가 완료되고 Connection을 유지한다.<ul>
+<li>전통적인 HTTP 통신은 요청-응답이 완료되면 Connection을 close한다. 때문에 이론상 하나의 Server가 Port 수의 한계(<code>n&lt;65535</code>)를 넘는 client의 요청을 처리할 수 있다.</li>
+<li>WebSocket은 Connection을 유지하고 있으므로, 가용 Port 수만큼의 Client와 통신할 수 있다.</li>
+</ul>
+</li>
+</ul>
+<p>Spring의 지원을 받아 Web Application Server에서 HTTP를 지원하면서 WebSocket도 지원할 수 있다. 하지만 HTTP와 WebSocket의 개념이 많이 상이하다 보니, WebSocket을 사용해야 한다면 전용 Server를 구축하는 편이 운영하기 쉬울 것으로 판단된다.</p>
+<h1 id="언제-쓰면-좋을까"><a href="#언제-쓰면-좋을까" class="headerlink" title="언제 쓰면 좋을까?"></a>언제 쓰면 좋을까?</h1><p><a href="https://docs.spring.io/spring/docs/5.0.4.RELEASE/spring-framework-reference/web.html#websocket-intro-when-to-use" target="_blank" rel="noopener">Spring Reference</a>을 참조하면, <code>자주 + 많은 양의 + 지연이 짧아야 하는 통신</code>을 할 수록 WebSocket이 적합하다고 설명하고 있다. 주로 채팅이나 게임이 이러한 요구 사항을 가질 것이다. 단순한 알림 성격의 뉴스 피드 같은 정보에는 polling이나 streaming 방식이 더욱 단순하고 효율적인 솔루션이 될 수 있다.</p>
+<h1 id="지원하는-Browser"><a href="#지원하는-Browser" class="headerlink" title="지원하는 Browser"></a>지원하는 Browser</h1><table>
+<thead>
+<tr>
+<th><img src="/images/spring-websocket/support-browsers.png" alt="지원브라우저"></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="https://caniuse.com/#feat=websockets" target="_blank" rel="noopener">https://caniuse.com/#feat=websockets</a></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>IE는 10부터 지원한다</p>
+</blockquote>
+<h1 id="SockJS"><a href="#SockJS" class="headerlink" title="SockJS"></a>SockJS</h1><p>IE 8, 9는 여전히 많은 인터넷 사용자가 사용하고 있는 브라우저이나, 해당 버전에서는 WebSocket을 지원하지 않는다. Spring에서는 <a href="https://github.com/sockjs/sockjs-client/" target="_blank" rel="noopener">sockjs-client</a>와 합을 맞추어서, 기존 설정에 큰 변경 없이, 마치 WebSocket Polyfill을 사용하는 것과 같은 효과를 낸다.</p>
+<h2 id="Spring-WebSocket-설정"><a href="#Spring-WebSocket-설정" class="headerlink" title="Spring WebSocket 설정"></a>Spring WebSocket 설정</h2><p><strong>WebSocket 기본 설정</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@EnableWebSocket</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">WebSocketConfig</span> <span class="keyword">implements</span> <span class="title">WebSocketConfigurer</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">registerWebSocketHandlers</span><span class="params">(WebSocketHandlerRegistry registry)</span> </span>&#123;</span><br><span class="line">        registry.addHandler(<span class="keyword">new</span> MyHandler(), <span class="string">"/myHandler"</span>).setAllowedOrigins(<span class="string">"*"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>WebSocket SockJS 설정</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@EnableWebSocket</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">WebSocketConfig</span> <span class="keyword">implements</span> <span class="title">WebSocketConfigurer</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">registerWebSocketHandlers</span><span class="params">(WebSocketHandlerRegistry registry)</span> </span>&#123;</span><br><span class="line">        registry.addHandler(<span class="keyword">new</span> MyHandler(), <span class="string">"/myHandler"</span>).setAllowedOrigins(<span class="string">"*"</span>).withSockJS();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>.withSockJS()</code>만 추가되었다. Client에서는 <code>GET /myHandler/info</code>를 호출해서 Server의 정보를 취득하며, Client의 지원 여부에 따라 Long polling이나 Polling으로 통신한다. Server 측에서는 위 설정 외에는 소스 코드의 변함없이 운영할 수 있다.</p>
+<h1 id="SockJS-기반-채팅서버-예제"><a href="#SockJS-기반-채팅서버-예제" class="headerlink" title="SockJS 기반 채팅서버 예제"></a>SockJS 기반 채팅서버 예제</h1><p>서버에서 미리 정의한 채팅방(<code>ChatRoom</code>)에 들어가 있는 사용자(<code>Session</code>) 간에 채팅을 지원한다.</p>
+<h2 id="Gradle-설정"><a href="#Gradle-설정" class="headerlink" title="Gradle 설정"></a>Gradle 설정</h2><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">dependencies</span> &#123;</span><br><span class="line">  <span class="keyword">compile</span>(<span class="string">'org.springframework.boot:spring-boot-starter-mustache'</span>)</span><br><span class="line">  <span class="keyword">compile</span>(<span class="string">'org.springframework.boot:spring-boot-starter-web'</span>)</span><br><span class="line">  <span class="keyword">compile</span>(<span class="string">'org.springframework.boot:spring-boot-starter-websocket'</span>)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">compile</span>(<span class="string">'org.webjars.bower:jquery:3.3.1'</span>)</span><br><span class="line">  <span class="keyword">compile</span>(<span class="string">'org.webjars:sockjs-client:1.1.2'</span>)</span><br><span class="line">  <span class="keyword">compile</span>(<span class="string">'org.webjars:webjars-locator:0.30'</span>)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">runtime</span>(<span class="string">'org.springframework.boot:spring-boot-devtools'</span>)</span><br><span class="line">  compileOnly(<span class="string">'org.projectlombok:lombok'</span>)</span><br><span class="line">  testCompile(<span class="string">'org.springframework.boot:spring-boot-starter-test'</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Spring-Application-설정"><a href="#Spring-Application-설정" class="headerlink" title="Spring Application 설정"></a>Spring Application 설정</h2><p><strong>application.yml</strong></p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring.mustache.suffix:</span> <span class="string">.html</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>WebSocketConfig</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Profile</span>(<span class="string">"!stomp"</span>)</span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@EnableWebSocket</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">WebSocketConfig</span> <span class="keyword">implements</span> <span class="title">WebSocketConfigurer</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> ChatHandler chatHandler;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">registerWebSocketHandlers</span><span class="params">(WebSocketHandlerRegistry registry)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 해당 endpoint로 handshake가 이루어진다.</span></span><br><span class="line">        registry.addHandler(chatHandler, <span class="string">"/ws/chat"</span>).setAllowedOrigins(<span class="string">"*"</span>).withSockJS();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>WebSocketHandlerRegistry</code>에 <code>WebSocketHandler</code>의 구현체를 등록한다. 등록된 Handler는 특정 endpoint(<code>&quot;/wa/chat&quot;</code>)로 handshake를 완료한 후 맺어진 connection의 관리한다. <code>WebSocketHandler</code>의 구현체(<code>ChatHandler</code>)의 내용은 아래에서 살펴보겠다.</p>
+<h2 id="채팅방-입장-구현"><a href="#채팅방-입장-구현" class="headerlink" title="채팅방 입장 구현"></a>채팅방 입장 구현</h2><h3 id="ChatRoom"><a href="#ChatRoom" class="headerlink" title="ChatRoom"></a>ChatRoom</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Getter</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ChatRoom</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String id;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> Set&lt;WebSocketSession&gt; sessions = <span class="keyword">new</span> HashSet&lt;&gt;();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 채팅방 생성</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ChatRoom <span class="title">create</span><span class="params">(@NonNull String name)</span> </span>&#123;</span><br><span class="line">        ChatRoom created = <span class="keyword">new</span> ChatRoom();</span><br><span class="line">        created.id = UUID.randomUUID().toString();</span><br><span class="line">        created.name = name;</span><br><span class="line">        <span class="keyword">return</span> created;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>채팅방은 <code>id</code>, <code>name</code>, <code>sessions</code>로 구성된다. <code>WebSocketSession</code>은 spring에서 WebSocket connection이 맺어진 세션을 가리킨다. 편하게 고수준 <code>socket</code>이라고 생각하자. 해당 session을 통해서 메시지를 보낼(<code>sendMessage()</code>) 수 있다.</p>
+<h3 id="ChatRoomRepository"><a href="#ChatRoomRepository" class="headerlink" title="ChatRoomRepository"></a>ChatRoomRepository</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Repository</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ChatRoomRepository</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;String, ChatRoom&gt; chatRoomMap;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ChatRoomRepository</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        chatRoomMap = Collections.unmodifiableMap(</span><br><span class="line">                Stream.of(ChatRoom.create(<span class="string">"1번방"</span>), ChatRoom.create(<span class="string">"2번방"</span>), ChatRoom.create(<span class="string">"3번방"</span>))</span><br><span class="line">                      .collect(Collectors.toMap(ChatRoom::getId, Function.identity())));</span><br><span class="line"></span><br><span class="line">        chatRooms = Collections.unmodifiableCollection(chatRoomMap.values());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ChatRoom <span class="title">getChatRoom</span><span class="params">(String id)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> chatRoomMap.get(id);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> Collection&lt;ChatRoom&gt; <span class="title">getChatRooms</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> chatRoomMap.values();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>테스트를 위한 용도로 UUID로 채팅방 id를 지정하여, 3개의 채팅방을 생성해두었다.</p>
+<h3 id="ChatController"><a href="#ChatController" class="headerlink" title="ChatController"></a>ChatController</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Controller</span></span><br><span class="line"><span class="meta">@RequestMapping</span>(<span class="string">"/chat"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ChatRoomController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ChatRoomRepository repository;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> AtomicInteger seq = <span class="keyword">new</span> AtomicInteger(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ChatRoomController</span><span class="params">(ChatRoomRepository repository)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.repository = repository;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/rooms"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">rooms</span><span class="params">(Model model)</span> </span>&#123;</span><br><span class="line">        model.addAttribute(<span class="string">"rooms"</span>, repository.getChatRooms());</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"/chat/room-list"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/rooms/&#123;id&#125;"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">room</span><span class="params">(@PathVariable String id, Model model)</span> </span>&#123;</span><br><span class="line">        ChatRoom room = repository.getChatRoom(id);</span><br><span class="line">        model.addAttribute(<span class="string">"room"</span>, room);</span><br><span class="line">        model.addAttribute(<span class="string">"member"</span>, <span class="string">"member"</span> + seq.incrementAndGet()); <span class="comment">// 회원 이름 부여</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="string">"/chat/room"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>채팅방에 진입을 하기 위한 Controller다. <code>/chat/rooms</code>를 통해서 채팅방의 목록을 확인할 수 있고, <code>/chat/rooms/{id}</code>를 통해서 특정 id의 채팅방에 입장할 수 있다.</p>
+<h3 id="room-list-html"><a href="#room-list-html" class="headerlink" title="room-list.html"></a>room-list.html</h3><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>채팅방 목록<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">ul</span>&gt;</span></span><br><span class="line">    &#123;&#123;#rooms&#125;&#125;</span><br><span class="line">    <span class="tag">&lt;<span class="name">li</span>&gt;</span><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">"/chat/rooms/&#123;&#123;id&#125;&#125;"</span>&gt;</span>&#123;&#123;name&#125;&#125;<span class="tag">&lt;/<span class="name">a</span>&gt;</span><span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">    &#123;&#123;/rooms&#125;&#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">ul</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="room-html"><a href="#room-html" class="headerlink" title="room.html"></a>room.html</h3><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"en"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"UTF-8"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">title</span>&gt;</span>&#123;&#123;room.name&#125;&#125;<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"/webjars/jquery/dist/jquery.min.js"</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"/webjars/sockjs-client/sockjs.min.js"</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>&#123;&#123;room.name&#125;&#125;(&#123;&#123;room.id&#125;&#125;)<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"content"</span> <span class="attr">data-room-id</span>=<span class="string">"&#123;&#123;room.id&#125;&#125;"</span> <span class="attr">data-member</span>=<span class="string">"&#123;&#123;member&#125;&#125;"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">ul</span> <span class="attr">class</span>=<span class="string">"chat_box"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">ul</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">"message"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">button</span> <span class="attr">class</span>=<span class="string">"send"</span>&gt;</span>보내기<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="javascript">    $(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span></span><br><span class="line"><span class="javascript">        <span class="keyword">var</span> chatBox = $(<span class="string">'.chat_box'</span>);</span></span><br><span class="line"><span class="javascript">        <span class="keyword">var</span> messageInput = $(<span class="string">'input[name="message"]'</span>);</span></span><br><span class="line"><span class="javascript">        <span class="keyword">var</span> sendBtn = $(<span class="string">'.send'</span>);</span></span><br><span class="line"><span class="javascript">        <span class="keyword">var</span> roomId = $(<span class="string">'.content'</span>).data(<span class="string">'room-id'</span>);</span></span><br><span class="line"><span class="javascript">        <span class="keyword">var</span> member = $(<span class="string">'.content'</span>).data(<span class="string">'member'</span>);</span></span><br><span class="line"></span><br><span class="line"><span class="actionscript">        <span class="comment">// handshake</span></span></span><br><span class="line"><span class="actionscript">        <span class="keyword">var</span> sock = <span class="keyword">new</span> SockJS(<span class="string">"/ws/chat"</span>);</span></span><br><span class="line"></span><br><span class="line"><span class="actionscript">        <span class="comment">// onopen : connection이 맺어졌을 때의 callback</span></span></span><br><span class="line"><span class="actionscript">        sock.onopen = <span class="function"><span class="keyword">function</span> <span class="params">()</span> </span>&#123;</span></span><br><span class="line"><span class="actionscript">            <span class="comment">// send : connection으로 message를 전달</span></span></span><br><span class="line"><span class="actionscript">            <span class="comment">// connection이 맺어진 후 가입(JOIN) 메시지를 전달</span></span></span><br><span class="line"><span class="javascript">            sock.send(<span class="built_in">JSON</span>.stringify(&#123;<span class="attr">chatRoomId</span>: roomId, <span class="attr">type</span>: <span class="string">'JOIN'</span>, <span class="attr">writer</span>: member&#125;));</span></span><br><span class="line">            </span><br><span class="line"><span class="actionscript">            <span class="comment">// onmessage : message를 받았을 때의 callback</span></span></span><br><span class="line"><span class="actionscript">            sock.onmessage = <span class="function"><span class="keyword">function</span> <span class="params">(e)</span> </span>&#123;</span></span><br><span class="line"><span class="javascript">                <span class="keyword">var</span> content = <span class="built_in">JSON</span>.parse(e.data);</span></span><br><span class="line"><span class="actionscript">                chatBox.append(<span class="string">'&lt;li&gt;'</span> + content.message + <span class="string">'('</span> + content.writer + <span class="string">')&lt;/li&gt;'</span>)</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line"><span class="actionscript">        sendBtn.click(<span class="function"><span class="keyword">function</span> <span class="params">()</span> </span>&#123;</span></span><br><span class="line"><span class="actionscript">            <span class="keyword">var</span> message = messageInput.val();</span></span><br><span class="line"><span class="javascript">            sock.send(<span class="built_in">JSON</span>.stringify(&#123;<span class="attr">chatRoomId</span>: roomId, <span class="attr">type</span>: <span class="string">'CHAT'</span>, <span class="attr">message</span>: message, <span class="attr">writer</span>: member&#125;));</span></span><br><span class="line"><span class="actionscript">            messageInput.val(<span class="string">''</span>);</span></span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>new SockJS(&quot;/ws/chat&quot;)</code> : handshake를 한다.</li>
+<li><code>sock.onoepn = function() { ... }</code> : handshake가 완료되고 connection이 맺어지면 실행된다.</li>
+<li><code>sock.send(string)</code> : socket을 대상으로 문자열을 전송한다.</li>
+<li><code>sock.onmessage = function(evt) { ... }</code> : socket에서 정보를 수신했을 때 실행된다. <code>evt.data</code>로 정보가 들어온다.</li>
+</ul>
+<h3 id="ChatMessage"><a href="#ChatMessage" class="headerlink" title="ChatMessage"></a>ChatMessage</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Getter</span></span><br><span class="line"><span class="meta">@Setter</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ChatMessage</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String chatRoomId;</span><br><span class="line">    <span class="keyword">private</span> String writer;</span><br><span class="line">    <span class="keyword">private</span> String message;</span><br><span class="line">    <span class="keyword">private</span> MessageType type;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>client와 주고받을 모델이다.</p>
+<h3 id="ChatHandler"><a href="#ChatHandler" class="headerlink" title="ChatHandler"></a>ChatHandler</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Slf</span>4j</span><br><span class="line"><span class="meta">@Profile</span>(<span class="string">"!stomp"</span>)</span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ChatHandler</span> <span class="keyword">extends</span> <span class="title">TextWebSocketHandler</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ObjectMapper objectMapper;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ChatRoomRepository repository;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ChatHandler</span><span class="params">(ObjectMapper objectMapper, ChatRoomRepository chatRoomRepository)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.objectMapper = objectMapper;</span><br><span class="line">        <span class="keyword">this</span>.repository = chatRoomRepository;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">handleTextMessage</span><span class="params">(WebSocketSession session, TextMessage message)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line"></span><br><span class="line">        String payload = message.getPayload();</span><br><span class="line">        log.info(<span class="string">"payload : &#123;&#125;"</span>, payload);</span><br><span class="line"></span><br><span class="line">        ChatMessage chatMessage = objectMapper.readValue(payload, ChatMessage<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">        ChatRoom chatRoom = repository.getChatRoom(chatMessage.getChatRoomId());</span><br><span class="line">        chatRoom.handleMessage(session, chatMessage, objectMapper);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">afterConnectionClosed</span><span class="params">(WebSocketSession session, CloseStatus status)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        repository.remove(session);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>ChatHandler</code>는 <code>WebSocketHandler</code>의 구현체이다. <code>WebSocketHandler</code>는 다음 메서드를 가지고 있다.</p>
+<ul>
+<li><code>afterConnectionEstablished(WebSocketSession)</code> : connection이 맺어진 후 실행된다.</li>
+<li><code>handleMessage(WebSocketSession, WebSocketMessage&lt;?&gt;)</code> : session에서 메시지를 수신했을 때 실행된다. message 타입에 따라 <code>handleTextMessage()</code>, <code>handleBinaryMessage()</code>를 실행한다.<ul>
+<li>본문에서 상속한 <code>TextWebSocketHandler</code>는 <code>handleTextMessage(WebSocketSession, TextMessage)</code>를 실행한다.</li>
+</ul>
+</li>
+<li><code>afterConnectionClosed(WebSocketSession, CloseStatus)</code> : close 이후 실행된다.</li>
+</ul>
+<p>위 소스에서는 message가 들어오는 경우, <code>message.getChatRoomId()</code>로 채팅방을 찾아 메시지를 전파한다.</p>
+<h3 id="ChatRoom-1"><a href="#ChatRoom-1" class="headerlink" title="ChatRoom"></a>ChatRoom</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Getter</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ChatRoom</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String id;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> Set&lt;WebSocketSession&gt; sessions = <span class="keyword">new</span> HashSet&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleMessage</span><span class="params">(WebSocketSession session, ChatMessage chatMessage, ObjectMapper objectMapper)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (chatMessage.getType() == MessageType.JOIN) &#123;</span><br><span class="line">            join(session);</span><br><span class="line">            chatMessage.setMessage(chatMessage.getWriter() + <span class="string">"님이 입장했습니다."</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        send(chatMessage, objectMapper);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">join</span><span class="params">(WebSocketSession session)</span> </span>&#123;</span><br><span class="line">        sessions.add(session);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> &lt;T&gt; <span class="function"><span class="keyword">void</span> <span class="title">send</span><span class="params">(T messageObject, ObjectMapper objectMapper)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        TextMessage message = <span class="keyword">new</span> TextMessage(objectMapper.writeValueAsString(messageObject));</span><br><span class="line">        sessions.parallelStream().forEach(session -&gt; session.sendMessage(message));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="실행"><a href="#실행" class="headerlink" title="실행"></a>실행</h2><p><img src="/images/spring-websocket/websocket-example1.png" alt="스크린샷1"></p>
+<h2 id="현재-채팅-서버의-단점"><a href="#현재-채팅-서버의-단점" class="headerlink" title="현재 채팅 서버의 단점"></a>현재 채팅 서버의 단점</h2><p><code>ChatRoom</code>이 하는 일이 저수준이다. 마치 socket을 직접 처리하는 것 같다. socket을 보유하고 있고, 특정 이벤트가 발생하면 socket에 메시지를 보내고, session이 종료되면 socket을 삭제한다. 지금까지의 소스에서 WebSocket의 기본적인 동작에 대해서 배웠다고 생각하자. Spring에서 지원해주는 STOMP를 사용하게 되면, 지금까지와는 전혀 다른 모습으로 개발을 하게 될 것이다.</p>
+<h1 id="STOMP"><a href="#STOMP" class="headerlink" title="STOMP"></a>STOMP</h1><br>
+> 여태까지의 WebSocket Application은 잊자. STOMP를 사용하게 되면, 사실상 Application에서 직접 session을 처리하는 것이 아니라, 오히려 proxy에 가까운 역할을 하게 된다.
+
+<p>앞서 <code>WebSocketHandler</code>에 대해서 설명하기를 message 타입이 binary 혹은 text로 나뉜다고 했었다. message가 binary거나 text이기만 하면 실제 내용물이 무엇이든지 통신이 이루어지는 것이다. 이를 sub-protocol을 사용해서 제어할 수 있다. handshake 과정에서 특정 sub-protocol을 사용하기로 합의할 수 있다. sub-protocol의 하나인 STOMP를 사용하게 되면 단순한 binary, text가 아닌 규격을 갖춘(format) message를 보낼 수 있다.</p>
+<p>STOMP의 형식은 마치 HTTP와 닮아 있다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">COMMAND</span><br><span class="line">header1:value1</span><br><span class="line">header2:value2</span><br><span class="line"></span><br><span class="line">Body^@</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>COMMAND : SEND, SUBSCRIBE를 지시할 수 있다.</li>
+<li>header : 기존의 WebSocket으로는 표현이 불가능한 header를 작성할 수 있다.<ul>
+<li>destination : 이 헤더로 메시지를 보내거나(SEND), 구독(SUBSCRIBE)할 수 있다. 이를 통해 간단하게 PUB-SUB를 구현할 수 있다.</li>
+</ul>
+</li>
+</ul>
+<p>예를 들어 ClientA는 아래와 같이 5번 채팅방에 대해 구독을 걸어둘 수 있다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SUBSCRIBE</span><br><span class="line">destination: &#x2F;subscribe&#x2F;chat&#x2F;room&#x2F;5</span><br></pre></td></tr></table></figure>
+
+<p>후에 ClientB에서 아래와 같이 채팅 메시지를 보낼 수 있다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">SEND</span><br><span class="line">content-type: application&#x2F;json</span><br><span class="line">destination: &#x2F;publish&#x2F;chat</span><br><span class="line"></span><br><span class="line">&#123;&quot;chatRoomId&quot;: 5, &quot;type&quot;: &quot;MESSAGE&quot;, &quot;writer&quot;: &quot;clientB&quot;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>이때 Server에서는 내용을 기반(<code>chatRoomId</code>)으로 메시지를 전송할 broker에 전달한다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">MESSAGE</span><br><span class="line">destination: &#x2F;subscribe&#x2F;chat&#x2F;room&#x2F;5</span><br><span class="line"></span><br><span class="line">&#123;&quot;chatRoomId&quot;: 5, &quot;type&quot;: &quot;MESSAGE&quot;, &quot;writer&quot;: &quot;clientB&quot;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>이렇게 <code>/subscribe/chat/room/5</code>를 구독하는 Client에게 메시지가 송신된다.</p>
+<img  src=http://www.plantuml.com/plantuml/svg/Iyx9JCqhSLJGjLC8JYqgIorIi58mr5C83dKATWxoT79Lq2ykJIfEBifCIjLFpaWiqI_Apy_LD-M2AhRHLKW6c-04r6S4rEVgvwAWNr2Qb9DPd07M05E9R86ndeAlQt2mepiXuu6Qag4Ej58mqLDuCtVYw-wj0000>
+
+<h1 id="STOMP-기반-채팅서버-예제"><a href="#STOMP-기반-채팅서버-예제" class="headerlink" title="STOMP 기반 채팅서버 예제"></a>STOMP 기반 채팅서버 예제</h1><p><a href="https://docs.spring.io/spring/docs/5.0.4.RELEASE/spring-framework-reference/web.html#websocket-stomp-message-flow" target="_blank" rel="noopener">Spring Reference</a>에서는 동작 방식을 먼저 상세히 설명한 후에 이런저런 소스를 설명하는데, 오히려 소스를 한 번 보고 동작 방식을 설명하는 것이 이해하기 쉬울 것 같아서 예제를 먼저 소개하려고 한다.</p>
+<h2 id="Spring-Application-설정-1"><a href="#Spring-Application-설정-1" class="headerlink" title="Spring Application 설정"></a>Spring Application 설정</h2><h3 id="StompWebSocketConfig"><a href="#StompWebSocketConfig" class="headerlink" title="StompWebSocketConfig"></a>StompWebSocketConfig</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Profile</span>(<span class="string">"stomp"</span>)</span><br><span class="line"><span class="meta">@EnableWebSocketMessageBroker</span></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StompWebSocketConfig</span> <span class="keyword">implements</span> <span class="title">WebSocketMessageBrokerConfigurer</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">registerStompEndpoints</span><span class="params">(StompEndpointRegistry registry)</span> </span>&#123;</span><br><span class="line">        registry.addEndpoint(<span class="string">"/stomp-chat"</span>).setAllowedOrigins(<span class="string">"*"</span>).withSockJS();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">configureMessageBroker</span><span class="params">(MessageBrokerRegistry registry)</span> </span>&#123;</span><br><span class="line">        registry.setApplicationDestinationPrefixes(<span class="string">"/publish"</span>);</span><br><span class="line">        registry.enableSimpleBroker(<span class="string">"/subscribe"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>구현할 interface의 대상이 <code>WebSocketMessageBrokerConfigurer</code>로 바뀌었다. <code>registerStompEndpoints</code>에서 기존의 WebSocket 설정과 마찬가지로 handshake와 통신을 담당할 endpoint를 지정한다. <code>configureMessageBroker</code>에서 Application 내부에서 사용할 path를 지정할 수 있다.</p>
+<ul>
+<li><code>setApplicationDestinationPrefixes</code> : client에서 <code>SEND</code> 요청을 처리한다.<ul>
+<li>Spring Reference에서는 <code>/topic</code>, <code>/queue</code>가 주로 등장하는데 여기서는 이해를 돕기 위해 <code>/publish</code>로 지정하였다.<ul>
+<li><code>/topic</code> : 암시적으로 1:N 전파를 의미한다.</li>
+<li><code>/queue</code> : 암시적으로 1:1 전파를 의미한다.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code>enableSimpleBroker</code> : 해당 경로로 <code>SimpleBroker</code>를 등록한다. <code>SimpleBroker</code>는 해당하는 경로를 <code>SUBSCRIBE</code>하는 client에게 메시지를 전달하는 간단한 작업을 수행한다.</li>
+<li><code>enableStompBrokerRelay</code> : <code>SimpleBroker</code>의 기능과 외부 message broker(<code>RabbitMQ</code>, <code>ActiveMQ</code> 등)에 메시지를 전달하는 기능을 가지고 있다.</li>
+</ul>
+<h2 id="Client"><a href="#Client" class="headerlink" title="Client"></a>Client</h2><h3 id="room-html-1"><a href="#room-html-1" class="headerlink" title="room.html"></a>room.html</h3><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"en"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"UTF-8"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">title</span>&gt;</span>&#123;&#123;room.name&#125;&#125;<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"/webjars/jquery/dist/jquery.min.js"</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"/webjars/sockjs-client/sockjs.min.js"</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"/webjars/stomp-websocket/stomp.min.js"</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>&#123;&#123;room.name&#125;&#125;(&#123;&#123;room.id&#125;&#125;)<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"content"</span> <span class="attr">data-room-id</span>=<span class="string">"&#123;&#123;room.id&#125;&#125;"</span> <span class="attr">data-member</span>=<span class="string">"&#123;&#123;member&#125;&#125;"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">ul</span> <span class="attr">class</span>=<span class="string">"chat_box"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">ul</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">"message"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">button</span> <span class="attr">class</span>=<span class="string">"send"</span>&gt;</span>보내기<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="javascript">    $(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span></span><br><span class="line"><span class="javascript">        <span class="keyword">var</span> chatBox = $(<span class="string">'.chat_box'</span>);</span></span><br><span class="line"><span class="javascript">        <span class="keyword">var</span> messageInput = $(<span class="string">'input[name="message"]'</span>);</span></span><br><span class="line"><span class="javascript">        <span class="keyword">var</span> sendBtn = $(<span class="string">'.send'</span>);</span></span><br><span class="line"><span class="javascript">        <span class="keyword">var</span> roomId = $(<span class="string">'.content'</span>).data(<span class="string">'room-id'</span>);</span></span><br><span class="line"><span class="javascript">        <span class="keyword">var</span> member = $(<span class="string">'.content'</span>).data(<span class="string">'member'</span>);</span></span><br><span class="line"></span><br><span class="line"><span class="actionscript">        <span class="keyword">var</span> sock = <span class="keyword">new</span> SockJS(<span class="string">"/stomp-chat"</span>);</span></span><br><span class="line"><span class="actionscript">        <span class="keyword">var</span> client = Stomp.over(sock); <span class="comment">// 1. SockJS를 내부에 들고 있는 client를 내어준다.</span></span></span><br><span class="line"></span><br><span class="line"><span class="actionscript">        <span class="comment">// 2. connection이 맺어지면 실행된다.</span></span></span><br><span class="line"><span class="actionscript">        client.connect(&#123;&#125;, <span class="function"><span class="keyword">function</span> <span class="params">()</span> </span>&#123;</span></span><br><span class="line"><span class="actionscript">            <span class="comment">// 3. send(path, header, message)로 메시지를 보낼 수 있다.</span></span></span><br><span class="line"><span class="javascript">            client.send(<span class="string">'/publish/chat/join'</span>, &#123;&#125;, <span class="built_in">JSON</span>.stringify(&#123;<span class="attr">chatRoomId</span>: roomId, <span class="attr">writer</span>: member&#125;)); </span></span><br><span class="line"><span class="actionscript">            <span class="comment">// 4. subscribe(path, callback)로 메시지를 받을 수 있다. callback 첫번째 파라미터의 body로 메시지의 내용이 들어온다.</span></span></span><br><span class="line"><span class="actionscript">            client.subscribe(<span class="string">'/subscribe/chat/room/'</span> + roomId, <span class="function"><span class="keyword">function</span> <span class="params">(chat)</span> </span>&#123;</span></span><br><span class="line"><span class="javascript">                <span class="keyword">var</span> content = <span class="built_in">JSON</span>.parse(chat.body);</span></span><br><span class="line"><span class="actionscript">                chatBox.append(<span class="string">'&lt;li&gt;'</span> + content.message + <span class="string">'('</span> + content.writer + <span class="string">')&lt;/li&gt;'</span>)</span></span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line"><span class="actionscript">        sendBtn.click(<span class="function"><span class="keyword">function</span> <span class="params">()</span> </span>&#123;</span></span><br><span class="line"><span class="actionscript">            <span class="keyword">var</span> message = messageInput.val();</span></span><br><span class="line"><span class="javascript">            client.send(<span class="string">'/publish/chat/message'</span>, &#123;&#125;, <span class="built_in">JSON</span>.stringify(&#123;<span class="attr">chatRoomId</span>: roomId, <span class="attr">message</span>: message, <span class="attr">writer</span>: member&#125;));</span></span><br><span class="line"><span class="actionscript">            messageInput.val(<span class="string">''</span>);</span></span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Controller"><a href="#Controller" class="headerlink" title="Controller"></a>Controller</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Profile</span>(<span class="string">"stomp"</span>)</span><br><span class="line"><span class="meta">@Controller</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ChatMessageController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> SimpMessagingTemplate template;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ChatMessageController</span><span class="params">(SimpMessagingTemplate template)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.template = template;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@MessageMapping</span>(<span class="string">"/chat/join"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">join</span><span class="params">(ChatMessage message)</span> </span>&#123;</span><br><span class="line">        message.setMessage(message.getWriter() + <span class="string">"님이 입장하셨습니다."</span>);</span><br><span class="line">        template.convertAndSend(<span class="string">"/subscribe/chat/room/"</span> + message.getChatRoomId(), message);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@MessageMapping</span>(<span class="string">"/chat/message"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">message</span><span class="params">(ChatMessage message)</span> </span>&#123;</span><br><span class="line">        template.convertAndSend(<span class="string">"/subscribe/chat/room/"</span> + message.getChatRoomId(), message);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>SimpleMessagingTemplate</code> : <code>@EnableWebSocketMessageBroker</code>를 통해서 등록되는 bean이다. 특정 Broker로 메시지를 전달한다.</li>
+<li><code>@MessageMapping</code> : Client가 <code>SEND</code>를 할 수 있는 경로다. <code>StompWebSocketConfig</code>에서 등록한 <code>applicationDestinationPrfixes</code>와 <code>@MessageMapping</code>의 경로가 합쳐진다.(<code>/publish/chat/join</code>)</li>
+</ul>
+<h2 id="설명"><a href="#설명" class="headerlink" title="설명"></a>설명</h2><p>소스는 위에서 설명한 것이 전부다. session도 Spring이 알아서 관리한다. 개발자가 할 일은 권한과 서비스 로직에 맞게 메시지를 처리하거나, broker로 메시지를 라우팅하는 것이다.</p>
+<h3 id="메시지-흐름"><a href="#메시지-흐름" class="headerlink" title="메시지 흐름"></a>메시지 흐름</h3><p>아래 그림은 <a href="https://docs.spring.io/spring/docs/5.0.4.RELEASE/spring-framework-reference/web.html#websocket-stomp-message-flow" target="_blank" rel="noopener">Spring Reference</a>에서 가져왔다. 이해하기 어렵다면 <code>/app</code>을 <code>/publish</code>로, <code>/topic</code>을 <code>/subscribe</code>로 치환해서 보자.</p>
+<table>
+<thead>
+<tr>
+<th><img src="/images/spring-websocket/message-flow-simple-broker.png" alt="메시지 흐름"></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>출처 : <a href="https://docs.spring.io/spring/docs/5.0.4.RELEASE/spring-framework-reference/web.html#websocket-stomp-message-flow" target="_blank" rel="noopener">https://docs.spring.io/spring/docs/5.0.4.RELEASE/spring-framework-reference/web.html#websocket-stomp-message-flow</a></td>
+</tr>
+</tbody></table>
+<ul>
+<li>SimpAnnotationMethod : <code>@MessageMapping</code> 등 client의 <code>SEND</code>를 받아서 처리한다.</li>
+<li>SimpleBroker : client의 정보를 메모리 상에 들고 있으며, client로 메시지를 내보낸다.</li>
+<li>channel : 3종류의 channel이 등장한다<ul>
+<li>clientInboundChannel : WebSocket Client로부터 들어오는 요청을 전달하며, <code>WebSocketMessageBrokerConfigurer</code>를 통해 interceptor, taskExecutor를 설정할 수 있다.</li>
+<li>clientOutboundChannel : WebSocket Client로 Server의 메시지를 내보내며, <code>WebSocketMessageBrokerConfigurer</code>를 통해 interceptor, taskExecutor를 설정할 수 있다.</li>
+<li>brokerChannel : Server 내부에서 사용하는 channel이며, 이를 통해 <code>SimpAnnotationMetho</code>는 <code>SimpleBroker</code>의 존재를 직접 알지 못해도 메시지를 전달할 수 있다(결합도를 낮춤)</li>
+</ul>
+</li>
+</ul>
+<h1 id="2대-이상의-서버를-사용한다면"><a href="#2대-이상의-서버를-사용한다면" class="headerlink" title="2대 이상의 서버를 사용한다면?"></a>2대 이상의 서버를 사용한다면?</h1><p>WebSocket을 사용해서 채팅 서버를 구현하고, 여러 서버를 사용한다면 당연히 아래와 같은 구조가 나올 것이다.</p>
+<img  src=http://www.plantuml.com/plantuml/svg/AqXCpavCJrLGAaujAaijCbHIgEPIK8ZsJIqk1Wfx9EQbv015Oq5YJaNvsM1sBLS1gYuZhBgCa7GPWNIXQpF6giqOIPinM5jqSavcQbw9Owo2hguTfjiKh1GCzHI2NVrSk33bG1fW3WSgDD9JWF3UJ9-Wy7hbb3VTSzuiRr1uiw3bTVSQBeHAP8i2IrDBKq6QZVKKa8KmZ7ZJjX3PYD82a25mjuFruxCIMRqJJlMeZj95-Cy8fCL4Jm7Yjhap55utRNapQoL8uzkU7Yw4Abs4DSuWFQQudOMgsWMdQfoECYRAKSOerhWIS1IgQZSSgW40>
+
+<h1 id="마무리"><a href="#마무리" class="headerlink" title="마무리"></a>마무리</h1><p>WebSocket에 대해서 알아보고, Spring에서 WebSocket을 어떻게 지원하는지 알아보았다. WebSocket 기술은 Web에서 Socket 통신을 하는 것처럼 동작하며, Spring에서는 이를 STOMP를 사용하여 고수준의 프로그래밍을 가능하게 했다. 간단한 소개가 목적이었기 때문에 Security, Load Balancing, Firewall 등의 주제는 다루지 않았다. 이러한 기술이 있음을 기억하고, 필요할 때 더 깊이 있게 파고들면 좋을 것 같다.</p>
+<p>WebSocket을 사용하고자 하는 서비스가 Web과 iOS, Android 환경을 모두 지원해야 하는 경우가 있을 수 있다. 이럴 때에는 Web 환경에서는 SockJS를 사용하여 <code>/ws-sockjs</code>로 endpoint를 열어두고, mobile 환경에는 <code>/ws</code>로 endpoint를 열어서 endpoint를 분리해서 운용할 수 있을 것이다. Android나 iOS 둘 다 STOMP를 지원하는 Library가 있는 것은 확인했다. 다만 필자가 해당 분야의 개발자가 아니기에 얼마나 사용성이 있는지는 확인하지 않았다. 가능하다면 STOMP로 동일한 sub-protocol을 운용할 수 있다면 운영하는 데에 큰 도움이 될 것 같다.</p>
+<p>WebSocket의 사용 여부를 결정하는 것은 사실상 하나로 귀결되는 것 같다. Connection을 유지할 필요가 있는지를 따져보는 것이다.</p>
+<ul>
+<li>장점 : Handshake(TCP 상의 통신 준비)를 할 필요가 없으며, 덕분에 지연이 낮다.<ul>
+<li>적은 지연, 높은 빈도, 대량의 정보 통신에 유리</li>
+</ul>
+</li>
+<li>단점 : Connection이 유지되는 동안 항상 통신을 하는 것은 아니다(Connection 낭비)</li>
+</ul>
+<p>Server에서 Client로 메시지를 보낼 수 있다는 것은 하나의 기능에 불과하다. 가장 중요하게 염두에 둬야 할 사항은 Connection 유지의 필요성이라 생각한다.</p>
+<p>2011년에 작성된 <a href="http://d2.naver.com/helloworld/1336" target="_blank" rel="noopener">네이버 Hello Wold의 글</a>에서는 WebSocket이 한창 발전하고 있다고 시사하였다. 이제는 미래 기술로서 발전 가능성이 아니라, 요구 사항이 충족된다면 실 서비스에서 도입할만한 기술이라고 생각한다.</p>
+<p>소스 코드 : <a href="https://github.com/supawer0728/simple-websocket" target="_blank" rel="noopener">https://github.com/supawer0728/simple-websocket</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>작성자:</strong>
+    supawer0728
+  </li>
+  <li class="post-copyright-link">
+    <strong>원본링크:</strong>
+    <a href="https://supawer0728.github.io/2018/03/30/spring-websocket/" title="Spring WebSocket 소개">https://supawer0728.github.io/2018/03/30/spring-websocket/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>라이센스: </strong>
+    <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a>
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/spring/" rel="tag"># spring</a>
+          
+            <a href="/tags/websocket/" rel="tag"># websocket</a>
+          
+        </div>
+      
+
+      
+      
+        <div class="post-widgets">
+        
+
+        
+
+        
+          
+          <div id="needsharebutton-postbottom">
+            <span class="btn">
+              <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </span>
+          </div>
+        
+        </div>
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/24/spring-event/" rel="next" title="Spring Event + Async + AOP 적용해보기">
+                <i class="fa fa-chevron-left"></i> Spring Event + Async + AOP 적용해보기
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/04/04/spring-filter-interceptor/" rel="prev" title="(Spring)Filter와 Interceptor의 차이">
+                (Spring)Filter와 Interceptor의 차이 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript" target="_blank" rel="noopener">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            목차
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            흝어보기
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="supawer0728" />
+            
+              <p class="site-author-name" itemprop="name">supawer0728</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">32</span>
+                  <span class="site-state-item-name">포스트</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">카테고리</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">50</span>
+                  <span class="site-state-item-name">태그</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/feed.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/supawer0728" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#서론"><span class="nav-number">1.</span> <span class="nav-text">서론</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Handshake"><span class="nav-number">2.</span> <span class="nav-text">Handshake</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Handshake-요청"><span class="nav-number">2.1.</span> <span class="nav-text">Handshake 요청</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Handshake-응답"><span class="nav-number">2.2.</span> <span class="nav-text">Handshake 응답</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#WebSocket-Sevrer를-운용할-때의-유의사항"><span class="nav-number">3.</span> <span class="nav-text">WebSocket Sevrer를 운용할 때의 유의사항</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#언제-쓰면-좋을까"><span class="nav-number">4.</span> <span class="nav-text">언제 쓰면 좋을까?</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#지원하는-Browser"><span class="nav-number">5.</span> <span class="nav-text">지원하는 Browser</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#SockJS"><span class="nav-number">6.</span> <span class="nav-text">SockJS</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Spring-WebSocket-설정"><span class="nav-number">6.1.</span> <span class="nav-text">Spring WebSocket 설정</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#SockJS-기반-채팅서버-예제"><span class="nav-number">7.</span> <span class="nav-text">SockJS 기반 채팅서버 예제</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Gradle-설정"><span class="nav-number">7.1.</span> <span class="nav-text">Gradle 설정</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Spring-Application-설정"><span class="nav-number">7.2.</span> <span class="nav-text">Spring Application 설정</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#채팅방-입장-구현"><span class="nav-number">7.3.</span> <span class="nav-text">채팅방 입장 구현</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ChatRoom"><span class="nav-number">7.3.1.</span> <span class="nav-text">ChatRoom</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ChatRoomRepository"><span class="nav-number">7.3.2.</span> <span class="nav-text">ChatRoomRepository</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ChatController"><span class="nav-number">7.3.3.</span> <span class="nav-text">ChatController</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#room-list-html"><span class="nav-number">7.3.4.</span> <span class="nav-text">room-list.html</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#room-html"><span class="nav-number">7.3.5.</span> <span class="nav-text">room.html</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ChatMessage"><span class="nav-number">7.3.6.</span> <span class="nav-text">ChatMessage</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ChatHandler"><span class="nav-number">7.3.7.</span> <span class="nav-text">ChatHandler</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ChatRoom-1"><span class="nav-number">7.3.8.</span> <span class="nav-text">ChatRoom</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#실행"><span class="nav-number">7.4.</span> <span class="nav-text">실행</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#현재-채팅-서버의-단점"><span class="nav-number">7.5.</span> <span class="nav-text">현재 채팅 서버의 단점</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#STOMP"><span class="nav-number">8.</span> <span class="nav-text">STOMP</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#STOMP-기반-채팅서버-예제"><span class="nav-number">9.</span> <span class="nav-text">STOMP 기반 채팅서버 예제</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Spring-Application-설정-1"><span class="nav-number">9.1.</span> <span class="nav-text">Spring Application 설정</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#StompWebSocketConfig"><span class="nav-number">9.1.1.</span> <span class="nav-text">StompWebSocketConfig</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Client"><span class="nav-number">9.2.</span> <span class="nav-text">Client</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#room-html-1"><span class="nav-number">9.2.1.</span> <span class="nav-text">room.html</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Controller"><span class="nav-number">9.3.</span> <span class="nav-text">Controller</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#설명"><span class="nav-number">9.4.</span> <span class="nav-text">설명</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#메시지-흐름"><span class="nav-number">9.4.1.</span> <span class="nav-text">메시지 흐름</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2대-이상의-서버를-사용한다면"><span class="nav-number">10.</span> <span class="nav-text">2대 이상의 서버를 사용한다면?</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#마무리"><span class="nav-number">11.</span> <span class="nav-text">마무리</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">supawer0728</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+  <div class="footer-custom">To Improve Human Life</div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://supawer0728-github-com.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://supawer0728.github.io/2018/03/30/spring-websocket/';
+          this.page.identifier = '2018/03/30/spring-websocket/';
+          this.page.title = 'Spring WebSocket 소개';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://supawer0728-github-com.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('-1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/needsharebutton/needsharebutton.css">
+
+  
+  
+  <script src="/lib/needsharebutton/needsharebutton.js"></script>
+
+  <script>
+    
+      pbOptions = {};
+      
+          pbOptions.iconStyle = "box";
+      
+          pbOptions.boxForm = "horizontal";
+      
+          pbOptions.position = "bottomCenter";
+      
+          pbOptions.networks = "Twitter,Facebook,GooglePlus,Evernote";
+      
+      new needShareButton('#needsharebutton-postbottom', pbOptions);
+    
+    
+  </script>
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

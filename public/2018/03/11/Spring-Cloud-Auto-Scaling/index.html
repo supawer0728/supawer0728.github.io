@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Nanum Gothic:300,300italic,400,400italic,700,700italic|Nanum Pen Script:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-icon-180x180.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.4">
+
+
+
+  <link rel="manifest" href="/images/manifest.json">
+
+
+  <meta name="msapplication-config" content="/images/browserconfig.xml" />
+
+
+
+  <meta name="keywords" content="spring-cloud,eureka,spring-actuator,architecture,msa," />
+
+
+
+
+
+  <link rel="alternate" href="/feed.xml" title="기록은 재산이다" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="Eureka Topology   중앙 레지스트리 컴포넌트에 서비스 식별자, 호스트명, 포트 번호, 동작 상태 등의 메타데이터를 담을 수 있다 Ribbon과 함께 클라이언트 측의 동적 부하 분산 기능을 담당할 수 있다  단점  인스턴스 추가를 수동으로 해야한다!!! 인스턴스 종료를 수동으로 해야한다!!!">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Cloud를 사용한 Auto Scaling">
+<meta property="og:url" content="https://supawer0728.github.io/2018/03/11/Spring-Cloud-Auto-Scaling/index.html">
+<meta property="og:site_name" content="기록은 재산이다">
+<meta property="og:description" content="Eureka Topology   중앙 레지스트리 컴포넌트에 서비스 식별자, 호스트명, 포트 번호, 동작 상태 등의 메타데이터를 담을 수 있다 Ribbon과 함께 클라이언트 측의 동적 부하 분산 기능을 담당할 수 있다  단점  인스턴스 추가를 수동으로 해야한다!!! 인스턴스 종료를 수동으로 해야한다!!!">
+<meta property="og:locale" content="ko_KR">
+<meta property="article:published_time" content="2018-03-10T17:00:00.000Z">
+<meta property="article:modified_time" content="2020-03-04T08:18:02.742Z">
+<meta property="article:author" content="supawer0728">
+<meta property="article:tag" content="spring-cloud">
+<meta property="article:tag" content="eureka">
+<meta property="article:tag" content="spring-actuator">
+<meta property="article:tag" content="architecture">
+<meta property="article:tag" content="msa">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '작성자'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://supawer0728.github.io/2018/03/11/Spring-Cloud-Auto-Scaling/"/>
+
+
+
+
+
+  <title>Spring Cloud를 사용한 Auto Scaling | 기록은 재산이다</title>
+  
+
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-115481794-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'UA-115481794-1');
+</script>
+
+
+
+
+
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script data-ad-client="" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="ko">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">기록은 재산이다</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">To Improve Human Life</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            홈
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            태그
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            카테고리
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            아카이브
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            검색
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="Searching..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://supawer0728.github.io/2018/03/11/Spring-Cloud-Auto-Scaling/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="supawer0728">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="기록은 재산이다">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Spring Cloud를 사용한 Auto Scaling</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">작성일&#58;</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-11T02:00:00+09:00">
+                2018-03-11
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">수정일&#58;</span>
+              
+              <time title="수정일" itemprop="dateModified" datetime="2020-03-04T17:18:02+09:00">
+              
+                2018-03-11
+              
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/" itemprop="url" rel="index">
+                    <span itemprop="name">spring</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/architecture/" itemprop="url" rel="index">
+                    <span itemprop="name">architecture</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/cloud/" itemprop="url" rel="index">
+                    <span itemprop="name">cloud</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/cloud/netflix/" itemprop="url" rel="index">
+                    <span itemprop="name">netflix</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/architecture/msa/" itemprop="url" rel="index">
+                    <span itemprop="name">msa</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/03/11/Spring-Cloud-Auto-Scaling/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/03/11/Spring-Cloud-Auto-Scaling/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="Eureka-Topology"><a href="#Eureka-Topology" class="headerlink" title="Eureka Topology"></a>Eureka Topology</h1><img  src=http://www.plantuml.com/plantuml/svg/IyxFBSZFIyqhKOXsBIrApKvK24ujAaijYkLAHiWa5cJgfYUMf9OdLce4PIObvUVfA41LE-Ta0fLeeYZFJSrDIYtI1UhIG5V5HOnP2hevgMabkdReJbAmKdZJCkVrfXQ5rwjMlbuuL-7DmWrlP_LmuR5GGRUq0Aj1hoTl19f0f7DIyilpGARWiGVej5bJtcnQg_1cGSkRjeK0>
+
+<ul>
+<li>중앙 레지스트리 컴포넌트에 서비스 식별자, 호스트명, 포트 번호, 동작 상태 등의 메타데이터를 담을 수 있다</li>
+<li>Ribbon과 함께 클라이언트 측의 동적 부하 분산 기능을 담당할 수 있다</li>
+</ul>
+<p><strong>단점</strong></p>
+<ul>
+<li>인스턴스 추가를 수동으로 해야한다!!!</li>
+<li>인스턴스 종료를 수동으로 해야한다!!!</li>
+</ul>
+<a id="more"></a>
+
+<h1 id="자동확장-Auto-Scale-out"><a href="#자동확장-Auto-Scale-out" class="headerlink" title="자동확장(Auto Scale-out)"></a>자동확장(Auto Scale-out)</h1><h2 id="자동확장이란"><a href="#자동확장이란" class="headerlink" title="자동확장이란?"></a>자동확장이란?</h2><ul>
+<li>트래픽 증가시 : 추가 인스턴스를 만듦</li>
+<li>트래픽 감소시 : 불필요한 여분의 인스턴스를 서비스에서 제외</li>
+</ul>
+<h3 id="장점"><a href="#장점" class="headerlink" title="장점"></a>장점</h3><ul>
+<li>고가용성</li>
+<li>확장성 : 필요한 서비스 그룹만 수평적으로 늘릴 수 있다</li>
+<li>자원 사용량 최적화</li>
+</ul>
+<h2 id="확장-모델"><a href="#확장-모델" class="headerlink" title="확장 모델"></a>확장 모델</h2><ul>
+<li>애플리케이션 자동 확장 : 애플리케이션 바이너리 복제</li>
+<li>인프라스트럭처 확장 : 전체 가상머신까지 복제</li>
+</ul>
+<h2 id="확장-모델-어플리케이션-자동-확장"><a href="#확장-모델-어플리케이션-자동-확장" class="headerlink" title="확장 모델(어플리케이션 자동 확장)"></a>확장 모델(어플리케이션 자동 확장)</h2><p><strong>A 시나리오</strong></p>
+<img  src=http://www.plantuml.com/plantuml/svg/AqXCpavCJrLGUhMXuKrpu-iLEzvqBp1KKgZcKb28VjCov_NEbZTTImnZkMgvk0gmgJL2Lsk4MwqnkbfZe5e0>
+
+<img  src=http://www.plantuml.com/plantuml/svg/AqXCpavCJrLGUhMXuKrpu-iLEzvqBp1HKgZcKb28VjCov_NEbZTTImnZkMgvk0gmgJL5LskaW5kn6OPYe5e0>
+
+<ul>
+<li>라이브러리만 바뀌었을 뿐 그 하부 인프라스트럭처는 바뀌지 않는다</li>
+<li>라이브러리만 교체하고 가상머신은 그대로이므로 인스턴스화가 빠르게 이루어진다</li>
+<li>OS 수준의 튜닝이 필요하다면 효과적이지 않을 수 있다</li>
+</ul>
+<h2 id="확장-모델-인프라스트럭처-자동-확장"><a href="#확장-모델-인프라스트럭처-자동-확장" class="headerlink" title="확장 모델(인프라스트럭처 자동 확장)"></a>확장 모델(인프라스트럭처 자동 확장)</h2><img  src=http://www.plantuml.com/plantuml/svg/AqXCpavCJrLGUZDhoviPZGflbanKKgZcKb0eW4cysj3mfhdnzOeTRxeN647a51IYtxJCURspvKtN4gDOe40jBWs6c1eC8HfgkRZWEjxCw03AuR7N18kz2dWjDiPYCLH7BG00>
+
+<ul>
+<li>대부분의 경우 새로운 가상머신을 그때그때 생성하고 제거</li>
+<li>예비 인스턴스는 미리 정의된 서비스 인스턴스를 가진 가상머신 이미지로 생성</li>
+<li><code>서비스1</code>에 대한 수요가 생길시 <code>가상머신3</code>이 운영 상태로 옮겨짐</li>
+<li>가상머신 이미지가 본질적으로 무거우므로 새로운 가상머신을 운영 상태로 전환하는 데 시간이 많이 소요될 수 있다<ul>
+<li>때문에 도커와 같은 가벼운 컨테이너가 선호된다</li>
+</ul>
+</li>
+</ul>
+<h2 id="확장-모델-클라우드-자동-확장"><a href="#확장-모델-클라우드-자동-확장" class="headerlink" title="확장 모델(클라우드 자동 확장)"></a>확장 모델(클라우드 자동 확장)</h2><p>AWS 등의 클라우드 서비스가 제공해주는 기능</p>
+<h2 id="자동-확장-방식-자원-제약-조건-기반"><a href="#자동-확장-방식-자원-제약-조건-기반" class="headerlink" title="자동 확장 방식(자원 제약 조건 기반)"></a>자동 확장 방식(자원 제약 조건 기반)</h2><p><strong>실시간 지표(metric)</strong></p>
+<ul>
+<li>cpu, 메모리, disc 사용율 뿐 아니라 <code>Heap memory</code>와 같이 인스턴스가 스스로 수집할 수 있는 통계에 기반해 확장함</li>
+</ul>
+<p><strong>예제</strong></p>
+<ul>
+<li>CPU사용량 60%를 초과하면 인스턴스 추가</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[모니터링] .right.&gt; [인스턴스3] : CPU가 60% 이상이면 가동</span><br><span class="line">[모니터링] -down-&gt; [인스턴스1] : CPU 모니터링</span><br><span class="line">[모니터링] -down-&gt; [인스턴스2] : CPU 모니터링</span><br></pre></td></tr></table></figure>
+<ul>
+<li>응답 슬라이딩 : 60초 슬라이딩 윈도우 내에서 특정 트랜잭션의 60% 이상의 응답 시간이 정해진 한계치를 넘으면 인스턴스 추가</li>
+<li>CPU 슬라이딩 : 5분 슬라이딩 윈도우 내에서 CPU 사용량이 70% 넘으면 새 인스턴스를 추가</li>
+<li>예외 슬라이딩 : 60초 슬라이딩 윈도우 내에서 80% 이상의 트랜잭션이 스레드 풀 부족에 의한 타임아웃이 발생했을 시, 새 인스턴스 추가</li>
+</ul>
+<h2 id="자동-확장-방식-특정-기간-동안"><a href="#자동-확장-방식-특정-기간-동안" class="headerlink" title="자동 확장 방식(특정 기간 동안)"></a>자동 확장 방식(특정 기간 동안)</h2><p><strong>개요</strong></p>
+<p>특정 기간 동안에 집중적으로 발생하는 트래픽을 처리하는 데 사용되는 방식</p>
+<img  src=http://www.plantuml.com/plantuml/svg/YtwzQiNhxewtBHjUBs-CLT0hoapFAD6pKuX-CtV7cwubRrks04dZM0Kh1GEBDzrptaoVeF1cnfhNopQyxbwYes084tlTj0KYnXMDQg1kIdvvdYwQUOQnH2apYWK0>
+
+<h2 id="자동-확장-방식-메시지-큐-길이-기반"><a href="#자동-확장-방식-메시지-큐-길이-기반" class="headerlink" title="자동 확장 방식(메시지 큐 길이 기반)"></a>자동 확장 방식(메시지 큐 길이 기반)</h2><img  src=http://www.plantuml.com/plantuml/svg/Ytupe-FryYKARrhclDxPygPhIQo2Raf-UPwkdKAqRsfnSM9wga9WQMffQgo2bG9SxSPNcxU-wPwZy6RkbjURbhpjsg7mUiESDyrp5RcYNw-SycRk7Z2_RI72M4EWkQK5M4rzjNNDw_vMeCvLArvtTxnjsV1wUIDGTKvgMWbMzMyR9oYysh43QBV2gqqDRvhMAA3hrGFvG0-e5uTZZ52DURMXGS7Gm03acpVDZI0_hToYy6RR5A0u0000>
+
+<h2 id="자동-확장-방식-예측에-의한-확장"><a href="#자동-확장-방식-예측에-의한-확장" class="headerlink" title="자동 확장 방식(예측에 의한 확장)"></a>자동 확장 방식(예측에 의한 확장)</h2><ul>
+<li>트래픽이 갑자기 치솟을 때는 전통적인 자동 확장은 도움이 되지 못한다</li>
+<li>실제 트래픽이 치솟기 전에 예측해서 확장한다</li>
+<li><a href="https://medium.com/netflix-techblog/scryer-netflixs-predictive-auto-scaling-engine-a3f8fc922270" target="_blank" rel="noopener">Netflix Scryer</a></li>
+<li>이력 정보, 현재 트렌드 등, 여러 가지 입력 정보를 바탕으로 발생 가능한 <code>트래픽 패턴</code>을 예측 - 빅데이터 분석 등의 솔루션과 연계</li>
+</ul>
+<h1 id="구현"><a href="#구현" class="headerlink" title="구현"></a>구현</h1><h2 id="필요한-기능"><a href="#필요한-기능" class="headerlink" title="필요한 기능"></a>필요한 기능</h2><img  src=http://www.plantuml.com/plantuml/svg/hP91Im915CVl-odUqJtiHdOByI8TWZe5NROEjivXoLQPtA3RPal89XJaWeah2beK6wooY46Vo7dp7Pg1g8jBMjxU3FFx_zwR6MFVCcdbWD0BooImQv_NYhP9De_it8v3oMaH2cMBsBNyCMXELSk3WLwNlNle3u7r6_ZiYehxC_OK_I0oZL21R0Dx6BD1g1WBBTbrMrQXSXeOBFp0CE4j3x0UoUegWNdY2W1xzp9O1auyOAyl8Xzm4FDEK_aDq-G0Ir-hb8oPFmAS3R0VP3REI8rQfleFJNQj6c4fb2jE2RuqcKDYbofKbPayyB3JmjikyCS0UwCCJWEyQQeWToTlIXgfwsczRotk_RhnVK8iGZ6BiZolErNzptzgvGbI7ddQciSkx5adj4WlWSKnlujuq9wFOrPlVm80>
+
+<ul>
+<li>마이크로 서비스 : 지속적으로 상태, 성능 성보를 전달(spring-actuator 사용시: <code>/mertirc</code>)</li>
+<li>서비스 레지스트리 : 모든 서비스와 해당 서비스들의 상태, 메타데이터, 종단점 URI를 지속적으로 추적</li>
+<li>로드 밸런서 : 사용 가능한 인스턴스 최신 정보를 얻기위해 서비스 레지스트리를 검색</li>
+<li>라이프 사이클 관리자<ul>
+<li>측정 지표 수집기 : 모든 서비스 인스턴스로부터 측정 지표 정보를 수집하는 책임, 슬라이딩 윈도우 유지</li>
+<li>확장 정책 : CPU 60% 이상 등의 규칙 집합</li>
+<li>결정 엔진 : 수집된 측정 지표와 확장 정책으로 확장과 축소를 결정하는 책임</li>
+<li>배포 규칙 : 서비스를 위해 최소 4GB의 메모리가 있어야 한다 등의 배포 제약 조건를 사용</li>
+<li>배포 엔진 : 레지스트리를 업데이트</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>라이프 사이클 관리자가 직접 인스턴스 생성, 제거를 하더라도 역할 상으로는 문제 없어 보임<br>다만 역할을 분리하여 관리하는 것이, 운영하기가 더 수월할 수도 있겠다는 생각이 듦</p>
+</blockquote>
+<h2 id="spring-boot를-활용한-사용자-정의-라이프-사이클-관리자-구현"><a href="#spring-boot를-활용한-사용자-정의-라이프-사이클-관리자-구현" class="headerlink" title="spring-boot를 활용한 사용자 정의 라이프 사이클 관리자 구현"></a>spring-boot를 활용한 사용자 정의 라이프 사이클 관리자 구현</h2><img  src=http://www.plantuml.com/plantuml/svg/YtOjBKhDJbHuqpBdzQQMMAxertFtl9cxvUsK5eKtJMj0hCOj2eu10R4AkgK5kdOAqQZg5QmK3FN0d9qjRxgMABnUjWP8lUtQeV1cuOQtith8CCy8oRpNcrkWCYIPd99VdWSo6wHXIilhvOqAhxSrWBN230PPPAptQaCZajlVD3U-RPwZy6OJqAGrN7WrutBxwyaRNo-SYyTfUY1NDNSel9cx0sH-onQGSG00>
+
+<ul>
+<li>스프링 부트 서비스는 마이크로 서비스에 해당<ul>
+<li>spring actuator가 활성화 되어 있고, 라이프 사이클 관리자는 이를 통해 측정 지표를 수집한다</li>
+</ul>
+</li>
+<li>라이프 사이클 관리자는 스르핑 애플리케이션이다<ul>
+<li>백그라운드 잡으로 실행</li>
+<li>Eureka 서버를 폴링</li>
+<li>Eureka 서버에서 받아온 서비스 목록의 actuator 종단점을 호출해서 상태와 수치 정보를 가져옴</li>
+<li>인스턴스 종료는 각 서비스 인스턴스의 종료 서비스를 호출(<code>/shutdown 등</code>)</li>
+<li>등록의 경우 SSH로 가상머신에 접속하고 미리 설치된 스크립트를 실행(혹은 스크립트 전달)</li>
+</ul>
+</li>
+</ul>
+<h2 id="member-api"><a href="#member-api" class="headerlink" title="member-api"></a>member-api</h2><p><strong>spring-actuator의 성능 지표</strong></p>
+<p><code>/metrics</code> 호출시 서비스 상태 반환</p>
+<p>참고 : <a href="https://cloud.spring.io/spring-cloud-netflix/multi/multi_netflix-metrics.html" target="_blank" rel="noopener">https://cloud.spring.io/spring-cloud-netflix/multi/multi_netflix-metrics.html</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;mem&quot;: 491102,</span><br><span class="line">    &quot;mem.free&quot;: 247109,</span><br><span class="line">    &quot;processors&quot;: 4,</span><br><span class="line">    &quot;instance.uptime&quot;: 15898,</span><br><span class="line">    &quot;uptime&quot;: 42016,</span><br><span class="line">    &quot;systemload.average&quot;: 3.90234375,</span><br><span class="line">    &quot;heap.committed&quot;: 435200,</span><br><span class="line">    &quot;heap.init&quot;: 262144,</span><br><span class="line">    &quot;heap.used&quot;: 188090,</span><br><span class="line">    &quot;heap&quot;: 3728384,</span><br><span class="line">    &quot;nonheap.committed&quot;: 56920,</span><br><span class="line">    &quot;nonheap.init&quot;: 2496,</span><br><span class="line">    &quot;nonheap.used&quot;: 55903,</span><br><span class="line">    &quot;nonheap&quot;: 0,</span><br><span class="line">    &quot;threads.peak&quot;: 35,</span><br><span class="line">    &quot;threads.daemon&quot;: 30,</span><br><span class="line">    ...</span><br><span class="line">    &quot;httpsessions.max&quot;: -1,</span><br><span class="line">    &quot;httpsessions.active&quot;: 0</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="member-api-1"><a href="#member-api-1" class="headerlink" title="member-api"></a>member-api</h2><p>분당 transaction 추가</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">@Autowired</span><br><span class="line">private GaugeService gaugeService;</span><br><span class="line"></span><br><span class="line">@Bean</span><br><span class="line">public Filter transactionPerMinuteCountFilter() &#123;</span><br><span class="line"></span><br><span class="line">    return new OncePerRequestFilter() &#123;</span><br><span class="line">        private SlidingWindowCounter counter &#x3D; new SlidingWindowCounter(Duration.ofSeconds(10L));</span><br><span class="line"></span><br><span class="line">        @Override</span><br><span class="line">        protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException &#123;</span><br><span class="line">            gaugeService.submit(&quot;gauge.request.per.10s&quot;, counter.increase());</span><br><span class="line">            filterChain.doFilter(request, response);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">private class SlidingWindowCounter &#123;</span><br><span class="line">    private Duration duration;</span><br><span class="line">    private LocalDateTime expiry;</span><br><span class="line">    private long count;</span><br><span class="line"></span><br><span class="line">    public SlidingWindowCounter(Duration duration) &#123;</span><br><span class="line">        this.duration &#x3D; duration;</span><br><span class="line">        calculateExpiry();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private void calculateExpiry() &#123;</span><br><span class="line">        this.expiry &#x3D; LocalDateTime.now().plus(duration);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public synchronized long increase() &#123;</span><br><span class="line">        if (expiry.isBefore(LocalDateTime.now())) &#123;</span><br><span class="line">            calculateExpiry();</span><br><span class="line">            count &#x3D; 1L;</span><br><span class="line">            return count;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        return ++count;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong><code>http://localhost:8081/metrics</code></strong></p>
+<p><code>/members</code>를 한 번 호출 후</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  ...</span><br><span class="line">  &quot;gauge.request.per.10s()&quot;: 1,</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="LifecycleManagerApplication"><a href="#LifecycleManagerApplication" class="headerlink" title="LifecycleManagerApplication"></a>LifecycleManagerApplication</h2><h3 id="MetricsCollector"><a href="#MetricsCollector" class="headerlink" title="MetricsCollector"></a>MetricsCollector</h3><p><code>/metrics</code> 정보 수집</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">while (true) &#123;</span><br><span class="line">    try &#123;</span><br><span class="line">        Thread.sleep(1000);</span><br><span class="line">    &#125; catch (InterruptedException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">    &#x2F;&#x2F; 서비스 목록 순회</span><br><span class="line">    eurekaClient.getServices().forEach(service -&gt; &#123;</span><br><span class="line">        log.info(&quot;service : &#123;&#125;&quot;, service);</span><br><span class="line">        Map metrics &#x3D; restTemplate.getForObject(&quot;http:&#x2F;&#x2F;&#123;service&#125;&#x2F;metrics&quot;, Map.class, service);</span><br><span class="line">        decisionEngine.execute(service, metrics);</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="LifecycleManagerApplication-1"><a href="#LifecycleManagerApplication-1" class="headerlink" title="LifecycleManagerApplication"></a>LifecycleManagerApplication</h2><h3 id="DecisionEngine"><a href="#DecisionEngine" class="headerlink" title="DecisionEngine"></a>DecisionEngine</h3><p><code>/metrics</code> 정보로 배포가 필요한지 판단 후 배포 실행</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F; 서비스 별 정책에 의한 확장 필요여부 판단</span><br><span class="line">if (policies.getPolicy(serviceId).isScaleOutRequired(serviceId, metrics)) &#123;</span><br><span class="line">    return deploymentEngine.scaleOut(deploymentRules.getDeploymentRule(serviceId), serviceId);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>SamplePolicy</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">public boolean isScaleOutRequired(String serviceId, Map metrics) &#123;</span><br><span class="line">    &#x2F;&#x2F; 10초당 100회 이상의 요청이 있는 경우 배포</span><br><span class="line">    if (metrics.containsKey(key)) &#123;</span><br><span class="line">        Long requestsPer10Seconds &#x3D; (Long) metrics.get(key);</span><br><span class="line">        log.info(&quot;&#123;&#125; : &#123;&#125;&quot;, key, requestsPer10Seconds);</span><br><span class="line">        return requestsPer10Seconds &gt; 10L;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    return false;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="LifecycleManagerApplication-2"><a href="#LifecycleManagerApplication-2" class="headerlink" title="LifecycleManagerApplication"></a>LifecycleManagerApplication</h2><h3 id="DeplymentEngine"><a href="#DeplymentEngine" class="headerlink" title="DeplymentEngine"></a>DeplymentEngine</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">public boolean scaleOut(DeploymentRule rule, String serviceId) &#123;</span><br><span class="line"></span><br><span class="line">    if (!rule.executable()) &#123;</span><br><span class="line">        return false;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    Thread thread &#x3D; new Thread(() -&gt; &#123;</span><br><span class="line">        executeDeploy();</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    thread.start();</span><br><span class="line">    return true;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F; TODO: 배포 서비스에 맞춰 배포 실행</span><br><span class="line">private void executeDeploy() &#123;</span><br><span class="line">    log.info(&quot;배포 실행&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="참고"><a href="#참고" class="headerlink" title="참고"></a>참고</h1><p><strong>서적</strong></p>
+<p><a href="http://www.acornpub.co.kr/book/spring-microservices" target="_blank" rel="noopener">스프링 마이크로 서비스(라제시 RV, 2017.07.27, acorn+PACKT)</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>작성자:</strong>
+    supawer0728
+  </li>
+  <li class="post-copyright-link">
+    <strong>원본링크:</strong>
+    <a href="https://supawer0728.github.io/2018/03/11/Spring-Cloud-Auto-Scaling/" title="Spring Cloud를 사용한 Auto Scaling">https://supawer0728.github.io/2018/03/11/Spring-Cloud-Auto-Scaling/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>라이센스: </strong>
+    <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a>
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/spring-cloud/" rel="tag"># spring-cloud</a>
+          
+            <a href="/tags/eureka/" rel="tag"># eureka</a>
+          
+            <a href="/tags/spring-actuator/" rel="tag"># spring-actuator</a>
+          
+            <a href="/tags/architecture/" rel="tag"># architecture</a>
+          
+            <a href="/tags/msa/" rel="tag"># msa</a>
+          
+        </div>
+      
+
+      
+      
+        <div class="post-widgets">
+        
+
+        
+
+        
+          
+          <div id="needsharebutton-postbottom">
+            <span class="btn">
+              <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </span>
+          </div>
+        
+        </div>
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/11/Spring-Cloud-Ribbon%EA%B3%BC-Eureka/" rel="next" title="(Spring Cloud)Ribbon과 Eureka">
+                <i class="fa fa-chevron-left"></i> (Spring Cloud)Ribbon과 Eureka
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/11/Spring-Cloud-Zuul/" rel="prev" title="(Spring Cloud) Zuul">
+                (Spring Cloud) Zuul <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript" target="_blank" rel="noopener">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            목차
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            흝어보기
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="supawer0728" />
+            
+              <p class="site-author-name" itemprop="name">supawer0728</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">32</span>
+                  <span class="site-state-item-name">포스트</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">카테고리</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">50</span>
+                  <span class="site-state-item-name">태그</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/feed.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/supawer0728" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Eureka-Topology"><span class="nav-number">1.</span> <span class="nav-text">Eureka Topology</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#자동확장-Auto-Scale-out"><span class="nav-number">2.</span> <span class="nav-text">자동확장(Auto Scale-out)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#자동확장이란"><span class="nav-number">2.1.</span> <span class="nav-text">자동확장이란?</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#장점"><span class="nav-number">2.1.1.</span> <span class="nav-text">장점</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#확장-모델"><span class="nav-number">2.2.</span> <span class="nav-text">확장 모델</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#확장-모델-어플리케이션-자동-확장"><span class="nav-number">2.3.</span> <span class="nav-text">확장 모델(어플리케이션 자동 확장)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#확장-모델-인프라스트럭처-자동-확장"><span class="nav-number">2.4.</span> <span class="nav-text">확장 모델(인프라스트럭처 자동 확장)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#확장-모델-클라우드-자동-확장"><span class="nav-number">2.5.</span> <span class="nav-text">확장 모델(클라우드 자동 확장)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#자동-확장-방식-자원-제약-조건-기반"><span class="nav-number">2.6.</span> <span class="nav-text">자동 확장 방식(자원 제약 조건 기반)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#자동-확장-방식-특정-기간-동안"><span class="nav-number">2.7.</span> <span class="nav-text">자동 확장 방식(특정 기간 동안)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#자동-확장-방식-메시지-큐-길이-기반"><span class="nav-number">2.8.</span> <span class="nav-text">자동 확장 방식(메시지 큐 길이 기반)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#자동-확장-방식-예측에-의한-확장"><span class="nav-number">2.9.</span> <span class="nav-text">자동 확장 방식(예측에 의한 확장)</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#구현"><span class="nav-number">3.</span> <span class="nav-text">구현</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#필요한-기능"><span class="nav-number">3.1.</span> <span class="nav-text">필요한 기능</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#spring-boot를-활용한-사용자-정의-라이프-사이클-관리자-구현"><span class="nav-number">3.2.</span> <span class="nav-text">spring-boot를 활용한 사용자 정의 라이프 사이클 관리자 구현</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#member-api"><span class="nav-number">3.3.</span> <span class="nav-text">member-api</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#member-api-1"><span class="nav-number">3.4.</span> <span class="nav-text">member-api</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LifecycleManagerApplication"><span class="nav-number">3.5.</span> <span class="nav-text">LifecycleManagerApplication</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#MetricsCollector"><span class="nav-number">3.5.1.</span> <span class="nav-text">MetricsCollector</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LifecycleManagerApplication-1"><span class="nav-number">3.6.</span> <span class="nav-text">LifecycleManagerApplication</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#DecisionEngine"><span class="nav-number">3.6.1.</span> <span class="nav-text">DecisionEngine</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LifecycleManagerApplication-2"><span class="nav-number">3.7.</span> <span class="nav-text">LifecycleManagerApplication</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#DeplymentEngine"><span class="nav-number">3.7.1.</span> <span class="nav-text">DeplymentEngine</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#참고"><span class="nav-number">4.</span> <span class="nav-text">참고</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">supawer0728</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+  <div class="footer-custom">To Improve Human Life</div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://supawer0728-github-com.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://supawer0728.github.io/2018/03/11/Spring-Cloud-Auto-Scaling/';
+          this.page.identifier = '2018/03/11/Spring-Cloud-Auto-Scaling/';
+          this.page.title = 'Spring Cloud를 사용한 Auto Scaling';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://supawer0728-github-com.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('-1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/needsharebutton/needsharebutton.css">
+
+  
+  
+  <script src="/lib/needsharebutton/needsharebutton.js"></script>
+
+  <script>
+    
+      pbOptions = {};
+      
+          pbOptions.iconStyle = "box";
+      
+          pbOptions.boxForm = "horizontal";
+      
+          pbOptions.position = "bottomCenter";
+      
+          pbOptions.networks = "Twitter,Facebook,GooglePlus,Evernote";
+      
+      new needShareButton('#needsharebutton-postbottom', pbOptions);
+    
+    
+  </script>
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

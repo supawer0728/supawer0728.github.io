@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Nanum Gothic:300,300italic,400,400italic,700,700italic|Nanum Pen Script:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-icon-180x180.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.4">
+
+
+
+  <link rel="manifest" href="/images/manifest.json">
+
+
+  <meta name="msapplication-config" content="/images/browserconfig.xml" />
+
+
+
+  <meta name="keywords" content="java,socket," />
+
+
+
+
+
+  <link rel="alternate" href="/feed.xml" title="기록은 재산이다" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="서론Spring에서 지원하는 Streaming이나, WebSocket에 관련해서 공부하다가, 기본 지식을 다시 복습해야할 필요성을 느꼈다.대학 강의 내용을 토대로 가끔씩 다시 떠올릴만한 내용들을 정리해두고자 한다. SocketKernel 상에서 File Descriptor로 취급된다.Local과 Remote의 Ip Address, Port 정보를 가지고 있">
+<meta property="og:type" content="article">
+<meta property="og:title" content="가끔 복기할 만한 TCP Socket Programming 기초">
+<meta property="og:url" content="https://supawer0728.github.io/2018/03/15/Java-Server-Socket-Programming-Base/index.html">
+<meta property="og:site_name" content="기록은 재산이다">
+<meta property="og:description" content="서론Spring에서 지원하는 Streaming이나, WebSocket에 관련해서 공부하다가, 기본 지식을 다시 복습해야할 필요성을 느꼈다.대학 강의 내용을 토대로 가끔씩 다시 떠올릴만한 내용들을 정리해두고자 한다. SocketKernel 상에서 File Descriptor로 취급된다.Local과 Remote의 Ip Address, Port 정보를 가지고 있">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/en/5/57/Tcp_state_diagram.png">
+<meta property="article:published_time" content="2018-03-15T01:51:24.000Z">
+<meta property="article:modified_time" content="2020-03-04T08:18:02.740Z">
+<meta property="article:author" content="supawer0728">
+<meta property="article:tag" content="java">
+<meta property="article:tag" content="socket">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://upload.wikimedia.org/wikipedia/en/5/57/Tcp_state_diagram.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '작성자'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://supawer0728.github.io/2018/03/15/Java-Server-Socket-Programming-Base/"/>
+
+
+
+
+
+  <title>가끔 복기할 만한 TCP Socket Programming 기초 | 기록은 재산이다</title>
+  
+
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-115481794-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'UA-115481794-1');
+</script>
+
+
+
+
+
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script data-ad-client="" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="ko">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">기록은 재산이다</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">To Improve Human Life</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            홈
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            태그
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            카테고리
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            아카이브
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            검색
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="Searching..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://supawer0728.github.io/2018/03/15/Java-Server-Socket-Programming-Base/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="supawer0728">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="기록은 재산이다">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">가끔 복기할 만한 TCP Socket Programming 기초</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">작성일&#58;</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-15T10:51:24+09:00">
+                2018-03-15
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">수정일&#58;</span>
+              
+              <time title="수정일" itemprop="dateModified" datetime="2020-03-04T17:18:02+09:00">
+              
+                2018-03-15
+              
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/etc/" itemprop="url" rel="index">
+                    <span itemprop="name">etc.</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/03/15/Java-Server-Socket-Programming-Base/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/03/15/Java-Server-Socket-Programming-Base/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="서론"><a href="#서론" class="headerlink" title="서론"></a>서론</h1><p>Spring에서 지원하는 Streaming이나, WebSocket에 관련해서 공부하다가, 기본 지식을 다시 복습해야할 필요성을 느꼈다.<br>대학 강의 내용을 토대로 가끔씩 다시 떠올릴만한 내용들을 정리해두고자 한다.</p>
+<h1 id="Socket"><a href="#Socket" class="headerlink" title="Socket"></a>Socket</h1><p>Kernel 상에서 File Descriptor로 취급된다.<br>Local과 Remote의 Ip Address, Port 정보를 가지고 있다.<br>Data를 이 Socket을 대상으로 Read, Write한다.</p>
+<a id="more"></a>
+
+<h1 id="Linux-Socket-Programming"><a href="#Linux-Socket-Programming" class="headerlink" title="Linux Socket Programming"></a>Linux Socket Programming</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span> </span>&#123;</span><br><span class="line">  <span class="keyword">int</span> server_socket;</span><br><span class="line">  <span class="keyword">int</span> client_socket;</span><br><span class="line">  <span class="keyword">int</span> port = <span class="number">8080</span>;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">server_address</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">client_address</span>;</span></span><br><span class="line">  <span class="keyword">int</span> client_address_len = <span class="keyword">sizeof</span>(client_address);</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">char</span>[] greeting = <span class="string">"Hello World!"</span>;</span><br><span class="line">  </span><br><span class="line">  server_socket = socket(PF_INET, SOCK_STREAM, <span class="number">0</span>); <span class="comment">// 1</span></span><br><span class="line"></span><br><span class="line">  <span class="built_in">memset</span>(&amp;server_address, <span class="number">0</span>, <span class="keyword">sizeof</span>(server_address))</span><br><span class="line">  serv_addr.sin_family = AF_INET;</span><br><span class="line">  serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);</span><br><span class="line">  serv_addr.sin_port = htons(<span class="number">5000</span>); </span><br><span class="line">  </span><br><span class="line">  bind(server_socket, (struct sockaddr*) &amp;server_address, <span class="keyword">sizeof</span>(server_address)); <span class="comment">// 2</span></span><br><span class="line"></span><br><span class="line">  <span class="built_in">listen</span>(server_socket, <span class="number">1</span>); <span class="comment">// 3</span></span><br><span class="line">  </span><br><span class="line">  client_socket = accept(server_socket, (struct sockaddr*)&amp;client_address, (<span class="keyword">socklen_t</span>*) &amp;client_address_len); <span class="comment">// 4</span></span><br><span class="line">  </span><br><span class="line">  <span class="built_in">write</span>(client_socket, greeting, <span class="keyword">sizeof</span>(greeting)); <span class="comment">// 5</span></span><br><span class="line">  <span class="built_in">close</span>(client_socket);</span><br><span class="line">  <span class="built_in">close</span>(server_socket);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Java는 위 작업들을 <code>new ServerSocket()</code>만으로도 자동으로 해주기 때문에.<br>Server가 Socket 통신할 때, 저수준에서 어떠한 작업들을 하는지 파악하기 위해 C로 작성해보았다.</p>
+<ol>
+<li>socket(file descriptor)를 생성한다<ul>
+<li>프로토콜 체계, TCP인지, UDP인지 결정한다</li>
+</ul>
+</li>
+<li>socket에 address 정보를 바인딩한다</li>
+<li>해당 socket이 요청을 받을 수 있도록한다</li>
+<li>server socket으로 연결(connection) 요청이 들어오면, accept()는 client의 socket을 반환한다. 연결이 있을 때까지 blocking된다</li>
+<li>client socket에 메시지를 쓴다</li>
+</ol>
+<h2 id="좀-더-살펴보기"><a href="#좀-더-살펴보기" class="headerlink" title="좀 더 살펴보기"></a>좀 더 살펴보기</h2><h3 id="listen-int-socket-int-backlog"><a href="#listen-int-socket-int-backlog" class="headerlink" title="listen(int socket, int backlog)"></a>listen(int socket, int backlog)</h3><p><code>socket</code>에 connection queue를 붙이고 connection 대기 상태로 바꾼다.<br><code>backlog</code>는 queue의 크기를 나타낸다</p>
+<h3 id="client-socket-accept-server-socket-…"><a href="#client-socket-accept-server-socket-…" class="headerlink" title="client_socket = accept(server_socket, …)"></a>client_socket = accept(server_socket, …)</h3><p>connection queue의 요청으로 connection을 맺은 후 새로운 socket을 생성해서 반환한다.<br><code>server_socket</code>은 계속해서 connection 요청을 처리해야하기 때문에, connection 요청이 처리된 경우에는 새로운 socket을 생성하게 된다.<br>새로 생성된 socket으로 client와 통신할 수 있다.</p>
+<h1 id="Socket-Stream"><a href="#Socket-Stream" class="headerlink" title="Socket Stream"></a>Socket Stream</h1><p>socket을 생성하고 connection이 수립되면, 해당 소켓으로 읽기와 쓰기가 가능하다.<br>읽기와 쓰기는 각각의 Stream 개념으로 유지되며, 버퍼를 가진다.<br><code>write()</code>를 호출하면 입력 버퍼로 데이터가 쌓이며, 원격에서 <code>read()</code>를 호출하면 데이터를 읽을 수 있다.</p>
+<p>오해하기 쉬운 것은 데이터를 보내는 시점이다.<br><code>write()</code>를 호출한다고 전송을 하는 것이 아니며, <code>read()</code>를 호출한다고 원격의 버퍼를 읽어오는 것이 아니다.</p>
+<p><code>write()</code>를 호출하면 socket의 쓰기 버퍼에 정보가 쌓인 상태로 있고, 원격에서 읽기 버퍼에 데이터를 쌓을 수 있는 상황인지 파악 후 통신을 시작한다.<br><a href="http://www.omnisecu.com/tcpip/tcp-sliding-window.php" target="_blank" rel="noopener">TCP Sliding Window</a>가 이를 가능하게 해준다.</p>
+<p>특정 socket에 read stream만 닫는다거나, write stream만 닫는 등의 방법으로 다양한 동작 방식으로 socket programming을 할 수 있다.(read thread와 write thread의 분할 등)</p>
+<h1 id="Hand-Shake-Send-Receive-Close"><a href="#Hand-Shake-Send-Receive-Close" class="headerlink" title="Hand Shake, Send/Receive, Close"></a>Hand Shake, Send/Receive, Close</h1><h2 id="Hand-Shake-3-Way-HandShaking"><a href="#Hand-Shake-3-Way-HandShaking" class="headerlink" title="Hand Shake : 3-Way HandShaking"></a>Hand Shake : 3-Way HandShaking</h2><p>TCP socket connection을 맺기 위한 일련의 과정이다.</p>
+<ol>
+<li>client : 들려?</li>
+<li>server : 어, 들려!</li>
+<li>client : Ok, 알았어!</li>
+</ol>
+<img  src=http://www.plantuml.com/plantuml/svg/Syx9JCqhKT2rKmXEBIfBBLAmKeWEZlIBLGXs3RHIC3Gmq55mTFQsKj3bWie3LJf3z41KQWEbeQgDuAeD3GovdB6OZ50BL05LQsHW2000>
+
+<p><strong>SEQ, ACK의 의미</strong></p>
+<p>각자 자기 입장에서</p>
+<ul>
+<li>SEQ : N까지 보냈다</li>
+<li>ACK : XX부터 보내면 된다(자신이 받은 SEQ + 1)</li>
+</ul>
+<h2 id="Send-Receive"><a href="#Send-Receive" class="headerlink" title="Send/Receive"></a>Send/Receive</h2><p>HandShake가 완료된 이후,<br>client에서 300byte를 세 번 전송하는 다이어그램.</p>
+<img  src=http://www.plantuml.com/plantuml/svg/2qujAaijKj2rKt3EoKpDAr5Gi588TWsqKZ0oCD1HC3Gmq4sgB4bLu8BA0jK5GtHOAJWwUrif61iOSWMZcm4r0YY7C0Ad2IO6HbosjWebcRcf-QKb2iKbYKKb2hQs25CZq8m5Qa0o5abhQbuAYaQy-d0vnzJ06000>
+
+<p>SEQ, ACK를 주고 받으면서 송수신한다.<br>timeout 내에 ACK가 오지 않으면 재전송한다.</p>
+<h2 id="Close-4-Way-Handshaking"><a href="#Close-4-Way-Handshaking" class="headerlink" title="Close : 4-Way Handshaking"></a>Close : 4-Way Handshaking</h2><ol>
+<li>client : 이제 우리 그만 만나…</li>
+<li>server : 그래, 맘 정리할 시간을 줘</li>
+<li>server : 정리다했어, 그동안 미안했어</li>
+<li>client : 그래 안녕</li>
+</ol>
+<img  src=http://www.plantuml.com/plantuml/svg/Syx9JCqhKT2rKmXEBIfBBLAmKeXsy_IBLGXs3RHIC3GmCD1HS7JsjbBGvShBBqbLo4bDAx42YIYycR7czTIULpjxtYnlK01gYGztz0o9D-I2cWCqqHbYDj14e7geYKO84u666o8R2ZG3Xw5646L5cUaPK7MlDszvtRG7eTJPnp_O5QmOg_q87m7jDyIm7semXgzy78D3ue6YNCvOGWdX9qE4cK3ZZH1-0YfxCtVFcmLJttJFURMXHI74qnVYo9YyLzjtABoTtG9nk0i0>
+
+<h3 id="우아한-종료란"><a href="#우아한-종료란" class="headerlink" title="우아한 종료란?"></a>우아한 종료란?</h3><p>TCP가 비정상적으로 종료될 가능성이 몇가지 있다.</p>
+<h4 id="case-1-개발자-실수-close-호출"><a href="#case-1-개발자-실수-close-호출" class="headerlink" title="case 1: 개발자 실수(close 호출)"></a>case 1: 개발자 실수(close 호출)</h4><p>socket을 통해서 read, write stream이 생성된다.<br><code>close(socket)</code>을 호출하면, 모든 stream을 닫아서 읽기가 불가능해진다.<br>즉, 한 쪽에서 <code>close(socket)</code>을 호출하면 아래와 같은 상황이 된다.</p>
+<p>여기서 client란 먼저 FIN을 요청한 쪽으로 정의하겠다.</p>
+<img  src=http://www.plantuml.com/plantuml/svg/ixLLICx9JCqhUJDzmfkMEK1EVd6gHd5-SdPgYQR2snaxtcoRes1ho-KCLgIWQwSGd5fKbbgaOAKGxURf5wiGx1fefM1eO62We-3ex6sbeCi5LG1K2jK4L0gKWYerGYW5wZB4gXfXC52r8R9gMrk5Lnic0972wpLRthJrlEcU2tGT0000>
+
+<h5 id="Half-Close"><a href="#Half-Close" class="headerlink" title="Half-Close"></a>Half-Close</h5><p>이러한 경우는 client에서 write stream만 먼저 종료시키는 Half-close 개념을 사용해서 해결할 수 있다.<br>write stream이 종료되어도 <code>close()</code>가 호출될 때, server로 ACK가 전송된다.</p>
+<h4 id="case-2-Client가-FIN을-보낸-후-Server로부터-ACK없이-FIN을-받는-경우"><a href="#case-2-Client가-FIN을-보낸-후-Server로부터-ACK없이-FIN을-받는-경우" class="headerlink" title="case 2: Client가 FIN을 보낸 후, Server로부터 ACK없이 FIN을 받는 경우"></a>case 2: Client가 FIN을 보낸 후, Server로부터 ACK없이 FIN을 받는 경우</h4><ul>
+<li>가능성 1 : Server측 ACK가 네트워크상 유실됨</li>
+<li>가능성 2 : Network Congestion 등의 문제로 FIN이 ACK보다 먼저 도착</li>
+</ul>
+<p><strong>도식으로 나타내면 다음과 같다</strong></p>
+<img  src=http://www.plantuml.com/plantuml/svg/Syx9JCqhKT2rKmXEBIfBBLAmKeXsy_IBLGXs3RHIC3GmCD1HS7JsjbBGvO8gqBMBK726w0Ag1Sf1rHeXr0Ar6IAK8wb6c0nKROYisXcBEn1c6o9K0pKQSUNbbwGgvAIcWGnzCtVFcmLJttJFURMXHI74qzSrFjpHCoGcxzNs7GflPxSeEFlu1xkw0000>
+
+<h5 id="TIME-WAIT"><a href="#TIME-WAIT" class="headerlink" title="TIME_WAIT"></a>TIME_WAIT</h5><p>4-Way Handshake로 종료하도록 TCP는 정의되어 있다.<br><code>FIN_WAIT_1</code> 상태에서 FIN을 먼저 받을 경우, 패킷 흐름의 무결성을 지키기 위해 <code>TIME_WAIT</code>동안 패킷를 기다린다.<br>패킷이 도착하거나, <code>TIME_WAIT</code> 시간이 경과하면 <code>CLOSED</code>로 바뀐다.<br><code>TIME_WAIT</code>는 먼저 <code>FIN</code>을 호출한 쪽에서 생겨야한다!!!</p>
+<p><strong>TCP State Diagram</strong></p>
+<p><img src="https://upload.wikimedia.org/wikipedia/en/5/57/Tcp_state_diagram.png" alt="Tcp state Diagram"></p>
+<p><strong>Sokcet Reuse</strong></p>
+<p>기본적으로 <code>SO_RESUSEADDR</code>은 <code>false</code>로 설정되어 있으며,<br><code>true</code>로 설정하면 <code>TIME_WAIT</code> 상태의 포트를 사용할 수 있게 된다.</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>작성자:</strong>
+    supawer0728
+  </li>
+  <li class="post-copyright-link">
+    <strong>원본링크:</strong>
+    <a href="https://supawer0728.github.io/2018/03/15/Java-Server-Socket-Programming-Base/" title="가끔 복기할 만한 TCP Socket Programming 기초">https://supawer0728.github.io/2018/03/15/Java-Server-Socket-Programming-Base/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>라이센스: </strong>
+    <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a>
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/java/" rel="tag"># java</a>
+          
+            <a href="/tags/socket/" rel="tag"># socket</a>
+          
+        </div>
+      
+
+      
+      
+        <div class="post-widgets">
+        
+
+        
+
+        
+          
+          <div id="needsharebutton-postbottom">
+            <span class="btn">
+              <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </span>
+          </div>
+        
+        </div>
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/14/Mustache/" rel="next" title="Mustache 공유">
+                <i class="fa fa-chevron-left"></i> Mustache 공유
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/15/spring-http-stereamings/" rel="prev" title="Spring5에서 HTTP Streaming">
+                Spring5에서 HTTP Streaming <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript" target="_blank" rel="noopener">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            목차
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            흝어보기
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="supawer0728" />
+            
+              <p class="site-author-name" itemprop="name">supawer0728</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">32</span>
+                  <span class="site-state-item-name">포스트</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">카테고리</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">50</span>
+                  <span class="site-state-item-name">태그</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/feed.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/supawer0728" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#서론"><span class="nav-number">1.</span> <span class="nav-text">서론</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Socket"><span class="nav-number">2.</span> <span class="nav-text">Socket</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Linux-Socket-Programming"><span class="nav-number">3.</span> <span class="nav-text">Linux Socket Programming</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#좀-더-살펴보기"><span class="nav-number">3.1.</span> <span class="nav-text">좀 더 살펴보기</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#listen-int-socket-int-backlog"><span class="nav-number">3.1.1.</span> <span class="nav-text">listen(int socket, int backlog)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#client-socket-accept-server-socket-…"><span class="nav-number">3.1.2.</span> <span class="nav-text">client_socket &#x3D; accept(server_socket, …)</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Socket-Stream"><span class="nav-number">4.</span> <span class="nav-text">Socket Stream</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Hand-Shake-Send-Receive-Close"><span class="nav-number">5.</span> <span class="nav-text">Hand Shake, Send&#x2F;Receive, Close</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Hand-Shake-3-Way-HandShaking"><span class="nav-number">5.1.</span> <span class="nav-text">Hand Shake : 3-Way HandShaking</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Send-Receive"><span class="nav-number">5.2.</span> <span class="nav-text">Send&#x2F;Receive</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Close-4-Way-Handshaking"><span class="nav-number">5.3.</span> <span class="nav-text">Close : 4-Way Handshaking</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#우아한-종료란"><span class="nav-number">5.3.1.</span> <span class="nav-text">우아한 종료란?</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#case-1-개발자-실수-close-호출"><span class="nav-number">5.3.1.1.</span> <span class="nav-text">case 1: 개발자 실수(close 호출)</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Half-Close"><span class="nav-number">5.3.1.1.1.</span> <span class="nav-text">Half-Close</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#case-2-Client가-FIN을-보낸-후-Server로부터-ACK없이-FIN을-받는-경우"><span class="nav-number">5.3.1.2.</span> <span class="nav-text">case 2: Client가 FIN을 보낸 후, Server로부터 ACK없이 FIN을 받는 경우</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#TIME-WAIT"><span class="nav-number">5.3.1.2.1.</span> <span class="nav-text">TIME_WAIT</span></a></li></ol></li></ol></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">supawer0728</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+  <div class="footer-custom">To Improve Human Life</div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://supawer0728-github-com.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://supawer0728.github.io/2018/03/15/Java-Server-Socket-Programming-Base/';
+          this.page.identifier = '2018/03/15/Java-Server-Socket-Programming-Base/';
+          this.page.title = '가끔 복기할 만한 TCP Socket Programming 기초';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://supawer0728-github-com.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('-1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/needsharebutton/needsharebutton.css">
+
+  
+  
+  <script src="/lib/needsharebutton/needsharebutton.js"></script>
+
+  <script>
+    
+      pbOptions = {};
+      
+          pbOptions.iconStyle = "box";
+      
+          pbOptions.boxForm = "horizontal";
+      
+          pbOptions.position = "bottomCenter";
+      
+          pbOptions.networks = "Twitter,Facebook,GooglePlus,Evernote";
+      
+      new needShareButton('#needsharebutton-postbottom', pbOptions);
+    
+    
+  </script>
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

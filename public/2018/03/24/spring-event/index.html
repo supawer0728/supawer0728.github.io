@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Nanum Gothic:300,300italic,400,400italic,700,700italic|Nanum Pen Script:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-icon-180x180.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.4">
+
+
+
+  <link rel="manifest" href="/images/manifest.json">
+
+
+  <meta name="msapplication-config" content="/images/browserconfig.xml" />
+
+
+
+  <meta name="keywords" content="spring,event,practice," />
+
+
+
+
+
+  <link rel="alternate" href="/feed.xml" title="기록은 재산이다" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="서론원래 글을 쓰기 위해 준비하던 내용은 Event를 강조하는 것이었는데, 준비를 하다 보니 Async와 AOP를 다 쓰게 되어버렸다. 이번 글에서는 하나의 transaction 안에서 많은 일을 처리하는 소스 코드를 두고, 아래와 같이 점진적으로 리팩토링해나가는 과정에 대해 이야기하려고 한다.   하나의 transaction으로 처리하기 transacti">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Event + Async + AOP 적용해보기">
+<meta property="og:url" content="https://supawer0728.github.io/2018/03/24/spring-event/index.html">
+<meta property="og:site_name" content="기록은 재산이다">
+<meta property="og:description" content="서론원래 글을 쓰기 위해 준비하던 내용은 Event를 강조하는 것이었는데, 준비를 하다 보니 Async와 AOP를 다 쓰게 되어버렸다. 이번 글에서는 하나의 transaction 안에서 많은 일을 처리하는 소스 코드를 두고, 아래와 같이 점진적으로 리팩토링해나가는 과정에 대해 이야기하려고 한다.   하나의 transaction으로 처리하기 transacti">
+<meta property="og:locale" content="ko_KR">
+<meta property="article:published_time" content="2018-03-23T15:43:45.000Z">
+<meta property="article:modified_time" content="2020-03-04T08:18:02.750Z">
+<meta property="article:author" content="supawer0728">
+<meta property="article:tag" content="spring">
+<meta property="article:tag" content="event">
+<meta property="article:tag" content="practice">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '작성자'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://supawer0728.github.io/2018/03/24/spring-event/"/>
+
+
+
+
+
+  <title>Spring Event + Async + AOP 적용해보기 | 기록은 재산이다</title>
+  
+
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-115481794-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'UA-115481794-1');
+</script>
+
+
+
+
+
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script data-ad-client="" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="ko">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">기록은 재산이다</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">To Improve Human Life</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            홈
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            태그
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            카테고리
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            아카이브
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            검색
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="Searching..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://supawer0728.github.io/2018/03/24/spring-event/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="supawer0728">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="기록은 재산이다">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Spring Event + Async + AOP 적용해보기</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">작성일&#58;</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-24T00:43:45+09:00">
+                2018-03-24
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">수정일&#58;</span>
+              
+              <time title="수정일" itemprop="dateModified" datetime="2020-03-04T17:18:02+09:00">
+              
+                2018-03-24
+              
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/" itemprop="url" rel="index">
+                    <span itemprop="name">spring</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/practice/" itemprop="url" rel="index">
+                    <span itemprop="name">practice</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/03/24/spring-event/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/03/24/spring-event/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="서론"><a href="#서론" class="headerlink" title="서론"></a>서론</h1><p>원래 글을 쓰기 위해 준비하던 내용은 Event를 강조하는 것이었는데, 준비를 하다 보니 Async와 AOP를 다 쓰게 되어버렸다.</p>
+<p>이번 글에서는 하나의 transaction 안에서 많은 일을 처리하는 소스 코드를 두고, 아래와 같이 점진적으로 리팩토링해나가는 과정에 대해 이야기하려고 한다. </p>
+<ol>
+<li>하나의 transaction으로 처리하기</li>
+<li>transaction 내에 처리하지 않아도 될 부분은, transaction이 끝난 후에 처리하기</li>
+<li>Event 사용하기</li>
+<li>Event도 비동기로 처리하기</li>
+<li>AOP를 사용해서 Advisor에서 Event 발급하기</li>
+<li>순서가 필요 있나? Best Effort!</li>
+</ol>
+<a id="more"></a>
+
+<p>본문에서는 <code>mybatis</code>를 사용하며, <code>@Service</code>에서 대부분의 로직을 처리하는 방식에 대해 다루고 있다. 도메인 주도 설계(Domain-Driven Design)으로 개발을 하는 경우에는 <code>Domain Event</code> 개념을 사용할 수 있다. 기회가 된다면 <code>DDD Start!(최범균 저)</code>라는 책을 읽어볼 것을 강력히 추천한다. 필자가 알고 있는 DDD의 지식이 대부분 저 책을 기반으로 하다 보니, 현재 알고 있는 내용으로 공개 블로그를 작성하기가 어렵다.<br><code>Spring Framework 5.0.4.RELEASE</code>가 나온 현재까지, 간편하게 <code>Domain Event</code>를 사용할 수 있는 방법은 없어 보인다. <code>ThreadLocal</code>이나 <code>Configurable</code>의 힘을 빌려 자체적으로 구현해야한다. <code>DDD Start!</code>를 보고 Spring에서 <code>Domain Event</code>를 사용할 것이라면, 작가님이 운영하는 <a href="http://javacan.tistory.com/entry/Handle-DomainEvent-with-Spring-ApplicationEventPublisher-EventListener-TransactionalEventListener" target="_blank" rel="noopener">블로그</a>도 참조하자.</p>
+<p>여기서 <code>Domain Event</code>에 대해서 다루지는 않겠지만 힌트 정도는 얻어 갈 수 있다고 생각한다.</p>
+<h1 id="요구-사항"><a href="#요구-사항" class="headerlink" title="요구 사항"></a>요구 사항</h1><ul>
+<li>회원이 가입하면 이메일과 SMS로 가입 축하 메시지를 보낸다.</li>
+<li>이메일과 SMS는 반드시 성공하지 않아도 괜찮다.</li>
+</ul>
+<h1 id="구현-1-하나의-transaction으로-처리하기"><a href="#구현-1-하나의-transaction으로-처리하기" class="headerlink" title="구현 1. 하나의 transaction으로 처리하기"></a>구현 1. 하나의 transaction으로 처리하기</h1><h2 id="의존성"><a href="#의존성" class="headerlink" title="의존성"></a>의존성</h2><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">dependencies</span> &#123;</span><br><span class="line">    <span class="keyword">compile</span>(<span class="string">'org.mybatis.spring.boot:mybatis-spring-boot-starter:1.3.2'</span>)</span><br><span class="line">    <span class="keyword">compile</span>(<span class="string">'org.springframework.boot:spring-boot-starter-aop'</span>)</span><br><span class="line">    <span class="keyword">compile</span>(<span class="string">'org.projectlombok:lombok'</span>)</span><br><span class="line">    <span class="keyword">runtime</span>(<span class="string">'com.h2database:h2'</span>)</span><br><span class="line">    testCompile(<span class="string">'org.springframework.boot:spring-boot-starter-test'</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="회원-관련"><a href="#회원-관련" class="headerlink" title="회원 관련"></a>회원 관련</h2><h3 id="모델"><a href="#모델" class="headerlink" title="모델"></a>모델</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Getter</span></span><br><span class="line"><span class="meta">@Setter</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Member</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> String email;</span><br><span class="line">    <span class="keyword">private</span> String phoneNo;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Member <span class="title">create</span><span class="params">(@NonNull String name, @NonNull String email, @NonNull String phoneNo)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        Member member = <span class="keyword">new</span> Member();</span><br><span class="line">        member.setName(name);</span><br><span class="line">        member.setEmail(email);</span><br><span class="line">        member.setPhoneNo(phoneNo);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> member;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Service"><a href="#Service" class="headerlink" title="Service"></a>Service</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">MemberJoinService</span> </span>&#123;</span><br><span class="line">    <span class="function">Member <span class="title">join</span><span class="params">(Member member)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>설명</strong></p>
+<p><code>MemberJoinService</code>의 구현체를 여럿 생성하여, Spring의 Profile 별로 구현체를 바꿔서 사용할 것이다.</p>
+<h2 id="MainClass"><a href="#MainClass" class="headerlink" title="MainClass"></a>MainClass</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Slf</span>4j</span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SimpleEventApplication</span> <span class="keyword">implements</span> <span class="title">CommandLineRunner</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> MemberJoinService memberJoinService;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> MemberMapper memberMapper;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run(SimpleEventApplication<span class="class">.<span class="keyword">class</span>, <span class="title">args</span>)</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">(String... args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line"></span><br><span class="line">        log.info(<span class="string">"&#123;&#125; is injected"</span>, memberJoinService.getClass().getCanonicalName());</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Member member = Member.create(<span class="string">"test"</span>, <span class="string">"test@test.com"</span>, <span class="string">"012-3456-7890"</span>);</span><br><span class="line">            memberJoinService.join(member);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            log.error(<span class="string">"&#123;&#125; was thrown"</span>, e.getClass().getCanonicalName());</span><br><span class="line">        &#125;</span><br><span class="line">        log.info(<span class="string">"member count : &#123;&#125;"</span>, memberMapper.count());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="핵심-로직"><a href="#핵심-로직" class="headerlink" title="핵심 로직"></a>핵심 로직</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Profile</span>(<span class="string">"simple"</span>)</span><br><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="meta">@Transactional</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SimpleMemberJoinService</span> <span class="keyword">implements</span> <span class="title">MemberJoinService</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> MemberMapper memberMapper;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> EmailService emailService;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> SmsService smsService;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Member <span class="title">join</span><span class="params">(Member member)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        memberMapper.insert(member);</span><br><span class="line">        emailService.sendEmail(member.getEmail(), EmailTemplateType.JOIN); <span class="comment">// log만 남김</span></span><br><span class="line">        smsService.sendSms(member.getPhoneNo(), SmsTemplateType.JOIN); <span class="comment">// log만 남김, `fail` profile에서는 RuntimeException을 던짐</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> member;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="성공-실패"><a href="#성공-실패" class="headerlink" title="성공, 실패"></a>성공, 실패</h3><p><strong>성공</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">INFO  [main] c.p.s.s.service.email.EmailService       : send JOIN email to test@test.com</span><br><span class="line">INFO  [main] c.p.s.s.service.sms.SuccessSmsService    : send JOIN sms to 012-3456-7890</span><br><span class="line">INFO  [main] c.p.s.s.SimpleEventApplication           : member count : 1</span><br></pre></td></tr></table></figure>
+
+<p><strong>실패</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">INFO  [main] c.p.s.s.service.email.EmailService       : send JOIN email to test@test.com</span><br><span class="line">INFO  [main] c.p.s.s.service.sms.FailSmsService       : send JOIN sms to 012-3456-7890</span><br><span class="line">ERROR [main] c.p.s.s.SimpleEventApplication           : java.lang.RuntimeException was thrown</span><br><span class="line">INFO  [main] c.p.s.s.SimpleEventApplication           : member count : 0</span><br></pre></td></tr></table></figure>
+
+<h3 id="설명"><a href="#설명" class="headerlink" title="설명"></a>설명</h3><p>Application을 실행시킬 때 <code>spring.profiles.active=simple</code>로 해야 정상 동작한다. 요구 사항을 단순하게 하나의 transaction에서 구현했다. 무척이나 간단하지만 <code>emailService</code>가 실패하거나, <code>smsService</code>가 실패하면 <code>memberMapper.insert()</code>도 <code>rollback</code>된다. 축하 메일을 못 받았으니 회원 가입이 취소된다? 있을 수 없는 일이다.</p>
+<h1 id="구현-2-transaction-내에-처리하지-않아도-될-부분은-transaction이-끝난-후에-처리하기"><a href="#구현-2-transaction-내에-처리하지-않아도-될-부분은-transaction이-끝난-후에-처리하기" class="headerlink" title="구현 2. transaction 내에 처리하지 않아도 될 부분은, transaction이 끝난 후에 처리하기"></a>구현 2. transaction 내에 처리하지 않아도 될 부분은, transaction이 끝난 후에 처리하기</h1><p>두 가지 방법이 있을 것 같다. 하나는 <code>@Transactional</code>를 이용하는 것, 하나는 <code>TransactionSynchronizationAdapter</code>를 사용하는 것이다. </p>
+<h2 id="Propagation-사용하기"><a href="#Propagation-사용하기" class="headerlink" title="Propagation 사용하기"></a>Propagation 사용하기</h2><p><code>Member</code>를 <code>insert</code>할 <code>Service</code>를 하나 더 두는 방식이다. 이 경우 <code>MemberJoinService</code>에서 <code>@Transactional</code> 선언을 지우거나, <code>MemberService.insert()</code>에서는 <code>REQUIRES_NEW</code>를 해서 <code>insert()</code>가 <code>rollback</code>되는 것을 막을 수 있다.</p>
+<img  src=http://www.plantuml.com/plantuml/svg/Y_PDpKrABVBApymBJYqgoqnEZLNGrRLJY8Q8GyNqClEAKujAD3HZ5QmK3BcYSMbopKtCp87fAKxDIu7eCCAj8pYt65EzCG00>
+
+<h2 id="TransactionSynchronizationAdapter-사용하기"><a href="#TransactionSynchronizationAdapter-사용하기" class="headerlink" title="TransactionSynchronizationAdapter 사용하기"></a>TransactionSynchronizationAdapter 사용하기</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Profile</span>(<span class="string">"advanced"</span>)</span><br><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="meta">@Transactional</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AdvancedMemberJoinService</span> <span class="keyword">implements</span> <span class="title">MemberJoinService</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> MemberMapper memberMapper;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> EmailService emailService;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> SmsService smsService;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Member <span class="title">join</span><span class="params">(Member member)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        memberMapper.insert(member);</span><br><span class="line">        TransactionSynchronizationManager.registerSynchronization(<span class="keyword">new</span> TransactionSynchronizationAdapter() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">afterCommit</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                emailService.sendEmail(member.getEmail(), EmailTemplateType.JOIN);</span><br><span class="line">                smsService.sendSms(member.getPhoneNo(), SmsTemplateType.JOIN);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> member;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="성공-실패-1"><a href="#성공-실패-1" class="headerlink" title="성공, 실패"></a>성공, 실패</h3><p><strong>성공</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">INFO  [main] c.p.s.s.service.email.EmailService       : send JOIN email to test@test.com</span><br><span class="line">INFO  [main] c.p.s.s.service.sms.SuccessSmsService    : send JOIN sms to 012-3456-7890</span><br><span class="line">INFO  [main] c.p.s.s.SimpleEventApplication           : member count : 1</span><br></pre></td></tr></table></figure>
+
+<p><strong>실패</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">INFO  [main] c.p.s.s.service.email.EmailService       : send JOIN email to test@test.com</span><br><span class="line">INFO  [main] c.p.s.s.service.sms.FailSmsService       : send JOIN sms to 012-3456-7890</span><br><span class="line">ERROR [main] c.p.s.s.SimpleEventApplication           : java.lang.RuntimeException was thrown</span><br><span class="line">INFO  [main] c.p.s.s.SimpleEventApplication           : member count : 1</span><br></pre></td></tr></table></figure>
+
+<p><code>TransactionSynchronizationAdaptor</code>를 사용하면 위와 같이, <code>beforeCommit()</code>, <code>afterCommit()</code> 등을 구현해서 특정 로직의 실행 시점을 조절할 수 있다. <code>TransactionSynchronizationAdaptor</code>는 이름 그대로 <code>TransactionSynchronization</code>를 어댑터 패턴으로 구현해 둔 추상 클래스이다. <code>TransactionSynchronization</code>에는 각 로직이 실행될 시점이 추상화되어 있으며, 자세한 설명은 <a href="https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/transaction/support/TransactionSynchronization.html" target="_blank" rel="noopener">JavaDoc</a>을 확인하자.</p>
+<p><code>Spring Framework 4.2.x</code>부터는 더 좋은 게 있으므로 길게 설명하지 않겠다.</p>
+<h1 id="구현-3-Event-사용하기"><a href="#구현-3-Event-사용하기" class="headerlink" title="구현 3. Event 사용하기"></a>구현 3. Event 사용하기</h1><p>이 구현부터 본격적으로 본문의 주제에 가까워진다. 우선 소스 코드로 어떻게 Spring Event를 이용할 수 있는지 확인해보자.</p>
+<h2 id="Spring-Application-Event-사용하기"><a href="#Spring-Application-Event-사용하기" class="headerlink" title="Spring Application Event 사용하기"></a>Spring Application Event 사용하기</h2><h3 id="Publisher"><a href="#Publisher" class="headerlink" title="Publisher"></a>Publisher</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Profile</span>(<span class="string">"event"</span>)</span><br><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="meta">@Transactional</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EventMemberJoinService</span> <span class="keyword">implements</span> <span class="title">ApplicationEventPublisherAware</span>, <span class="title">MemberJoinService</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> MemberMapper memberMapper;</span><br><span class="line">    <span class="keyword">private</span> ApplicationEventPublisher eventPublisher;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Member <span class="title">join</span><span class="params">(Member member)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        memberMapper.insert(member);</span><br><span class="line">        eventPublisher.publishEvent(<span class="keyword">new</span> MemberJoinedEvent(member)); <span class="comment">// gray zone</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> member;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setApplicationEventPublisher</span><span class="params">(ApplicationEventPublisher applicationEventPublisher)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.eventPublisher = applicationEventPublisher;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">MemberJoinedEvent</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Getter</span></span><br><span class="line">        <span class="keyword">private</span> Member member;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">private</span> <span class="title">MemberJoinedEvent</span><span class="params">(@NonNull Member member)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">this</span>.member = member;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="설명-1"><a href="#설명-1" class="headerlink" title="설명"></a>설명</h4><p><code>ApplicationEventPublisherAware</code> 인터페이스를 구현하면, Spring이 자동으로 <code>ApplicationEventPublisher</code>를 주입해준다. Event를 발급하는 방법은 너무나 간단하다. <code>ApplicationEventPublisher.publishEvent(Object event)</code>를 호출하면 끝이다.</p>
+<p><code>MemberService</code>는 이제 회원이 가입되었으면, 가입되었다는 Event를 발급한다.(<code>MemberJoinedEvent</code>) 어디선가 이 Event를 받아서 처리만 해주면 될 것이다. 이 Event를 어떻게 받아서 처리하는지 확인해보자.</p>
+<blockquote>
+<p><code>// gray zone</code>이라고 붙인 곳은, 저 코드가 저 위치에 있는 것을 허용할 것이냐, 말 것이냐를 개발자들의 판단에 맡기고 싶어서 두었다. 본문에서는 refactoring의 대상이라 판단하고, 나중에 AOP로 제거할 것이다.</p>
+</blockquote>
+<h3 id="Listener"><a href="#Listener" class="headerlink" title="Listener"></a>Listener</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MemberJoinedEventListener</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> SmsService smsService;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> EmailService emailService;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@TransactionalEventListener</span>(phase = TransactionPhase.AFTER_COMMIT, classes = EventMemberJoinService.MemberJoinedEvent<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">    <span class="title">public</span> <span class="title">void</span> <span class="title">handle</span>(<span class="title">EventMemberJoinService</span>.<span class="title">MemberJoinedEvent</span> <span class="title">event</span>) </span>&#123;</span><br><span class="line">        Member member = event.getMember();</span><br><span class="line">        emailService.sendEmail(member.getEmail(), EmailTemplateType.JOIN);</span><br><span class="line">        smsService.sendSms(member.getPhoneNo(), SmsTemplateType.JOIN);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="설명-2"><a href="#설명-2" class="headerlink" title="설명"></a>설명</h4><p><code>@TransactionalEventListener</code>는 <code>4.2</code> 버전부터 사용할 수 있다. 간단하게 위에서 사용한 것과 같이, <code>phase</code>에는 실행 시점을, <code>classes</code>에는 Event의 타입을 넣어 발급된 Event를 처리할 수 있다.</p>
+<p><strong>TransactionalEventListener</strong></p>
+<p>| parameter <th colspan="3">description |<br>| - | - | - | - |<br>| phase <td colspan="3"> transaction과 연관지어, 어느 시점에서 로직을 실행할지 정할 수 있다.<br>- BEFORE_COMMIT<br>- AFTER_COMMIT(default)<br>- AFTER_ROLLBACK<br>- AFTER_COMPLETION |<br>| fallbackExecution <td colspan="3"> 진행 중인 transaction이 없을 때에도 실행할지 여부. 기본값은 <code>false</code> |<br>| value, classes <td colspan="3"> Listener가 처리할 Event의 타입을 배열로 받는다.<br>한 종류의 타입만 지정되었을 때에는 메서드의 파라미터로 받을 수 있지만,<br>여러 타입이 선언된 경우에는 메서드의 파라미터는 비워둬야 한다. |<br>| condition <td colspan="3"> SpEL을 선언하여 true인 경우에 실행된다. |</p>
+<h4 id="결과"><a href="#결과" class="headerlink" title="결과"></a>결과</h4><p><strong>성공</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">INFO  [main] c.p.s.s.service.email.EmailService       : send JOIN email to test@test.com</span><br><span class="line">INFO  [main] c.p.s.s.service.sms.SuccessSmsService    : send JOIN sms to 012-3456-7890</span><br><span class="line">INFO  [main] c.p.s.s.SimpleEventApplication           : member count : 1</span><br></pre></td></tr></table></figure>
+
+<p><strong>실패</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">INFO  [main] c.p.s.s.service.email.EmailService       : send JOIN email to test@test.com</span><br><span class="line">INFO  [main] c.p.s.s.service.sms.FailSmsService       : send JOIN sms to 012-3456-7890</span><br><span class="line">ERROR [main] o.s.t.s.TransactionSynchronizationUtils  : TransactionSynchronization.afterCompletion threw exception</span><br><span class="line">...</span><br><span class="line">INFO  [main] c.p.s.s.SimpleEventApplication           : member count : 1</span><br></pre></td></tr></table></figure>
+
+<h2 id="ApplicationEvnetPublisher에-대해서"><a href="#ApplicationEvnetPublisher에-대해서" class="headerlink" title="ApplicationEvnetPublisher에 대해서"></a>ApplicationEvnetPublisher에 대해서</h2><p>Spring에서 지원하는 <code>ApplicationEvnetPublisher</code>를 이용한 Event 처리 방식은 <code>ApplicationContext</code>를 통해서 이루어진다. <code>ApplicationContext</code>가 <code>ApplicationEventPublisher</code>를 상속하고 있다. 즉 <code>Publisher</code>와 <code>Listener</code>는 Spring에 Bean으로 등록되어야 한다. Spring이 초기화될 때 <code>@EventListener</code>, <code>@TransactionalEventListener</code>를 <code>ApplicationContext</code>에 등록을 해두고 <code>publishEvent()</code>가 실행되면 등록된 Listener에 Event를 뿌려준다.</p>
+<h2 id="Event에-대해서"><a href="#Event에-대해서" class="headerlink" title="Event에 대해서"></a>Event에 대해서</h2><p>앞서 작성했던 <code>EventMemberJoinService</code>를 다시 한 번 살펴보자.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Profile</span>(<span class="string">"event"</span>)</span><br><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="meta">@Transactional</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EventMemberJoinService</span> <span class="keyword">implements</span> <span class="title">ApplicationEventPublisherAware</span>, <span class="title">MemberJoinService</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> Member <span class="title">join</span><span class="params">(Member member)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        memberMapper.insert(member);</span><br><span class="line">        eventPublisher.publishEvent(<span class="keyword">new</span> MemberJoinedEvent(member)); <span class="comment">// gray zone</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> member;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>이전까지의 소스와의 차이가 있다. 바로 <code>EmailService</code>와 <code>SmsService</code>가 없어진 것이다! 느슨한 결합으로 인한 OOP의 장점을 그대로 누릴 수 있다.</p>
+<h3 id="결합도"><a href="#결합도" class="headerlink" title="결합도"></a>결합도</h3><p>현재는 하나의 Application에서만 Event를 사용하고 있어서 크게 와닿지 않을 수도 있을 것 같다. 좀 더 설명하기 쉽고, 거창해 보일 수 있도록 크기를 키워보자. 만약에 MSA와 같은 구조의 시스템에서 Event를 사용한다면 어떻게 될까?</p>
+<h4 id="시스템-간-강결합-HTTP-Rest-API-호출"><a href="#시스템-간-강결합-HTTP-Rest-API-호출" class="headerlink" title="시스템 간 강결합 : HTTP Rest API 호출"></a>시스템 간 강결합 : HTTP Rest API 호출</h4><img  src=http://www.plantuml.com/plantuml/svg/Y_PDpKrABGfEBIfBBOfLqDMrKuZsJSpCWGbOARoUlF7rmhaA2G7-mI4A-YML1QdwNlwUVleb-VebgSKb3Y12Bpa_Du4h6ejPmRd5H1bbO6YaQsnYQgPhRc5fa000>
+
+<p>강결합 상태의 시스템의 문제를 여기서 확인할 수 있다.<br><code>MemberServer</code>는 각 Server를 알고 있다. 호출해야 할 URI를 스스로 가지고 있다. 만약 <code>MailServer</code>에서 메일을 보내기 위한 URI가 변경이 된다면, <code>MemberServer</code>도 수정을 해야 한다. 메일 서버가 변경이 되었는데, 회원 가입 로직이 변경되어야 한다.</p>
+<h4 id="느슨한-결합으로-Event-방식"><a href="#느슨한-결합으로-Event-방식" class="headerlink" title="느슨한 결합으로 : Event 방식"></a>느슨한 결합으로 : Event 방식</h4><img  src=http://www.plantuml.com/plantuml/svg/Y_PDpKrABGfEBIfBBOfLqDMrKuXsBKlDAmaiJIrDZLMmKe0eyChFp4jD0SjmeIW0w_1DpCo16M6by7f3mvjfMzuitlDguuRNJJDGrTlewcAgd_rcQikh3GtOr8FD3yuj9iLuDEKefWC0>
+
+<p>앞선 구조와 비교해보자. <code>MemberServer</code>는 회원이 가입했을 때 <code>MemberJoinedEvent</code>를 생성해서 <code>EventQueue</code>에 넣기만 하면 끝이다. 뒤에 무슨 일이 일어나든 <code>관심사</code> 밖의 일이다. <code>MailServer</code>가 <code>EventQueue</code>에서 Event를 받아 가서 처리하든, <code>EventQueue</code>가 <code>MailServer</code>에 Event를 밀어주는 방식으로 처리하든 관심 없는 거다.</p>
+<ul>
+<li>MailServer, SmsServer의 로직 변화가 MemberServer에 영향을 주지 않는다.</li>
+<li>MemberServer는 자신의 업무(도메인) 영역만 잘 처리하면 된다.</li>
+</ul>
+<h1 id="구현-4-Event도-비동기로-처리하기"><a href="#구현-4-Event도-비동기로-처리하기" class="headerlink" title="구현 4. Event도 비동기로 처리하기"></a>구현 4. Event도 비동기로 처리하기</h1><h2 id="Spring-Application-설정"><a href="#Spring-Application-설정" class="headerlink" title="Spring Application 설정"></a>Spring Application 설정</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//..</span></span><br><span class="line"><span class="meta">@EnableAsync</span>(proxyTargetClass = <span class="keyword">true</span>)</span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SimpleEventApplication</span> <span class="keyword">implements</span> <span class="title">CommandLineRunner</span> </span>&#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="MemberJoinEvnetListener"><a href="#MemberJoinEvnetListener" class="headerlink" title="MemberJoinEvnetListener"></a>MemberJoinEvnetListener</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MemberJoinedEventListener</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> SmsService smsService;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> EmailService emailService;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Async</span></span><br><span class="line">    <span class="meta">@TransactionalEventListener</span>(phase = TransactionPhase.AFTER_COMMIT, classes = EventMemberJoinService.MemberJoinedEvent<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">    <span class="title">public</span> <span class="title">void</span> <span class="title">handle</span>(<span class="title">EventMemberJoinService</span>.<span class="title">MemberJoinedEvent</span> <span class="title">event</span>) </span>&#123;</span><br><span class="line">        Member member = event.getMember();</span><br><span class="line">        emailService.sendEmail(member.getEmail(), EmailTemplateType.JOIN);</span><br><span class="line">        smsService.sendSms(member.getPhoneNo(), SmsTemplateType.JOIN);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>@Async</code>를 사용하여 비동기로 구현할 수 있다.</p>
+<h2 id="결과-1"><a href="#결과-1" class="headerlink" title="결과"></a>결과</h2><p><strong>성공</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">INFO  [cTaskExecutor-1] c.p.s.s.service.email.EmailService       : send JOIN email to test@test.com</span><br><span class="line">INFO  [cTaskExecutor-1] c.p.s.s.service.sms.SuccessSmsService    : send JOIN sms to 012-3456-7890</span><br><span class="line">INFO  [           main] c.p.s.s.SimpleEventApplication           : member count : 1</span><br></pre></td></tr></table></figure>
+
+<p><strong>실패</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">INFO  [cTaskExecutor-1] c.p.s.s.service.email.EmailService       : send JOIN email to test@test.com</span><br><span class="line">INFO  [cTaskExecutor-1] c.p.s.s.service.sms.FailSmsService       : send JOIN sms to 012-3456-7890</span><br><span class="line">INFO  [           main] c.p.s.s.SimpleEventApplication           : member count : 1</span><br><span class="line">ERROR [cTaskExecutor-1] .a.i.SimpleAsyncUncaughtExceptionHandler : Unexpected error occurred invoking async method &#39;public void com.parfait.study.simpleevent.service.event.AsyncMemberJoinedEventListener.handle(com.parfait.study.simpleevent.service.member.AsyncEventMemberJoinService$AsyncMemberJoinedEvent)&#39;.</span><br></pre></td></tr></table></figure>
+
+<h2 id="설명-3"><a href="#설명-3" class="headerlink" title="설명"></a>설명</h2><p>간단하게 spring에서 지원해주는 비동기를 사용할 수 있다. spring에서 어떻게 비동기를 지원해주는지는 본 문서에서는 설명하지 않겠다. 때문에 <code>TaskExecutor</code>도 따로 지정하지 않고 사용했다. spring에서 비동기를 사용하는 방법이 궁금하면 <a href="https://docs.spring.io/spring/docs/5.0.4.RELEASE/spring-framework-reference/integration.html#scheduling" target="_blank" rel="noopener">레퍼런스</a>를 읽어보자.</p>
+<h1 id="구현-5-AOP를-사용해서-Advisor에서-Event-발급하기"><a href="#구현-5-AOP를-사용해서-Advisor에서-Event-발급하기" class="headerlink" title="구현 5. AOP를 사용해서 Advisor에서 Event 발급하기"></a>구현 5. AOP를 사용해서 Advisor에서 Event 발급하기</h1><p>앞서 Event를 발급하였을 때 <code>// gray zone</code>의 주석을 달았다. 왜 <code>gray zone</code>이라고 했을까? <code>MemberJoinedEvent</code>를 <code>MemberJoinedService</code>에서 발급하는 것이 맞을까? 개발자 취향에 따라 나뉠 수 있을 것 같다. 만약 <code>DDD</code>를 기반으로 작성한 코드였다면 100% <code>NO!</code>라고 할 수 있다. 하지만 지금의 예제는 <code>Service</code>에서 대부분의 로직을 처리한다. 때문에 누군가는 <code>Service</code>에서 Event를 발급해도 된다고 할 것이고, 누군가는 Service는 핵심 로직에만 집중했으면 좋겠다고 할 것이다.<br>여기서는 후자를 지지해서 AOP로 <code>gray zone</code>의 코드를 제거해보려고 한다. Event를 발급하는 행위를 하나의 공통된 방식에 따라 처리할 수 있는 관심사로 취급하겠다.</p>
+<blockquote>
+<p>서비스에서 Event를 발급하겠다는 전자의 선택도 존중한다. AOP는 공통 관심사를 분리해서 더 나은 POJO를 만들 수 있게 해준다. 하지만 익숙하지 않은 개발자에게는, 전체 애플리케이션 동작을 파악하는 데에 애를 먹을 수 있다. 혼자 개발하는 개발자가 아니라면, 내가 속한 팀에서 어떠한 방법의 프로그래밍이 가장 큰 효율을 낼 수 있는지 파악해봐야 할 것이다.</p>
+</blockquote>
+<h2 id="의존성-설정"><a href="#의존성-설정" class="headerlink" title="의존성 설정"></a>의존성 설정</h2><p>spring의 AOP를 사용할 것이니 관련된 의존성을 추가하자</p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">dependencies</span> &#123;</span><br><span class="line">  <span class="keyword">compile</span>(<span class="string">'org.springframework.boot:spring-boot-starter-aop'</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Spring-Application-설정-1"><a href="#Spring-Application-설정-1" class="headerlink" title="Spring Application 설정"></a>Spring Application 설정</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//..</span></span><br><span class="line"><span class="meta">@EnableAspectJAutoProxy</span>(proxyTargetClass = <span class="keyword">true</span>)</span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SimpleEventApplication</span> <span class="keyword">implements</span> <span class="title">CommandLineRunner</span> </span>&#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="MemberJoinService"><a href="#MemberJoinService" class="headerlink" title="MemberJoinService"></a>MemberJoinService</h2><p>최종적으로 아래 코드가 동작하도록 만들 것이다. 기존에 <code>eventPublisher.publishEvent(new MemberJoinedEvent(member));</code>가 없어졌다. 즉 <code>MemberJoinService</code>는 더 이상 <code>ApplicationEventPublisher</code>에 의존하지 않으며, 그 존재를 모르게 되었다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Profile</span>(<span class="string">"aop-async-event"</span>)</span><br><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="meta">@Transactional</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AopAsyncEventMemberJoinService</span> <span class="keyword">implements</span> <span class="title">MemberJoinService</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> MemberMapper memberMapper;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PublishEvent</span>(eventType = AopAsyncMemberJoinedEvent<span class="class">.<span class="keyword">class</span>, <span class="title">params</span> </span>= <span class="string">"#&#123;T(com.parfait.study.simpleevent.model.SendableParameter).create(email, phoneNo)&#125;"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Member <span class="title">join</span><span class="params">(Member member)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        memberMapper.insert(member);</span><br><span class="line">        <span class="keyword">return</span> member;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>AOP는 <code>@PublishEvent</code>를 대상으로 실행된다. <code>eventType</code>을 보고 어떤 타입의 Event를 발급할 것이며, <code>params</code>를 해석해서 알맞은 생성자 파라미터를 던져준다.</p>
+<h2 id="발행할-Event-정의"><a href="#발행할-Event-정의" class="headerlink" title="발행할 Event 정의"></a>발행할 Event 정의</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 해당 소스의 구현체는 목적에 따라 기본 생성자 혹은 하나의 값을 받는 생성자를 가질 것.</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">EventHoldingValue</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="function">T <span class="title">getValue</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">AopAsyncMemberJoinedEvent</span> <span class="keyword">implements</span> <span class="title">EventHoldingValue</span>&lt;<span class="title">SendableParameter</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Getter</span></span><br><span class="line">    <span class="keyword">private</span> SendableParameter value;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">AopAsyncMemberJoinedEvent</span><span class="params">(@NonNull SendableParameter sendableParameter)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.value = sendableParameter;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SendableParameter</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String email;</span><br><span class="line">    <span class="keyword">private</span> String phoneNo;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> SendableParameter <span class="title">create</span><span class="params">(String email, String phoneNo)</span> </span>&#123;</span><br><span class="line">        SendableParameter parameter = <span class="keyword">new</span> SendableParameter();</span><br><span class="line">        parameter.setEmail(email);</span><br><span class="line">        parameter.setPhoneNo(phoneNo);</span><br><span class="line">        <span class="keyword">return</span> parameter;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>value</code>를 가지는 Event를 뜻하는 <code>EventHoldingValue&lt;T&gt;</code>를 정의하고 이를 구현한 <code>AopAsyncMemberJoinedEvent</code>를 위와 같이 정의했다. <code>SendableParameter</code>는 앞서 봤던 <code>@PublishEvent(params)</code>에서 정의된 SpEL이 실행되어 생성된다.</p>
+<h2 id="AOP관련-코드"><a href="#AOP관련-코드" class="headerlink" title="AOP관련 코드"></a>AOP관련 코드</h2><h3 id="PublishEvent"><a href="#PublishEvent" class="headerlink" title="@PublishEvent"></a>@PublishEvent</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Retention</span>(RetentionPolicy.RUNTIME)</span><br><span class="line"><span class="meta">@Target</span>(ElementType.METHOD)</span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> PublishEvent &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * return이 비어있는 경우 new eventType()</span></span><br><span class="line"><span class="comment">    * params가 비어있는 경우 new eventType(returnValue)</span></span><br><span class="line"><span class="comment">    * params가 문자열인 경우 new event</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    Class&lt;? extends EventHoldingValue&gt; eventType();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 빈값, 문자열, SpEL('#&#123;표현식&#125;')을 사용할 수 있음</span></span><br><span class="line">    <span class="function">String <span class="title">params</span><span class="params">()</span> <span class="keyword">default</span> ""</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Pointcut을 제공할 애노테이션을 정의한다.</p>
+<h3 id="Advisor"><a href="#Advisor" class="headerlink" title="Advisor"></a>Advisor</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="meta">@Aspect</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PublishEventAspect</span> <span class="keyword">implements</span> <span class="title">ApplicationEventPublisherAware</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Pointcut</span>(<span class="string">"@annotation(publishEvent)"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">pointcut</span><span class="params">(PublishEvent publishEvent)</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * return값 없으면 new eventType()</span></span><br><span class="line"><span class="comment">    * params값 없으면 new eventType(retVal)</span></span><br><span class="line"><span class="comment">    * params값이 문자열이면 new eventType(params)</span></span><br><span class="line"><span class="comment">    * params값이 SpEL이면 parse 후에 evnetType(params)</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="meta">@AfterReturning</span>(pointcut = <span class="string">"pointcut(publishEvent)"</span>, returning = <span class="string">"retVal"</span>, argNames = <span class="string">"publishEvent,retVal"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">afterReturning</span><span class="params">(PublishEvent publishEvent, Object retVal)</span> <span class="keyword">throws</span> NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException </span>&#123;</span><br><span class="line"></span><br><span class="line">        Object event;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (retVal == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">// method 반환 값이 void일 때에는 new eventType(this);</span></span><br><span class="line">            event = publishEvent.eventType()</span><br><span class="line">                                .getDeclaredConstructor()</span><br><span class="line">                                .newInstance();</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (StringUtils.isEmpty(publishEvent.params())) &#123;</span><br><span class="line">            <span class="comment">// params가 비어 있는 경우 new eventType(retVal);</span></span><br><span class="line">            event = publishEvent.eventType()</span><br><span class="line">                                .getConstructor(retVal.getClass())</span><br><span class="line">                                .newInstance(retVal);</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (isSpel(publishEvent.params())) &#123;</span><br><span class="line">            <span class="comment">// params가 spel인 경우 new eventType(parsed(publishEvent.params()))</span></span><br><span class="line">            String spel = publishEvent.params().replaceAll(spelRegex, <span class="string">"$1"</span>);</span><br><span class="line">            Object constructArg = expressionParser.parseExpression(spel).getValue(retVal);</span><br><span class="line">            event = publishEvent.eventType()</span><br><span class="line">                                .getDeclaredConstructor(constructArg.getClass())</span><br><span class="line">                                .newInstance(constructArg);</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// params가 그냥 string인 경우 new eventType(publishEvent.params());</span></span><br><span class="line">            event = publishEvent.eventType().getConstructor(String<span class="class">.<span class="keyword">class</span>).<span class="title">newInstance</span>(<span class="title">publishEvent</span>.<span class="title">params</span>())</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        eventPublisher.publishEvent(event);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">isSpel</span><span class="params">(String params)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> spelPattern.matcher(params).matches();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setApplicationEventPublisher</span><span class="params">(ApplicationEventPublisher applicationEventPublisher)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.eventPublisher = applicationEventPublisher;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="실행-결과"><a href="#실행-결과" class="headerlink" title="실행 결과"></a>실행 결과</h2><p><strong>성공</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">INFO  [cTaskExecutor-1] c.p.s.s.service.email.EmailService       : send JOIN email to test@test.com</span><br><span class="line">INFO  [cTaskExecutor-1] c.p.s.s.service.sms.SuccessSmsService    : send JOIN sms to 012-3456-7890</span><br><span class="line">INFO  [           main] c.p.s.s.SimpleEventApplication           : member count : 1</span><br></pre></td></tr></table></figure>
+
+<p><strong>실패</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">INFO  [cTaskExecutor-1] c.p.s.s.service.email.EmailService       : send JOIN email to test@test.com</span><br><span class="line">INFO  [cTaskExecutor-1] c.p.s.s.service.sms.FailSmsService       : send JOIN sms to 012-3456-7890</span><br><span class="line">INFO  [           main] c.p.s.s.SimpleEventApplication           : member count : 1</span><br><span class="line">ERROR [cTaskExecutor-1] .a.i.SimpleAsyncUncaughtExceptionHandler : Unexpected error occurred invoking async method &#39;public void com.parfait.study.simpleevent.service.event.AopAsyncMemberJoinedEventListener.handle(com.parfait.study.simpleevent.service.member.AopAsyncEventMemberJoinService$AopAsyncMemberJoinedEvent)&#39;.</span><br></pre></td></tr></table></figure>
+
+<h2 id="설명-4"><a href="#설명-4" class="headerlink" title="설명"></a>설명</h2><p>Event를 발급하는 공통된 행위를 애노테이션과 AOP를 사용해서 구현해보았다. 이로써 <code>Service</code> 계층의 로직에서는 특별한 일이 아니면 Event를 발급할 소스가 등장하지 않을 것이고, <code>ApplicationEventPublisher</code>와의 의존 관계도 끊을 수 있다. </p>
+<p>여기서 한 번 더 리팩토링하려고 한다. 아직도 문제점이 있다. 바로 이벤트 처리에 <code>순서</code>가 존재한다는 점이다.</p>
+<h1 id="구현-6-순서가-필요있나-Best-Effort"><a href="#구현-6-순서가-필요있나-Best-Effort" class="headerlink" title="구현 6. 순서가 필요있나? Best Effort!"></a>구현 6. 순서가 필요있나? Best Effort!</h1><p>비동기를 처리하는 데 굳이 순서가 필요할까? 여태까지의 코드를 보면 <code>Email</code>이 성공해야 <code>Sms</code>가 성공한다. 실제로 우리의 로직은 이러한 순서를 필요로 하지 않는다. <code>MemberJoinedEvent</code>를 발급했을 때, 이를 처리할 핸들러를 여럿 등록하고 각각의 thread를 격리해보자.</p>
+<h3 id="설명-5"><a href="#설명-5" class="headerlink" title="설명"></a>설명</h3><p><code>MemberJoinService</code>의 구현체에서 달라진 부분은 없다</p>
+<h2 id="EventListeners"><a href="#EventListeners" class="headerlink" title="EventListeners"></a>EventListeners</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EmailEventListener</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> EmailService emailService;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Async</span></span><br><span class="line">    <span class="meta">@TransactionalEventListener</span>(phase = TransactionPhase.AFTER_COMMIT, classes = DistributedAopAsyncMemberJoinedEvent<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">    <span class="title">public</span> <span class="title">void</span> <span class="title">handleMemberJoinedEvent</span>(<span class="title">DistributedAopAsyncMemberJoinedEvent</span> <span class="title">event</span>) </span>&#123;</span><br><span class="line">        SendableParameter parameter = event.getValue();</span><br><span class="line">        emailService.sendEmail(parameter.getEmail(), parameter.getEmailTemplateType());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SmsEventListener</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> SmsService smsEventService;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Async</span></span><br><span class="line">    <span class="meta">@TransactionalEventListener</span>(phase = TransactionPhase.AFTER_COMMIT, classes = DistributedAopAsyncMemberJoinedEvent<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">    <span class="title">public</span> <span class="title">void</span> <span class="title">sendEmail</span>(<span class="title">DistributedAopAsyncMemberJoinedEvent</span> <span class="title">event</span>) </span>&#123;</span><br><span class="line">        SendableParameter request = event.getValue();</span><br><span class="line">        smsEventService.sendSms(request.getPhoneNo(), request.getSmsTemplateType());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="결과-2"><a href="#결과-2" class="headerlink" title="결과"></a>결과</h2><p><strong>성공</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">INFO  [cTaskExecutor-2] c.p.s.s.service.sms.SuccessSmsService    : send JOIN sms to 012-3456-7890</span><br><span class="line">INFO  [cTaskExecutor-1] c.p.s.s.service.email.EmailService       : send JOIN email to test@test.com</span><br><span class="line">INFO  [           main] c.p.s.s.SimpleEventApplication           : member count : 1</span><br></pre></td></tr></table></figure>
+
+<p><strong>실패</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">INFO  [cTaskExecutor-1] c.p.s.s.service.email.EmailService       : send JOIN email to test@test.com</span><br><span class="line">INFO  [cTaskExecutor-2] c.p.s.s.service.sms.FailSmsService       : send JOIN sms to 012-3456-7890</span><br><span class="line">INFO  [           main] c.p.s.s.SimpleEventApplication           : member count : 1</span><br><span class="line">ERROR [cTaskExecutor-2] .a.i.SimpleAsyncUncaughtExceptionHandler : Unexpected error occurred invoking async method &#39;public void com.parfait.study.simpleevent.service.sms.SmsEventService.sendEmail(com.parfait.study.simpleevent.service.member.DistributedAopAsyncEventMemberJoinService$DistributedAopAsyncMemberJoinedEvent)&#39;.</span><br></pre></td></tr></table></figure>
+
+<h2 id="설명-6"><a href="#설명-6" class="headerlink" title="설명"></a>설명</h2><p>Email과 Sms를 다른 thread에서 보내고 있는 것을 확인할 수 있다.<br>말만 어렵게 했지 내용은 간단하다. Event에 대한 <code>Listener(subscriber, 혹은 handler)</code>는 필요하면 언제든지 추가하면 된다. 또한 <code>@Async</code> 지원도 가능하다.</p>
+<h1 id="마무리"><a href="#마무리" class="headerlink" title="마무리"></a>마무리</h1><p>Spring에서 지원하는 Event 처리 방법과 실제로 어떻게 사용할 수 있을지 살펴보았다. 가장 중요한 것은 Event를 사용하는 이유를 깨닫는 것이다. 가장 큰 이유는 Event 방식은 <code>시스템 간의 결합도를 낮춰주는 것</code>이다. 결합도를 낮춰서 서비스 로직에 집중하고, 장애 전파에 강한 애플리케이션을 작성할 수 있다. 비동기로 실행하는 것도 Spring의 지원을 받아 간단하게 처리할 수 있다. </p>
+<p>물론 이러한 Event 방식도 문제는 있다. Global Transaction을 어떻게 쥐고 갈 것인지 하는 것이다. 본문에서는 하나의 Application 내에서 Event를 발생시키고 처리했는데, Event-Driven Architecture의 MSA 환경을 구성하는 경우, 어떻게 Transaction과 Latency 사이에서 타협점을 찾을 것인가는, 현재 이 업계의 큰 이슈 중 하나가 아닐까? 아직까지는 Event를 사용하면서 완벽한 Transaction을 지원하는 것은 어려워 보인다. 서비스 간의 결합도를 떨어뜨리기 위해, Event를 위한 별도의 모듈(RabbitMQ, Kafka)을 사용하는 중에 데이터 손실 등 넘어야 할 난관도 많이 있다. 하지만 Event를 사용하는 구조 자체는 매우 매력적이며, 개발자에게 더 많은 선택지를 가져다준다.</p>
+<p>Spring은 개발자로 하여금 POJO를 작성하여 OOP를 할 수 있도록 유도한다. Spring Event 또한 개발자가 OOP를 더 잘할 수 있도록 도와주는 장치다. 더 유연한 구조로 나아가는 방법 중의 하나로 충분히 써먹을 수 있을 것이라 믿어 의심치 않는다.</p>
+<p>소스 코드 : <a href="https://github.com/supawer0728/simple-event" target="_blank" rel="noopener">https://github.com/supawer0728/simple-event</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>작성자:</strong>
+    supawer0728
+  </li>
+  <li class="post-copyright-link">
+    <strong>원본링크:</strong>
+    <a href="https://supawer0728.github.io/2018/03/24/spring-event/" title="Spring Event + Async + AOP 적용해보기">https://supawer0728.github.io/2018/03/24/spring-event/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>라이센스: </strong>
+    <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a>
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/spring/" rel="tag"># spring</a>
+          
+            <a href="/tags/event/" rel="tag"># event</a>
+          
+            <a href="/tags/practice/" rel="tag"># practice</a>
+          
+        </div>
+      
+
+      
+      
+        <div class="post-widgets">
+        
+
+        
+
+        
+          
+          <div id="needsharebutton-postbottom">
+            <span class="btn">
+              <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </span>
+          </div>
+        
+        </div>
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/22/spring-multi-transaction/" rel="next" title="(Spring)다중 DataSource 처리">
+                <i class="fa fa-chevron-left"></i> (Spring)다중 DataSource 처리
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/30/spring-websocket/" rel="prev" title="Spring WebSocket 소개">
+                Spring WebSocket 소개 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript" target="_blank" rel="noopener">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            목차
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            흝어보기
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="supawer0728" />
+            
+              <p class="site-author-name" itemprop="name">supawer0728</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">32</span>
+                  <span class="site-state-item-name">포스트</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">카테고리</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">50</span>
+                  <span class="site-state-item-name">태그</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/feed.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/supawer0728" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#서론"><span class="nav-number">1.</span> <span class="nav-text">서론</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#요구-사항"><span class="nav-number">2.</span> <span class="nav-text">요구 사항</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#구현-1-하나의-transaction으로-처리하기"><span class="nav-number">3.</span> <span class="nav-text">구현 1. 하나의 transaction으로 처리하기</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#의존성"><span class="nav-number">3.1.</span> <span class="nav-text">의존성</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#회원-관련"><span class="nav-number">3.2.</span> <span class="nav-text">회원 관련</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#모델"><span class="nav-number">3.2.1.</span> <span class="nav-text">모델</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Service"><span class="nav-number">3.2.2.</span> <span class="nav-text">Service</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MainClass"><span class="nav-number">3.3.</span> <span class="nav-text">MainClass</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#핵심-로직"><span class="nav-number">3.4.</span> <span class="nav-text">핵심 로직</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#성공-실패"><span class="nav-number">3.4.1.</span> <span class="nav-text">성공, 실패</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#설명"><span class="nav-number">3.4.2.</span> <span class="nav-text">설명</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#구현-2-transaction-내에-처리하지-않아도-될-부분은-transaction이-끝난-후에-처리하기"><span class="nav-number">4.</span> <span class="nav-text">구현 2. transaction 내에 처리하지 않아도 될 부분은, transaction이 끝난 후에 처리하기</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Propagation-사용하기"><span class="nav-number">4.1.</span> <span class="nav-text">Propagation 사용하기</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TransactionSynchronizationAdapter-사용하기"><span class="nav-number">4.2.</span> <span class="nav-text">TransactionSynchronizationAdapter 사용하기</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#성공-실패-1"><span class="nav-number">4.2.1.</span> <span class="nav-text">성공, 실패</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#구현-3-Event-사용하기"><span class="nav-number">5.</span> <span class="nav-text">구현 3. Event 사용하기</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Spring-Application-Event-사용하기"><span class="nav-number">5.1.</span> <span class="nav-text">Spring Application Event 사용하기</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Publisher"><span class="nav-number">5.1.1.</span> <span class="nav-text">Publisher</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#설명-1"><span class="nav-number">5.1.1.1.</span> <span class="nav-text">설명</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Listener"><span class="nav-number">5.1.2.</span> <span class="nav-text">Listener</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#설명-2"><span class="nav-number">5.1.2.1.</span> <span class="nav-text">설명</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#결과"><span class="nav-number">5.1.2.2.</span> <span class="nav-text">결과</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ApplicationEvnetPublisher에-대해서"><span class="nav-number">5.2.</span> <span class="nav-text">ApplicationEvnetPublisher에 대해서</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Event에-대해서"><span class="nav-number">5.3.</span> <span class="nav-text">Event에 대해서</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#결합도"><span class="nav-number">5.3.1.</span> <span class="nav-text">결합도</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#시스템-간-강결합-HTTP-Rest-API-호출"><span class="nav-number">5.3.1.1.</span> <span class="nav-text">시스템 간 강결합 : HTTP Rest API 호출</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#느슨한-결합으로-Event-방식"><span class="nav-number">5.3.1.2.</span> <span class="nav-text">느슨한 결합으로 : Event 방식</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#구현-4-Event도-비동기로-처리하기"><span class="nav-number">6.</span> <span class="nav-text">구현 4. Event도 비동기로 처리하기</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Spring-Application-설정"><span class="nav-number">6.1.</span> <span class="nav-text">Spring Application 설정</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MemberJoinEvnetListener"><span class="nav-number">6.2.</span> <span class="nav-text">MemberJoinEvnetListener</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#결과-1"><span class="nav-number">6.3.</span> <span class="nav-text">결과</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#설명-3"><span class="nav-number">6.4.</span> <span class="nav-text">설명</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#구현-5-AOP를-사용해서-Advisor에서-Event-발급하기"><span class="nav-number">7.</span> <span class="nav-text">구현 5. AOP를 사용해서 Advisor에서 Event 발급하기</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#의존성-설정"><span class="nav-number">7.1.</span> <span class="nav-text">의존성 설정</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Spring-Application-설정-1"><span class="nav-number">7.2.</span> <span class="nav-text">Spring Application 설정</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MemberJoinService"><span class="nav-number">7.3.</span> <span class="nav-text">MemberJoinService</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#발행할-Event-정의"><span class="nav-number">7.4.</span> <span class="nav-text">발행할 Event 정의</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AOP관련-코드"><span class="nav-number">7.5.</span> <span class="nav-text">AOP관련 코드</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#PublishEvent"><span class="nav-number">7.5.1.</span> <span class="nav-text">@PublishEvent</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Advisor"><span class="nav-number">7.5.2.</span> <span class="nav-text">Advisor</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#실행-결과"><span class="nav-number">7.6.</span> <span class="nav-text">실행 결과</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#설명-4"><span class="nav-number">7.7.</span> <span class="nav-text">설명</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#구현-6-순서가-필요있나-Best-Effort"><span class="nav-number">8.</span> <span class="nav-text">구현 6. 순서가 필요있나? Best Effort!</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#설명-5"><span class="nav-number">8.0.1.</span> <span class="nav-text">설명</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#EventListeners"><span class="nav-number">8.1.</span> <span class="nav-text">EventListeners</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#결과-2"><span class="nav-number">8.2.</span> <span class="nav-text">결과</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#설명-6"><span class="nav-number">8.3.</span> <span class="nav-text">설명</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#마무리"><span class="nav-number">9.</span> <span class="nav-text">마무리</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">supawer0728</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+  <div class="footer-custom">To Improve Human Life</div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://supawer0728-github-com.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://supawer0728.github.io/2018/03/24/spring-event/';
+          this.page.identifier = '2018/03/24/spring-event/';
+          this.page.title = 'Spring Event + Async + AOP 적용해보기';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://supawer0728-github-com.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('-1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/needsharebutton/needsharebutton.css">
+
+  
+  
+  <script src="/lib/needsharebutton/needsharebutton.js"></script>
+
+  <script>
+    
+      pbOptions = {};
+      
+          pbOptions.iconStyle = "box";
+      
+          pbOptions.boxForm = "horizontal";
+      
+          pbOptions.position = "bottomCenter";
+      
+          pbOptions.networks = "Twitter,Facebook,GooglePlus,Evernote";
+      
+      new needShareButton('#needsharebutton-postbottom', pbOptions);
+    
+    
+  </script>
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

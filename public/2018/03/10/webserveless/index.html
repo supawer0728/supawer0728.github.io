@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Nanum Gothic:300,300italic,400,400italic,700,700italic|Nanum Pen Script:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-icon-180x180.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.4">
+
+
+
+  <link rel="manifest" href="/images/manifest.json">
+
+
+  <meta name="msapplication-config" content="/images/browserconfig.xml" />
+
+
+
+  <meta name="keywords" content="architecture,spring-boot,haproxy,web-server," />
+
+
+
+
+
+  <link rel="alternate" href="/feed.xml" title="기록은 재산이다" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="서론L4의 scale-out이 어렵다는 점을 해결하기 위해, HAProxy를 사용하게 된 후, 과연 web server가 필요할까라는 의문이 들었다. apache http + tomcat라는 기술 스택은 마치 표준인양 Java 서버 진영에서는 많이 사용되고 있는데, HAProxy로 L4를 대체해버린 경우에도 정말 apache http가 필요한 걸까? 한 번">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HAProxy를 이용한 WebServer-less 구조">
+<meta property="og:url" content="https://supawer0728.github.io/2018/03/10/webserveless/index.html">
+<meta property="og:site_name" content="기록은 재산이다">
+<meta property="og:description" content="서론L4의 scale-out이 어렵다는 점을 해결하기 위해, HAProxy를 사용하게 된 후, 과연 web server가 필요할까라는 의문이 들었다. apache http + tomcat라는 기술 스택은 마치 표준인양 Java 서버 진영에서는 많이 사용되고 있는데, HAProxy로 L4를 대체해버린 경우에도 정말 apache http가 필요한 걸까? 한 번">
+<meta property="og:locale" content="ko_KR">
+<meta property="article:published_time" content="2018-03-09T18:14:40.000Z">
+<meta property="article:modified_time" content="2020-03-04T08:18:02.752Z">
+<meta property="article:author" content="supawer0728">
+<meta property="article:tag" content="architecture">
+<meta property="article:tag" content="spring-boot">
+<meta property="article:tag" content="haproxy">
+<meta property="article:tag" content="web-server">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '작성자'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://supawer0728.github.io/2018/03/10/webserveless/"/>
+
+
+
+
+
+  <title>HAProxy를 이용한 WebServer-less 구조 | 기록은 재산이다</title>
+  
+
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-115481794-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'UA-115481794-1');
+</script>
+
+
+
+
+
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script data-ad-client="" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="ko">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">기록은 재산이다</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">To Improve Human Life</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            홈
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            태그
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            카테고리
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            아카이브
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            검색
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="Searching..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://supawer0728.github.io/2018/03/10/webserveless/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="supawer0728">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="기록은 재산이다">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">HAProxy를 이용한 WebServer-less 구조</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">작성일&#58;</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-10T03:14:40+09:00">
+                2018-03-10
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">수정일&#58;</span>
+              
+              <time title="수정일" itemprop="dateModified" datetime="2020-03-04T17:18:02+09:00">
+              
+                2018-03-10
+              
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/architecture/" itemprop="url" rel="index">
+                    <span itemprop="name">architecture</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/03/10/webserveless/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/03/10/webserveless/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="서론"><a href="#서론" class="headerlink" title="서론"></a>서론</h1><p>L4의 scale-out이 어렵다는 점을 해결하기 위해, HAProxy를 사용하게 된 후, 과연 web server가 필요할까라는 의문이 들었다. <code>apache http + tomcat</code>라는 기술 스택은 마치 표준인양 Java 서버 진영에서는 많이 사용되고 있는데, HAProxy로 L4를 대체해버린 경우에도 정말 apache http가 필요한 걸까? 한 번 따져볼 일이다.</p>
+<a id="more"></a>
+
+<h1 id="L4-Apache-Http-Tomcat-VS-HAProxy-Tomcat"><a href="#L4-Apache-Http-Tomcat-VS-HAProxy-Tomcat" class="headerlink" title="L4 + Apache Http + Tomcat VS HAProxy + Tomcat"></a>L4 + Apache Http + Tomcat VS HAProxy + Tomcat</h1><p>HAProxy로 L4/L7 switch를 대체하는 것에 대한 내용은 <a href="http://d2.naver.com/helloworld/284659" target="_blank" rel="noopener">Naver의 기술 블로그(L4/L7 스위치의 대안, 오픈 소스 로드 밸런서 HAProxy)</a>를 참고하자</p>
+<p>다음은 각 구성을 다이어그램으로 표현한 것이다.</p>
+<p><strong>전통적인 L4 - Server 구성</strong></p>
+<img  src=http://www.plantuml.com/plantuml/svg/uof8JCvEJ4zLK4e4iZ9I5RGLIl9panDB5Dwqp7czgKL9ePfBGI4QNT8m5fkeKInNBHTNT79EPcfUIQo2hgwTGhIFIImNY83mi9Y3Mn9e7000>
+
+<p><strong>GSLB - HAProxy - Server 구성</strong></p>
+<img  src=http://www.plantuml.com/plantuml/svg/AqXCpavCJrLGIYn8JCv8LT1MACdFJKuiKNZJCkVrfXObXMek1OLeT4d3M6oYHh5SjLpHoJcPgNabiGgwkdOAqUd5EKcnN10A8fAHM52KNr5fY5KKQ0920KG6YzM4b22POaJO52ESfW00>
+
+<h2 id="Apache-Http-Tomcat-스택을-쓰는-이유"><a href="#Apache-Http-Tomcat-스택을-쓰는-이유" class="headerlink" title="Apache Http + Tomcat 스택을 쓰는 이유"></a>Apache Http + Tomcat 스택을 쓰는 이유</h2><p>우선 왜 <code>apache http + tomcat</code>을 사용할까?<br>개인적으로 생각하는 <code>apache http + tomcat</code>을 쓰는 이유에 대해서 꼽아봤다.</p>
+<ul>
+<li>정적 컨텐츠 제공<ul>
+<li>apache http는 빠른 성능의 정적 컨텐츠 제공이 강점이다.</li>
+<li>apache http로 정적 컨텐츠를 제공하고, tomcat으로 동적 service logic을 실행한다.</li>
+</ul>
+</li>
+<li>보안<ul>
+<li>여러 조건을 가지고 ACL을 걸 수 있다.</li>
+<li>SSL Offloading으로 tomcat에서는 http로만 잘 동작하도록 해도 문제없다.</li>
+</ul>
+</li>
+<li>Apache 모듈 지원<ul>
+<li>많은 기능을 모듈화하여 필요에 따라 사용할 수 있다.</li>
+</ul>
+</li>
+<li>레퍼런스<ul>
+<li><code>apache http + tomcat</code>은 사용자가 많다.</li>
+<li>많은 실패사례, 성공사례, 예제와 설명을 접할 수 있다.</li>
+</ul>
+</li>
+</ul>
+<p>적어놓고 보니 안 쓸 이유가 없어보인다.<br>사실 이 외에도 많은 장점이 있다.(가상호스트, 요청 편집, 프록시 등)<br>HAProxy를 사용한다는 가정하에 몇 가지 태클을 걸어보자.</p>
+<blockquote>
+<p>만약 위의 기능이 필요하다면 <code>apache http + tomcat</code>을 쓰자</p>
+</blockquote>
+<h3 id="정적-컨텐츠-제공"><a href="#정적-컨텐츠-제공" class="headerlink" title="정적 컨텐츠 제공"></a>정적 컨텐츠 제공</h3><p>과연 정적인 컨텐츠가 서버마다 있어야 할까?<br><code>/static/a.png</code> 파일이 A서버에 요청할 때와, B서버에 요청할 때 다른 결과가 나와야할 컨텐츠가 있을까?<br>그렇지 않다면 차라리 가용성을 높게 구성한 CDN에서 관리하는게 좋다고 생각한다.</p>
+<h3 id="보안"><a href="#보안" class="headerlink" title="보안"></a>보안</h3><p>SSL Offloading, URI, Header 등, L4/L7을 대체하는 HAProxy에서 ACL체크를 할 수 있다.</p>
+<h3 id="Apache-모듈-지원"><a href="#Apache-모듈-지원" class="headerlink" title="Apache 모듈 지원"></a>Apache 모듈 지원</h3><p>HAProxy의 주된 기능은 당연히 Proxy이다. 만약 Caching이 필요하다거나, Apache의 모듈에서만 제공하는 기능이 반드시 필요하다면 Apache를 써야한다. 하지만 인프라 구성이 HAProxy로도 충분히 해낼 수 있다면 Apache를 사용해야할 이유가 희미해진다.</p>
+<h3 id="성능"><a href="#성능" class="headerlink" title="성능"></a>성능</h3><blockquote><p>단일 서버를 사용한다면 native web server를 tomcat 앞에 두는 것은 대부분의 경우, HTTP connector로 standalone으로 동작하는 것보다 <code>현저하게 낮은 성능(significantly worse)</code>을 보인다. 이는 web application의 대부분이 정적 파일로 구성된 경우에도 마찬가지다.</p>
+<footer><strong>Tomcat Reference</strong><cite><a href="https://tomcat.apache.org/tomcat-8.5-doc/connectors.html" target="_blank" rel="noopener">Connectors How To</a></cite></footer></blockquote>
+
+<p>물론 <code>apache http + tomcat</code>으로 구성할 때에는, 둘 사이의 통신을 ajp 프로토콜을 사용하여 빠른 성능을 내려고 노력하지만 <strong>필연적으로 tomcat standalone보다는 느릴 수 밖에 없다</strong></p>
+<h3 id="결론"><a href="#결론" class="headerlink" title="결론"></a>결론</h3><p>Apache http에 의존적인 서비스를 해야하는 가에 대해 확인할 필요가 있다.<br>꼭 Apache http를 써야할 이유가 없고, 성능이나 비용 절감의 요구가 더 크다면 과감히 WebServer-less로 전환해보는 건 어떨까?</p>
+<h1 id="기존에-사용하던-Apache의-기능을-HAProxy로-Porting-할-수-있을까"><a href="#기존에-사용하던-Apache의-기능을-HAProxy로-Porting-할-수-있을까" class="headerlink" title="기존에 사용하던 Apache의 기능을 HAProxy로 Porting 할 수 있을까?"></a>기존에 사용하던 Apache의 기능을 HAProxy로 Porting 할 수 있을까?</h1><h2 id="error-처리"><a href="#error-처리" class="headerlink" title="error 처리"></a>error 처리</h2><p><strong>apache</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ErrorDocument 400 &#x2F;error&#x2F;invalidRequest.html</span><br></pre></td></tr></table></figure>
+
+<p><strong>HAProxy</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">errorfile 404 &#x2F;etc&#x2F;haproxy&#x2F;errorfiles&#x2F;404.html</span><br></pre></td></tr></table></figure>
+
+<h2 id="특정-요청-오류-응답"><a href="#특정-요청-오류-응답" class="headerlink" title="특정 요청 오류 응답"></a>특정 요청 오류 응답</h2><p><strong>apache</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Redirect 404 &#x2F;favicon.ico</span><br></pre></td></tr></table></figure>
+
+<p><strong>HAProxy</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">acl favicon_request path &#x2F;favicon.ico</span><br><span class="line">http-request deny 404 if favicon_request</span><br></pre></td></tr></table></figure>
+
+<h2 id="특정-경로-ACL-403"><a href="#특정-경로-ACL-403" class="headerlink" title="특정 경로 ACL(403)"></a>특정 경로 ACL(403)</h2><p><strong>apache</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;DirectoryMatch &quot;(^|&#x2F;)META-INF($|&#x2F;)&quot;&gt;</span><br><span class="line">  Order deny,allow</span><br><span class="line">  deny from all</span><br><span class="line">&lt;&#x2F;DirectoryMatch&gt;</span><br></pre></td></tr></table></figure>
+
+<p><strong>HAProxy</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">acl meta_inf_request path_reg (^|&#x2F;)META-INF($|&#x2F;)</span><br><span class="line">http-request deny if meta_inf_request # http-request allow if !meta_inf_request</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="응답-압축"><a href="#응답-압축" class="headerlink" title="응답 압축"></a>응답 압축</h2><p><strong>apache</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">AddOutputFilterByType DEFLATE text&#x2F;plain text&#x2F;html text&#x2F;xml</span><br><span class="line">DeflateCompressionLevel 9</span><br><span class="line">BrowserMatch ^Mozilla&#x2F;4 gzip-only-text&#x2F;html</span><br></pre></td></tr></table></figure>
+
+<p><strong>HAProxy</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">tune.zlib.memlevel 9</span><br><span class="line">compression algo gzip</span><br><span class="line">comporession type text&#x2F;html text&#x2F;pain text&#x2F;xml</span><br></pre></td></tr></table></figure>
+
+<h2 id="Request-재작성-mod-rewrite"><a href="#Request-재작성-mod-rewrite" class="headerlink" title="Request 재작성(mod_rewrite)"></a>Request 재작성(mod_rewrite)</h2><p><strong>www를 강제로 붙이기</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">http-request redirect code 301 \</span><br><span class="line">location http:&#x2F;&#x2F;www.%[hdr(host)]%[capture.req.uri] \</span><br><span class="line">unless &#123; hdr_beg(host) -i www &#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="VirtualHost"><a href="#VirtualHost" class="headerlink" title="VirtualHost"></a>VirtualHost</h2><p><strong>로드밸런서(GSLB)에 등록된 ip 기반으로 나누는 방식(권장)</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">frontend a_domain</span><br><span class="line">  bind 133.186.189.5:80</span><br><span class="line">  bind 133.186.189.5:443 ssl crt &#x2F;etc&#x2F;haproxy&#x2F;ssl&#x2F;cert.pem</span><br><span class="line">frontend b_domain</span><br><span class="line">  bind 133.186.189.6:80</span><br><span class="line">  bind 133.186.189.6:443 ssl crt &#x2F;etc&#x2F;haproxy&#x2F;ssl&#x2F;cert.pem</span><br></pre></td></tr></table></figure>
+
+<p><strong>하나의 IP로 받고 Domain name을 기준으로 front에서 나누는 방식</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">frontend http_proxy</span><br><span class="line">  bind :80</span><br><span class="line">  bind :443 ssl crt &#x2F;etc&#x2F;haproxy&#x2F;ssl&#x2F;coexapi&#x2F;cert.pem</span><br><span class="line"> </span><br><span class="line">  acl is_a hdr_beg(host) a.com</span><br><span class="line">  acl is_b hdr_beg(host) b.com</span><br><span class="line">  http-request deny 404 if !a and !b</span><br><span class="line">  use_backend a_backend if a</span><br><span class="line">  use_backend b_backend if b</span><br></pre></td></tr></table></figure>
+
+<h2 id="X-Forwarded-For"><a href="#X-Forwarded-For" class="headerlink" title="X-Forwarded-For"></a>X-Forwarded-For</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">frontend www</span><br><span class="line">    mode http</span><br><span class="line">    option forwardfor except 127.0.0.1</span><br><span class="line"></span><br><span class="line">backend www</span><br><span class="line">    mode http</span><br><span class="line">    option forwardfor</span><br><span class="line">    # option forwardfor header X-Client : X-Client 이름의 헤더로 forwardfor 값을 넣음</span><br></pre></td></tr></table></figure>
+
+<h1 id="마무리"><a href="#마무리" class="headerlink" title="마무리"></a>마무리</h1><p>관례는 좋다고 생각한다. 레퍼런스가 많고, 배우기 쉬우며, 많은 사람들이 그 기술을 사용할 때에는 다 이유가 있기 때문에 쓴다. 하지만 레퍼런스 케이스가 모든 경우에 대입할 수 있는 것은 아니다. 새로운 요구 사항들이 생기고, 새로운 기술들을 익히는 과정에서 한 번 쯤은 내가 쓰고 있던 기술들을 돌이켜 보고 더 나은 구조는 없을까 고민해보는 것도 좋은 경험인 것 같다.</p>
+<p>한 가지 분명히 밝혀둬야할 것은 HAProxy는 Apache의 대체 기술이 아니다. Apache는 server이고, HAProxy는 proxy이다. 각자 자신만이 할 수 있는 영역이 있고, 두 기술 모두 처리할 수 있는 영역이 있다. 여기서는 교집합이 되는 영역에 대해서 이야기하고 싶었다.</p>
+<p>본문에서는 전체 주제를 유지하기 위해 Apache의 기능에만 많은 초점을 맞추었지만, HAProxy 또한 각 node끼리 P2P로 통신하여 전체 트래픽을 제어하거나, sticky session을 구성하거나, 임계치를 걸 수 있는 등, Apache에서는 하지 못할 일들을 할 수 있다. 그러니 한 번 쯤은 HAProxy 레퍼런스를 훑어보는 것도 좋다.</p>
+<p>HAProxy는 L4/L7에서 요청을 다룰 수 있는 기능을 제공한다. HAProxy를 사용해서 L4/L7을 대체하는 구성을 사용하게 된다면, 그동안 당연히 사용해왔던 apache http에 대해서 다시 한 번 돌아볼 필요가 있다고 생각한다.</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>작성자:</strong>
+    supawer0728
+  </li>
+  <li class="post-copyright-link">
+    <strong>원본링크:</strong>
+    <a href="https://supawer0728.github.io/2018/03/10/webserveless/" title="HAProxy를 이용한 WebServer-less 구조">https://supawer0728.github.io/2018/03/10/webserveless/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>라이센스: </strong>
+    <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a>
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/architecture/" rel="tag"># architecture</a>
+          
+            <a href="/tags/spring-boot/" rel="tag"># spring-boot</a>
+          
+            <a href="/tags/haproxy/" rel="tag"># haproxy</a>
+          
+            <a href="/tags/web-server/" rel="tag"># web-server</a>
+          
+        </div>
+      
+
+      
+      
+        <div class="post-widgets">
+        
+
+        
+
+        
+          
+          <div id="needsharebutton-postbottom">
+            <span class="btn">
+              <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </span>
+          </div>
+        
+        </div>
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/10/Spring-BindingResult-json/" rel="prev" title="Spring BindingResult를 json으로 받기">
+                Spring BindingResult를 json으로 받기 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript" target="_blank" rel="noopener">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            목차
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            흝어보기
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="supawer0728" />
+            
+              <p class="site-author-name" itemprop="name">supawer0728</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">32</span>
+                  <span class="site-state-item-name">포스트</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">카테고리</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">50</span>
+                  <span class="site-state-item-name">태그</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/feed.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/supawer0728" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#서론"><span class="nav-number">1.</span> <span class="nav-text">서론</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#L4-Apache-Http-Tomcat-VS-HAProxy-Tomcat"><span class="nav-number">2.</span> <span class="nav-text">L4 + Apache Http + Tomcat VS HAProxy + Tomcat</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Apache-Http-Tomcat-스택을-쓰는-이유"><span class="nav-number">2.1.</span> <span class="nav-text">Apache Http + Tomcat 스택을 쓰는 이유</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#정적-컨텐츠-제공"><span class="nav-number">2.1.1.</span> <span class="nav-text">정적 컨텐츠 제공</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#보안"><span class="nav-number">2.1.2.</span> <span class="nav-text">보안</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Apache-모듈-지원"><span class="nav-number">2.1.3.</span> <span class="nav-text">Apache 모듈 지원</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#성능"><span class="nav-number">2.1.4.</span> <span class="nav-text">성능</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#결론"><span class="nav-number">2.1.5.</span> <span class="nav-text">결론</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#기존에-사용하던-Apache의-기능을-HAProxy로-Porting-할-수-있을까"><span class="nav-number">3.</span> <span class="nav-text">기존에 사용하던 Apache의 기능을 HAProxy로 Porting 할 수 있을까?</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#error-처리"><span class="nav-number">3.1.</span> <span class="nav-text">error 처리</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#특정-요청-오류-응답"><span class="nav-number">3.2.</span> <span class="nav-text">특정 요청 오류 응답</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#특정-경로-ACL-403"><span class="nav-number">3.3.</span> <span class="nav-text">특정 경로 ACL(403)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#응답-압축"><span class="nav-number">3.4.</span> <span class="nav-text">응답 압축</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Request-재작성-mod-rewrite"><span class="nav-number">3.5.</span> <span class="nav-text">Request 재작성(mod_rewrite)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#VirtualHost"><span class="nav-number">3.6.</span> <span class="nav-text">VirtualHost</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#X-Forwarded-For"><span class="nav-number">3.7.</span> <span class="nav-text">X-Forwarded-For</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#마무리"><span class="nav-number">4.</span> <span class="nav-text">마무리</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">supawer0728</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+  <div class="footer-custom">To Improve Human Life</div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://supawer0728-github-com.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://supawer0728.github.io/2018/03/10/webserveless/';
+          this.page.identifier = '2018/03/10/webserveless/';
+          this.page.title = 'HAProxy를 이용한 WebServer-less 구조';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://supawer0728-github-com.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('-1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/needsharebutton/needsharebutton.css">
+
+  
+  
+  <script src="/lib/needsharebutton/needsharebutton.js"></script>
+
+  <script>
+    
+      pbOptions = {};
+      
+          pbOptions.iconStyle = "box";
+      
+          pbOptions.boxForm = "horizontal";
+      
+          pbOptions.position = "bottomCenter";
+      
+          pbOptions.networks = "Twitter,Facebook,GooglePlus,Evernote";
+      
+      new needShareButton('#needsharebutton-postbottom', pbOptions);
+    
+    
+  </script>
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

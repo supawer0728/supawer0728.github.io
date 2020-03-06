@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Nanum Gothic:300,300italic,400,400italic,700,700italic|Nanum Pen Script:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-icon-180x180.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.4">
+
+
+
+  <link rel="manifest" href="/images/manifest.json">
+
+
+  <meta name="msapplication-config" content="/images/browserconfig.xml" />
+
+
+
+  <meta name="keywords" content="view template engine,view," />
+
+
+
+
+
+  <link rel="alternate" href="/feed.xml" title="기록은 재산이다" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="서론Java 서버를 개발하면서 View Template Engine에 대해서 매번 고민하게 된다. spring boot를 써보면,  더 이상 JSP를 쓰지 말아야 할 것처럼 말한다 boot에서 jsp를 쓸 경우 war로 만들어야 하며, WAS에 따라서 지원하지 않을 수 있다 - Tomcat만 고집한다면야…   Velocity는 boot에서 지원하지 않는다">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Mustache 공유">
+<meta property="og:url" content="https://supawer0728.github.io/2018/03/14/Mustache/index.html">
+<meta property="og:site_name" content="기록은 재산이다">
+<meta property="og:description" content="서론Java 서버를 개발하면서 View Template Engine에 대해서 매번 고민하게 된다. spring boot를 써보면,  더 이상 JSP를 쓰지 말아야 할 것처럼 말한다 boot에서 jsp를 쓸 경우 war로 만들어야 하며, WAS에 따라서 지원하지 않을 수 있다 - Tomcat만 고집한다면야…   Velocity는 boot에서 지원하지 않는다">
+<meta property="og:locale" content="ko_KR">
+<meta property="article:published_time" content="2018-03-14T02:49:21.000Z">
+<meta property="article:modified_time" content="2020-03-04T08:18:02.740Z">
+<meta property="article:author" content="supawer0728">
+<meta property="article:tag" content="view template engine">
+<meta property="article:tag" content="view">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '작성자'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://supawer0728.github.io/2018/03/14/Mustache/"/>
+
+
+
+
+
+  <title>Mustache 공유 | 기록은 재산이다</title>
+  
+
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-115481794-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'UA-115481794-1');
+</script>
+
+
+
+
+
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script data-ad-client="" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="ko">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">기록은 재산이다</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">To Improve Human Life</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            홈
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            태그
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            카테고리
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            아카이브
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            검색
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="Searching..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://supawer0728.github.io/2018/03/14/Mustache/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="supawer0728">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="기록은 재산이다">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Mustache 공유</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">작성일&#58;</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-14T11:49:21+09:00">
+                2018-03-14
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">수정일&#58;</span>
+              
+              <time title="수정일" itemprop="dateModified" datetime="2020-03-04T17:18:02+09:00">
+              
+                2018-03-14
+              
+              </time>
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/03/14/Mustache/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/03/14/Mustache/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="서론"><a href="#서론" class="headerlink" title="서론"></a>서론</h1><p>Java 서버를 개발하면서 View Template Engine에 대해서 매번 고민하게 된다.</p>
+<p>spring boot를 써보면,</p>
+<ul>
+<li><a href="https://docs.spring.io/spring-boot/docs/2.0.0.RELEASE/reference/htmlsingle/#boot-features-spring-mvc-template-engines" target="_blank" rel="noopener">더 이상 JSP를 쓰지 말아야 할 것처럼 말한다</a><ul>
+<li>boot에서 jsp를 쓸 경우 war로 만들어야 하며, WAS에 따라서 지원하지 않을 수 있다 - Tomcat만 고집한다면야…</li>
+</ul>
+</li>
+<li>Velocity는 boot에서 지원하지 않는다<ul>
+<li>너무 오랫동안 업데이트가 없다면서 뺐는데, 2017-08-06에 Velocity Engine 2.0이 나왔다</li>
+</ul>
+</li>
+<li>Thymeleaf3는 여전히 느린 모양이다.</li>
+<li>Freemarker가 그나마 가장 무난하다.</li>
+</ul>
+<p>위와 같이 알고 있던 중에 최신 spring 문서를 뒤져보다가, <code>script views</code>라는 게 있다는 걸 알게 되었다.<br>Handlebars, Mustache, React, Kotlin Script templating 등등의 많은 라이브러리가 있었는데, 그중에서 Mustache를 살펴보려 한다.</p>
+<a id="more"></a>
+
+<h1 id="Mustache"><a href="#Mustache" class="headerlink" title="Mustache"></a>Mustache</h1><p>Mustache는 Simple하다.<br>얼마나 Simple하냐면, 설명도 <code>Logic-less templates.</code>가 끝이다.<br>별다른 로직이 존재하지 않아서 배우는 것도 간단하다.<br><code>spring-boot</code>에서 <code>starter</code>를 지원하기 때문에 설정도 간단하게 할 수 있다.</p>
+<p>하지만 가장 중요한 것은 <code>Logic-less</code>라는 점이다.<br>MVC 패턴으로 개발을 하다 보면, view에 로직을 구현하려는 경우를 종종 보게 된다.<br>web view를 작성하다 보면 필연적으로 JavaScript를 사용하게 되고,<br>client에서 필요한 로직을 JavaScript로 구현하게 된다.<br>개인적으로 client의 역할과 view의 역할은 분리해야 한다고 생각하며,<br>view에 로직이 구현되어 있는 경우, OOP의 5원칙 중에 SRP를 어겼다고 생각한다.</p>
+<p>때문에 Mustache의 <code>Logic-less</code>라고 하는 점은 매우 끌리는 장점 중 하나이다.</p>
+<h1 id="Mustache-배워보기"><a href="#Mustache-배워보기" class="headerlink" title="Mustache 배워보기"></a>Mustache 배워보기</h1><p>기본적으로 Mustache의 <a href="https://mustache.github.io/mustache.5.html" target="_blank" rel="noopener">Manual</a>을 따르며 하나씩 spring-boot와 연계해보겠다.</p>
+<h2 id="프로젝트-의존성-설정"><a href="#프로젝트-의존성-설정" class="headerlink" title="프로젝트 의존성 설정"></a>프로젝트 의존성 설정</h2><p>spring-boot 버전 : 2.0.0.RELEASE</p>
+<p>간편하게 만들기 : <a href="https://start.spring.io/" target="_blank" rel="noopener">https://start.spring.io/</a></p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">dependencies</span> &#123;</span><br><span class="line"><span class="keyword">compile</span>(<span class="string">'org.springframework.boot:spring-boot-starter-mustache'</span>)</span><br><span class="line"><span class="keyword">compile</span>(<span class="string">'org.springframework.boot:spring-boot-starter-webflux'</span>)</span><br><span class="line"><span class="keyword">runtime</span>(<span class="string">'org.springframework.boot:spring-boot-devtools'</span>)</span><br><span class="line">compileOnly(<span class="string">'org.projectlombok:lombok'</span>)</span><br><span class="line">testCompile(<span class="string">'org.springframework.boot:spring-boot-starter-test'</span>)</span><br><span class="line">testCompile(<span class="string">'io.projectreactor:reactor-test'</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="application-yml"><a href="#application-yml" class="headerlink" title="application.yml"></a>application.yml</h2><p>기본설정은 <code>spring.mustache.suffix=.mustache</code>다.<br>이를 <code>.html</code>로 바꿨다. (취향)</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring.mustache.suffix:</span> <span class="string">.html</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="model"><a href="#model" class="headerlink" title="model"></a>model</h2><p><a href="https://jsonplaceholder.typicode.com/users" target="_blank" rel="noopener">Online Fake Rest Api</a>를 사용했다</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">User</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> User EMPTY = <span class="keyword">new</span> User();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Integer id;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> String email;</span><br><span class="line">    <span class="keyword">private</span> String phone;</span><br><span class="line">    <span class="keyword">private</span> String website;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="controller"><a href="#controller" class="headerlink" title="controller"></a>controller</h2><table>
+<thead>
+<tr>
+<th>API</th>
+<th>URI</th>
+<th>viewName</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>목록</td>
+<td><code>/users</code></td>
+<td><code>/users/list</code></td>
+</tr>
+<tr>
+<td>상세</td>
+<td><code>/users/{id}</code></td>
+<td><code>/users/detail</code></td>
+</tr>
+</tbody></table>
+<p><code>spring.mustache.prefix=classpath:/templates/</code>가 기본설정이다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Controller</span></span><br><span class="line"><span class="meta">@RequestMapping</span>(<span class="string">"/users"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> ParameterizedTypeReference&lt;List&lt;User&gt;&gt; postsListType = <span class="keyword">new</span> ParameterizedTypeReference&lt;List&lt;User&gt;&gt;() &#123;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getList</span><span class="params">(Model model)</span> </span>&#123;</span><br><span class="line">        Mono&lt;List&lt;User&gt;&gt; posts = WebClient.create(<span class="string">"https://jsonplaceholder.typicode.com"</span>)</span><br><span class="line">                                          .get()</span><br><span class="line">                                          .uri(<span class="string">"/users"</span>)</span><br><span class="line">                                          .retrieve()</span><br><span class="line">                                          .bodyToMono(postsListType)</span><br><span class="line">                                          .onErrorReturn(Collections.emptyList());</span><br><span class="line"></span><br><span class="line">        model.addAttribute(<span class="string">"user"</span>, posts);</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"/users/list"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/&#123;id&#125;"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getUser</span><span class="params">(@PathVariable Long id, Model model)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        Mono&lt;User&gt; post = WebClient.create(<span class="string">"https://jsonplaceholder.typicode.com"</span>)</span><br><span class="line">                                   .get()</span><br><span class="line">                                   .uri(<span class="string">"/users/&#123;id&#125;"</span>, id)</span><br><span class="line">                                   .retrieve()</span><br><span class="line">                                   .bodyToMono(User<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">                                   .<span class="title">onErrorReturn</span>(<span class="title">User</span>.<span class="title">EMPTY</span>)</span>;</span><br><span class="line"></span><br><span class="line">        model.addAttribute(<span class="string">"user"</span>, post);</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"/users/detail"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="view"><a href="#view" class="headerlink" title="view"></a>view</h2><p><code>src/main/resources/templates/users/detail.html</code></p>
+<p>User 객체의 속성을 보여준다</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"container"</span>&gt;</span></span><br><span class="line">    &#123;&#123;#user&#125;&#125;</span><br><span class="line">    <span class="tag">&lt;<span class="name">p</span>&gt;</span></span><br><span class="line">        id : &#123;&#123;id&#125;&#125;<span class="tag">&lt;<span class="name">br</span>/&gt;</span></span><br><span class="line">        name : &#123;&#123;name&#125;&#125;<span class="tag">&lt;<span class="name">br</span>/&gt;</span></span><br><span class="line">        phone : &#123;&#123;phone&#125;&#125;<span class="tag">&lt;<span class="name">br</span>/&gt;</span></span><br><span class="line">        website : &#123;&#123;website&#125;&#125;<span class="tag">&lt;<span class="name">br</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line">    &#123;&#123;/user&#125;&#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="변수"><a href="#변수" class="headerlink" title="변수"></a>변수</h3><p>콧수염 두 개(<code>{{id}}</code>)로 표현한다</p>
+<h4 id="HTML-Escape"><a href="#HTML-Escape" class="headerlink" title="HTML Escape"></a>HTML Escape</h4><p>콧수염 안의 문자열은 기본으로 HTML Escape가 적용된다</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">model.addAttribute(<span class="string">"company"</span>, <span class="string">"&lt;b&gt;GitHub&lt;/b&gt;"</span>)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- &#123;&#123;company&#125;&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- &lt;b&gt;GitHub&lt;&#x2F;b&amp;gt</span><br></pre></td></tr></table></figure>
+
+<p>unescape를 하기 위해서는</p>
+<ul>
+<li>괄호를 3번 중첩 시키거나 : <code>{{{ compnay }}}</code></li>
+<li><code>&amp;</code>를 사용한다 : <code>{{& company }}</code></li>
+</ul>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- &#123;&#123;&#123;company&#125;&#125;&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- &lt;b&gt;GitHub&lt;&#x2F;b&gt;</span><br></pre></td></tr></table></figure>
+
+<h3 id="섹션"><a href="#섹션" class="headerlink" title="섹션"></a>섹션</h3><p>섹션은 콧수염과 샵으로 표현한다(<code>{{ #post }}</code>)</p>
+<p>섹션에 들어가는 key 타입에 따라서 표현이 달라진다</p>
+<h4 id="False-Empty-List"><a href="#False-Empty-List" class="headerlink" title="False, Empty List"></a>False, Empty List</h4><p>key의 값이 false이거나 empty list인 경우, 해당 섹션은 표시되지 않는다</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Shown.</span><br><span class="line">&#123;&#123;#post&#125;&#125;</span><br><span class="line">Never shown!</span><br><span class="line">&#123;&#123;/person&#125;&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="Non-Empty-Lists"><a href="#Non-Empty-Lists" class="headerlink" title="Non-Empty Lists"></a>Non-Empty Lists</h4><p>key가 비어있지 않은 list인 경우 섹션 내의 내용의 반복한다</p>
+<h5 id="GET-users-요청"><a href="#GET-users-요청" class="headerlink" title="GET /users 요청"></a><code>GET /users</code> 요청</h5><p><strong>list.html</strong></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"container"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">table</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">tr</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">td</span>&gt;</span>id<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">td</span>&gt;</span>name<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">td</span>&gt;</span>phone<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">td</span>&gt;</span>website<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">tr</span>&gt;</span></span><br><span class="line">        &#123;&#123;#user&#125;&#125;</span><br><span class="line">        <span class="tag">&lt;<span class="name">tr</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">td</span>&gt;</span>&#123;&#123;id&#125;&#125;<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">td</span>&gt;</span>&#123;&#123;name&#125;&#125;<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">td</span>&gt;</span>&#123;&#123;phone&#125;&#125;<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">td</span>&gt;</span>&#123;&#123;website&#125;&#125;<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">tr</span>&gt;</span></span><br><span class="line">        &#123;&#123;/user&#125;&#125;</span><br><span class="line">    <span class="tag">&lt;/<span class="name">table</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>결과</strong></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"container"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">table</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">tr</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">td</span>&gt;</span>id<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">td</span>&gt;</span>name<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">td</span>&gt;</span>phone<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">td</span>&gt;</span>website<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">tr</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">tr</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">td</span>&gt;</span>1<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">td</span>&gt;</span>Leanne Graham<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">td</span>&gt;</span>1-770-736-8031 x56442<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">td</span>&gt;</span>hildegard.org<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">tr</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">tr</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">td</span>&gt;</span>2<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">td</span>&gt;</span>Ervin Howell<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">td</span>&gt;</span>010-692-6593 x09125<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">td</span>&gt;</span>anastasia.net<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">tr</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- ... --&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">table</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="Lambda"><a href="#Lambda" class="headerlink" title="Lambda"></a>Lambda</h4><p>lambda식을 실행할 수 있다</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;&#123;#user&#125;&#125;</span><br><span class="line">  &#123;&#123;#doubled&#125;&#125;</span><br><span class="line">    &#123;&#123;name&#125;&#125;</span><br><span class="line">  &#123;&#123;/doubled&#125;&#125;</span><br><span class="line">&#123;&#123;/user&#125;&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@ControllerAdvice</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LayoutAdvice</span> </span>&#123;</span><br><span class="line">    <span class="meta">@ModelAttribute</span>(<span class="string">"doubled"</span>)</span><br><span class="line">    <span class="keyword">public</span> Mustache.<span class="function">Lambda <span class="title">doubled</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> (frag, out) -&gt; &#123;</span><br><span class="line">            String bodyString = frag.execute();</span><br><span class="line">            out.append(bodyString)</span><br><span class="line">               .append(bodyString);</span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>결과</strong></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 이름이 Leanne Graham인 경우 --&gt;</span></span><br><span class="line">Leanne GrahamLeanne Graham</span><br></pre></td></tr></table></figure>
+
+<p>lambda식은 아래 interface를 구현해서 만들 수 있다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Lambda</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">execute</span> <span class="params">(Template.Fragment frag, Writer out)</span> <span class="keyword">throws</span> IOException</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>frag.execute()</code> : 내부의 표현식을 실행한 후 String으로 반환한다.</li>
+<li><code>frag.context()</code> : 상위 오브젝트(여기서는 User)를 가져온다.</li>
+<li><code>frag.context(int n)</code> : n번째 상위 오브젝트를 가져온다.</li>
+</ul>
+<blockquote>
+<p>이러한 기능을 제공하나, 행여나 view에서 serivce logic을 작성하지는 말자.</p>
+</blockquote>
+<h4 id="False값이-아닌-경우"><a href="#False값이-아닌-경우" class="headerlink" title="False값이 아닌 경우"></a>False값이 아닌 경우</h4><p>list도 아니고, false도 아니라면 이를 block을 가진 context(즉 object)로 간주한다</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">model.addAttribute(<span class="string">"user"</span>, <span class="keyword">new</span> User(<span class="string">"abc"</span>));</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;&#123;#user&#125;&#125;</span><br><span class="line">  Hello, &#123;&#123;name&#125;&#125;!</span><br><span class="line">&#123;&#123;/user&#125;&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>결과</strong></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Hello, abc!</span><br></pre></td></tr></table></figure>
+
+<h4 id="Inverted-Section"><a href="#Inverted-Section" class="headerlink" title="Inverted Section"></a>Inverted Section</h4><p>섹션에 논리 부정 연산자(<code>!</code>)가 붙은 격이다</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">model.addAttribute(<span class="string">"users"</span>, Collections.emptyList());</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;&#123;#users&#125;&#125;</span><br><span class="line">  &#123;&#123;name&#125;&#125;</span><br><span class="line">&#123;&#123;/users&#125;&#125;</span><br><span class="line">&#123;&#123;^users&#125;&#125;</span><br><span class="line">  No users...</span><br><span class="line">&#123;&#123;/users&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>결과</strong></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">No users...</span><br></pre></td></tr></table></figure>
+
+<h4 id="주석"><a href="#주석" class="headerlink" title="주석"></a>주석</h4><p><code>{{! ignore me }}</code></p>
+<h4 id="Partials"><a href="#Partials" class="headerlink" title="Partials"></a>Partials</h4><p><code>{{>users/list-item}}</code>과 같이, 외부 문서를 불러올 수 있다.</p>
+<p><code>GET /users</code></p>
+<p><strong>src/main/resources/templates/users/list.html</strong></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"container"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">table</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">tr</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">td</span>&gt;</span>id<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">td</span>&gt;</span>name<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">td</span>&gt;</span>phone<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">td</span>&gt;</span>website<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">td</span>&gt;</span>doubled name<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">tr</span>&gt;</span></span><br><span class="line">        &#123;&#123;#user&#125;&#125;</span><br><span class="line">        &#123;&#123;&gt;users/list-item&#125;&#125;</span><br><span class="line">        &#123;&#123;/user&#125;&#125;</span><br><span class="line">    <span class="tag">&lt;/<span class="name">table</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>src/main/resources/templates/users/list-item.html</strong></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">tr</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">td</span>&gt;</span>&#123;&#123;id&#125;&#125;<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">td</span>&gt;</span>&#123;&#123;name&#125;&#125;<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">td</span>&gt;</span>&#123;&#123;phone&#125;&#125;<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">td</span>&gt;</span>&#123;&#123;website&#125;&#125;<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">td</span>&gt;</span>&#123;&#123;#doubled&#125;&#125;&#123;&#123;name&#125;&#125;&#123;&#123;/doubled&#125;&#125;<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">tr</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="Delimter"><a href="#Delimter" class="headerlink" title="Delimter"></a>Delimter</h4><p>콧수염(<code>{{ }}</code>) 을 다른 기호로 바꿀 때 사용한다</p>
+<p><strong>콧수염을 <code>&lt;% %&gt;</code>로</strong></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;&#123; name &#125;&#125;</span><br><span class="line">&#123;&#123;=<span class="tag">&lt;<span class="name">%</span> %&gt;</span>=&#125;&#125; <span class="comment">&lt;!-- 변환 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">%</span> <span class="attr">name</span> %&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Spring-Boot-Property"><a href="#Spring-Boot-Property" class="headerlink" title="Spring Boot Property"></a>Spring Boot Property</h2><p>기본으로 설정되어 있는 Property와 기본값은 다음과 같다</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"># HttpServletRequest의 attribute를 Controller에서 생성한 동일한 이름의 model attribute로 덮어 쓸 수 있는지 여부</span><br><span class="line">spring.mustache.allow-request-override&#x3D;false </span><br><span class="line"></span><br><span class="line"># HttpSession의 attribute를 Controller에서 생성한 동일한 이름의 model attribute로 덮어 쓸 수 있는지 여부</span><br><span class="line">spring.mustache.allow-session-override&#x3D;false </span><br><span class="line"></span><br><span class="line">spring.mustache.cache&#x3D;false </span><br><span class="line">spring.mustache.charset&#x3D;UTF-8</span><br><span class="line">spring.mustache.check-template-location&#x3D;true</span><br><span class="line">spring.mustache.content-type&#x3D;text&#x2F;html</span><br><span class="line">spring.mustache.enabled&#x3D;true</span><br><span class="line"></span><br><span class="line"># 모든 request attribute를 template에 병합하기 전 포함시켜야하는 지 여부</span><br><span class="line">spring.mustache.expose-request-attributes&#x3D;false</span><br><span class="line"># 모든 session attribute를 template에 병합하기 전 포함시켜야하는 지 여부</span><br><span class="line">spring.mustache.expose-session-attributes&#x3D;false</span><br><span class="line"># RequestContext를 노출할지 여부(&quot;springMacroRequsetContext&quot;라는 이름의 spring macro library에 의해 설정됨)</span><br><span class="line"># &lt;link rel&#x3D;&quot;stylesheet&quot; href&#x3D;&quot;&#123;&#123;springMacroRequestContext.request.contextPath&#125;&#125;&#x2F;assets&#x2F;app.css&quot;&gt;</span><br><span class="line">spring.mustache.expose-spring-macro-helpers&#x3D;true</span><br><span class="line"></span><br><span class="line">spring.mustache.prefix&#x3D;classpath:&#x2F;templates&#x2F; </span><br><span class="line"># 전체 view에서 사용할 RequestContext의 이름(키)</span><br><span class="line">spring.mustache.request-context-attribute&#x3D;</span><br><span class="line"># viewname의 접미사</span><br><span class="line">spring.mustache.suffix&#x3D;.mustache</span><br><span class="line"># 처리할 view name의 white list</span><br><span class="line">spring.mustache.view-names&#x3D;</span><br></pre></td></tr></table></figure>
+
+<h1 id="마무리"><a href="#마무리" class="headerlink" title="마무리"></a>마무리</h1><p>script 기반의 view template engine인 mustache에 대해서 알아보았다.</p>
+<p>여타 다른 엔진에 비해서 제공하는 기능은 훨씬 적다.<br>하지만 간단하고 배우기 쉬우며, spring boot와 통합도 제공한다.</p>
+<p><a href="https://github.com/jreijn/spring-comparing-template-engines" target="_blank" rel="noopener">2015년 기준</a>으로 Freemarker나 Velocity에 견줄 수 있을 정도의 속도가 나왔다고 한다.<br>물론 이런 종류의 테스트는 최적화를 위해서는 더 다양한 케이스를 테스트해 봐야겠지만, 생각보다 훨씬 빠르다는 것에 다시 놀랐다.</p>
+<p>logic-less의 view를 구현하고, client의 logic을 node나 전담 front-server에서 구현할 수 있다면, 꽤 괜찮은 솔루션이라 생각된다.</p>
+<p>소스 코드 : <a href="https://github.com/supawer0728/simple-mustache" target="_blank" rel="noopener">https://github.com/supawer0728/simple-mustache</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>작성자:</strong>
+    supawer0728
+  </li>
+  <li class="post-copyright-link">
+    <strong>원본링크:</strong>
+    <a href="https://supawer0728.github.io/2018/03/14/Mustache/" title="Mustache 공유">https://supawer0728.github.io/2018/03/14/Mustache/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>라이센스: </strong>
+    <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a>
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/view-template-engine/" rel="tag"># view template engine</a>
+          
+            <a href="/tags/view/" rel="tag"># view</a>
+          
+        </div>
+      
+
+      
+      
+        <div class="post-widgets">
+        
+
+        
+
+        
+          
+          <div id="needsharebutton-postbottom">
+            <span class="btn">
+              <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </span>
+          </div>
+        
+        </div>
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/11/Spring-request-model3/" rel="next" title="Spring에서 요청에 따른 부가 응답 추가하기(3) - webflux 적용">
+                <i class="fa fa-chevron-left"></i> Spring에서 요청에 따른 부가 응답 추가하기(3) - webflux 적용
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/15/Java-Server-Socket-Programming-Base/" rel="prev" title="가끔 복기할 만한 TCP Socket Programming 기초">
+                가끔 복기할 만한 TCP Socket Programming 기초 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript" target="_blank" rel="noopener">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            목차
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            흝어보기
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="supawer0728" />
+            
+              <p class="site-author-name" itemprop="name">supawer0728</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">32</span>
+                  <span class="site-state-item-name">포스트</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">카테고리</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">50</span>
+                  <span class="site-state-item-name">태그</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/feed.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/supawer0728" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#서론"><span class="nav-number">1.</span> <span class="nav-text">서론</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Mustache"><span class="nav-number">2.</span> <span class="nav-text">Mustache</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Mustache-배워보기"><span class="nav-number">3.</span> <span class="nav-text">Mustache 배워보기</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#프로젝트-의존성-설정"><span class="nav-number">3.1.</span> <span class="nav-text">프로젝트 의존성 설정</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#application-yml"><span class="nav-number">3.2.</span> <span class="nav-text">application.yml</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#model"><span class="nav-number">3.3.</span> <span class="nav-text">model</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#controller"><span class="nav-number">3.4.</span> <span class="nav-text">controller</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#view"><span class="nav-number">3.5.</span> <span class="nav-text">view</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#변수"><span class="nav-number">3.5.1.</span> <span class="nav-text">변수</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#HTML-Escape"><span class="nav-number">3.5.1.1.</span> <span class="nav-text">HTML Escape</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#섹션"><span class="nav-number">3.5.2.</span> <span class="nav-text">섹션</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#False-Empty-List"><span class="nav-number">3.5.2.1.</span> <span class="nav-text">False, Empty List</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Non-Empty-Lists"><span class="nav-number">3.5.2.2.</span> <span class="nav-text">Non-Empty Lists</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#GET-users-요청"><span class="nav-number">3.5.2.2.1.</span> <span class="nav-text">GET &#x2F;users 요청</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Lambda"><span class="nav-number">3.5.2.3.</span> <span class="nav-text">Lambda</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#False값이-아닌-경우"><span class="nav-number">3.5.2.4.</span> <span class="nav-text">False값이 아닌 경우</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Inverted-Section"><span class="nav-number">3.5.2.5.</span> <span class="nav-text">Inverted Section</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#주석"><span class="nav-number">3.5.2.6.</span> <span class="nav-text">주석</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Partials"><span class="nav-number">3.5.2.7.</span> <span class="nav-text">Partials</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Delimter"><span class="nav-number">3.5.2.8.</span> <span class="nav-text">Delimter</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Spring-Boot-Property"><span class="nav-number">3.6.</span> <span class="nav-text">Spring Boot Property</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#마무리"><span class="nav-number">4.</span> <span class="nav-text">마무리</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">supawer0728</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+  <div class="footer-custom">To Improve Human Life</div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://supawer0728-github-com.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://supawer0728.github.io/2018/03/14/Mustache/';
+          this.page.identifier = '2018/03/14/Mustache/';
+          this.page.title = 'Mustache 공유';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://supawer0728-github-com.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('-1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/needsharebutton/needsharebutton.css">
+
+  
+  
+  <script src="/lib/needsharebutton/needsharebutton.js"></script>
+
+  <script>
+    
+      pbOptions = {};
+      
+          pbOptions.iconStyle = "box";
+      
+          pbOptions.boxForm = "horizontal";
+      
+          pbOptions.position = "bottomCenter";
+      
+          pbOptions.networks = "Twitter,Facebook,GooglePlus,Evernote";
+      
+      new needShareButton('#needsharebutton-postbottom', pbOptions);
+    
+    
+  </script>
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,1781 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Nanum Gothic:300,300italic,400,400italic,700,700italic|Nanum Pen Script:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-icon-180x180.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.4">
+
+
+
+  <link rel="manifest" href="/images/manifest.json">
+
+
+  <meta name="msapplication-config" content="/images/browserconfig.xml" />
+
+
+
+  <meta name="keywords" content="spring," />
+
+
+
+
+
+  <link rel="alternate" href="/feed.xml" title="기록은 재산이다" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="서론Spring Application을 만들면서 여러 DataSource와 transaction이 존재하고 하나의 transaction 내에 commit과 rollback이 잘 동작하도록 하려면 어떻게 설정해야 할까? 실제로 구현을 해본 적은 없지만 세 가지 방법이 머릿속에 떠올랐다.  @Transactional의 propagation을 이용 spring-">
+<meta property="og:type" content="article">
+<meta property="og:title" content="(Spring)다중 DataSource 처리">
+<meta property="og:url" content="https://supawer0728.github.io/2018/03/22/spring-multi-transaction/index.html">
+<meta property="og:site_name" content="기록은 재산이다">
+<meta property="og:description" content="서론Spring Application을 만들면서 여러 DataSource와 transaction이 존재하고 하나의 transaction 내에 commit과 rollback이 잘 동작하도록 하려면 어떻게 설정해야 할까? 실제로 구현을 해본 적은 없지만 세 가지 방법이 머릿속에 떠올랐다.  @Transactional의 propagation을 이용 spring-">
+<meta property="og:locale" content="ko_KR">
+<meta property="article:published_time" content="2018-03-22T04:54:08.000Z">
+<meta property="article:modified_time" content="2020-03-04T08:18:02.751Z">
+<meta property="article:author" content="supawer0728">
+<meta property="article:tag" content="spring">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '작성자'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://supawer0728.github.io/2018/03/22/spring-multi-transaction/"/>
+
+
+
+
+
+  <title>(Spring)다중 DataSource 처리 | 기록은 재산이다</title>
+  
+
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-115481794-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'UA-115481794-1');
+</script>
+
+
+
+
+
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script data-ad-client="" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="ko">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">기록은 재산이다</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">To Improve Human Life</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            홈
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            태그
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            카테고리
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            아카이브
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            검색
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="Searching..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://supawer0728.github.io/2018/03/22/spring-multi-transaction/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="supawer0728">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="기록은 재산이다">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">(Spring)다중 DataSource 처리</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">작성일&#58;</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-22T13:54:08+09:00">
+                2018-03-22
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">수정일&#58;</span>
+              
+              <time title="수정일" itemprop="dateModified" datetime="2020-03-04T17:18:02+09:00">
+              
+                2018-03-22
+              
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/" itemprop="url" rel="index">
+                    <span itemprop="name">spring</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/03/22/spring-multi-transaction/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/03/22/spring-multi-transaction/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="서론"><a href="#서론" class="headerlink" title="서론"></a>서론</h1><p>Spring Application을 만들면서 여러 <code>DataSource</code>와 <code>transaction</code>이 존재하고 하나의 transaction 내에 commit과 rollback이 잘 동작하도록 하려면 어떻게 설정해야 할까? 실제로 구현을 해본 적은 없지만 세 가지 방법이 머릿속에 떠올랐다.</p>
+<ul>
+<li><code>@Transactional</code>의 propagation을 이용</li>
+<li><code>spring-data-commons</code>의 <code>ChainedTransactionManager</code> 이용</li>
+<li><code>JtaTransactionManager</code> 이용</li>
+</ul>
+<p>이 방법들이 실제로 써먹을 수 있을지 확인해보려고 한다.</p>
+<a id="more"></a>
+
+<h1 id="구현-1-Transactional의-propagation-이용"><a href="#구현-1-Transactional의-propagation-이용" class="headerlink" title="구현 1 - @Transactional의 propagation 이용"></a>구현 1 - @Transactional의 propagation 이용</h1><h2 id="Transactional-propagation에-대한-간단한-설명"><a href="#Transactional-propagation에-대한-간단한-설명" class="headerlink" title="Transactional.propagation에 대한 간단한 설명"></a>Transactional.propagation에 대한 간단한 설명</h2><p>Spring의 <code>@Transactional</code>의 <code>propagation</code> 속성으로 다음과 같은 설정을 할 수 있다. 자세한 설명을 해둔 <a href="http://springsource.tistory.com/136" target="_blank" rel="noopener">블로그(Rednics Blog)</a>가 있어 링크를 남긴다. <a href="https://docs.spring.io/spring/docs/4.2.x/spring-framework-reference/html/transaction.html#tx-propagation" target="_blank" rel="noopener">spring reference</a>도 참조하자</p>
+<ul>
+<li>REQUIRED : 기본 설정, 진행중인 transaction이 있으면 참여, 없으면 새로 생성</li>
+<li>SUPPORTS : 진행중인 transaction이 있으면 참여, 없으면 transaction 없이 실행</li>
+<li>MANDATORY : 진행중인 transaction이 있으면 참여, 없으면 예외.</li>
+<li>REQUIRES_NEW : 새로운 transaction 시작. 진행중인 transaction은 보류.</li>
+<li>NOT_SUPPORTED : 진행중인 transaction이 있으면 보류, transaction 없이 실행.</li>
+<li>NEVER : transaction없이 실행. 진행중인 transaction이 있으면 예외.</li>
+<li>NESTED : 중첩 transaction 실행. 자식 tx은 부모 tx에게 영향을 주지 않지만, 부모는 자식에게 영향을 줌.</li>
+</ul>
+<h2 id="요구-사항"><a href="#요구-사항" class="headerlink" title="요구 사항"></a>요구 사항</h2><img  src=http://www.plantuml.com/plantuml/svg/Yov9BIvnpiyhAShFoKajYbNGrRLJYBR9JSrDIYqAgR2BoSl9JyzC3aujAijCJerLi5B8JIt9o4zHUDEzvEsqJYuyIZ5CWZ2HZ3BKKyZCAqujAl45on0sB2a_iIW5B0jc8Hbb13FA2IIXyMP6nvkPErvlcFEcUQwY9W00>
+<p>하고자 하는 일을 다이어그램으로 나타내면 위와 같다.<br>주로 사용하는 DataSource와 transaction이 존재하고, 거기에 부가 transaction이 참여하는 모양새다. 2번에서 예외가 발생했을 때, 2번도 rollback이 되고 1번도 같이 rollback이 되었으면 좋겠다. </p>
+<p>memberTx와 boardTx가 <code>REQUIRED</code>, <code>REQUIRES_NEW</code>, <code>NESTED</code>의 propagation을 가질 수 있을 때, 총 9가지 경우의 수가 나온다. 어떤 조합에서 <code>commit</code>과 <code>rollback</code>이 어떻게 실행될지 직접 구현해보겠다.</p>
+<p>다음 단락부터 이를 구현한 예제가 나올텐데, 좀 지루한 내용이라 결과만 알고 싶다면 바로 결론으로 가자.</p>
+<h2 id="의존성"><a href="#의존성" class="headerlink" title="의존성"></a>의존성</h2><p>본문에서는 <code>spring-boot</code>, <code>mysql(docker 사용)</code>, <code>mybatis</code>를 사용한다.<br><code>spring-boot</code>의 버전은 <code>2.0.0.RELEASE</code>다.</p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">dependencies</span> &#123;</span><br><span class="line">    <span class="keyword">compile</span>(<span class="string">'org.springframework.boot:spring-boot-starter-web'</span>)</span><br><span class="line">    <span class="keyword">compile</span>(<span class="string">'org.mybatis.spring.boot:mybatis-spring-boot-starter:1.3.2'</span>)</span><br><span class="line">    compileOnly(<span class="string">'org.projectlombok:lombok'</span>)</span><br><span class="line">    <span class="keyword">runtime</span>(<span class="string">'mysql:mysql-connector-java'</span>)</span><br><span class="line">    testCompile(<span class="string">'org.springframework.boot:spring-boot-starter-test'</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="SpringApplication-설정"><a href="#SpringApplication-설정" class="headerlink" title="SpringApplication 설정"></a>SpringApplication 설정</h2><h3 id="application-yml"><a href="#application-yml" class="headerlink" title="application.yml"></a>application.yml</h3><figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">datasource:</span></span><br><span class="line">    <span class="attr">hikari1:</span></span><br><span class="line">      <span class="attr">username:</span> <span class="string">multitxtest</span></span><br><span class="line">      <span class="attr">password:</span> <span class="string">multitxtest</span></span><br><span class="line">      <span class="attr">driver-class-name:</span> <span class="string">com.mysql.jdbc.Driver</span></span><br><span class="line">      <span class="attr">url:</span> <span class="string">jdbc:mysql://127.0.0.1:11306/multi_tx_test</span></span><br><span class="line">    <span class="attr">hikari2:</span></span><br><span class="line">      <span class="attr">url:</span></span><br><span class="line">      <span class="attr">username:</span> <span class="string">multitxtest</span></span><br><span class="line">      <span class="attr">password:</span> <span class="string">multitxtest</span></span><br><span class="line">      <span class="attr">driver-class-name:</span> <span class="string">com.mysql.jdbc.Driver</span></span><br><span class="line">      <span class="attr">url:</span> <span class="string">jdbc:mysql://127.0.0.1:11307/multi_tx_test</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="두-개의-SqlSession-생성"><a href="#두-개의-SqlSession-생성" class="headerlink" title="두 개의 SqlSession 생성"></a>두 개의 SqlSession 생성</h3><h4 id="Board용-SqlSession"><a href="#Board용-SqlSession" class="headerlink" title="Board용 SqlSession"></a>Board용 SqlSession</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// board</span></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@EnableConfigurationProperties</span>(Hikari2Properties<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">BoardSqlSessionConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> DataSource <span class="title">boardDataSource</span><span class="params">(Hikari2Properties properties)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> DataSourceCreator.createHikariDataSource(properties);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> PlatformTransactionManager <span class="title">boardTxManager</span><span class="params">(DataSource boardDataSource)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> DataSourceTransactionManager(boardDataSource);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> SqlSessionFactory <span class="title">boardSqlSessionFactory</span><span class="params">(DataSource boardDataSource)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        SqlSessionFactoryBean factoryBean = <span class="keyword">new</span> SqlSessionFactoryBean();</span><br><span class="line">        factoryBean.setDataSource(boardDataSource);</span><br><span class="line">        <span class="keyword">return</span> factoryBean.getObject();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span>(destroyMethod = <span class="string">"clearCache"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> SqlSession <span class="title">boardSqlSession</span><span class="params">(SqlSessionFactory boardSqlSessionFactory)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> SqlSessionTemplate(boardSqlSessionFactory);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> MapperFactoryBean&lt;BoardMapper&gt; <span class="title">boardMapper</span><span class="params">(SqlSessionFactory boardSqlSessionFactory)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        MapperFactoryBean&lt;BoardMapper&gt; factoryBean = <span class="keyword">new</span> MapperFactoryBean&lt;&gt;(BoardMapper<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">        factoryBean.setSqlSessionFactory(boardSqlSessionFactory);</span><br><span class="line">        <span class="keyword">return</span> factoryBean;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="Member용-SqlSession"><a href="#Member용-SqlSession" class="headerlink" title="Member용 SqlSession"></a>Member용 SqlSession</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// member</span></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@EnableConfigurationProperties</span>(Hikari1Properties<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">MemberSqlSessionConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> DataSource <span class="title">memberDataSource</span><span class="params">(Hikari1Properties properties)</span> </span>&#123; ... &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="meta">@Primary</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> PlatformTransactionManager <span class="title">memberTxManager</span><span class="params">(DataSource memberDataSource)</span> </span>&#123; ... &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> SqlSessionFactory <span class="title">memberSqlSessionFactory</span><span class="params">(DataSource memberDataSource)</span> <span class="keyword">throws</span> Exception </span>&#123; ... &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span>(destroyMethod = <span class="string">"clearCache"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> SqlSession <span class="title">memberSqlSession</span><span class="params">(SqlSessionFactory memberSqlSessionFactory)</span> </span>&#123; ... &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> MapperFactoryBean&lt;MemberMapper&gt; <span class="title">memberMapper</span><span class="params">(SqlSessionFactory memberSqlSessionFactory)</span> </span>&#123; ... &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="DataSourceCreator"><a href="#DataSourceCreator" class="headerlink" title="DataSourceCreator"></a>DataSourceCreator</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@UtilityClass</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DataSourceCreator</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> DataSource <span class="title">createHikariDataSource</span><span class="params">(DataSourceProperties properties)</span> </span>&#123;</span><br><span class="line">        HikariDataSource dataSource = <span class="keyword">new</span> HikariDataSource();</span><br><span class="line">        dataSource.setJdbcUrl(properties.getUrl());</span><br><span class="line">        dataSource.setUsername(properties.getUsername());</span><br><span class="line">        dataSource.setPassword(properties.getPassword());</span><br><span class="line">        dataSource.setDriverClassName(properties.getDriverClassName());</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> dataSource;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="DAO"><a href="#DAO" class="headerlink" title="DAO"></a>DAO</h2><h3 id="BoardMapper"><a href="#BoardMapper" class="headerlink" title="BoardMapper"></a>BoardMapper</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">BoardMapper</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Insert</span>(<span class="string">"INSERT INTO board(title, content) VALUES(#&#123;title&#125;, #&#123;content&#125;)"</span>)</span><br><span class="line">    <span class="meta">@SelectKey</span>(statement = <span class="string">"SELECT LAST_INSERT_ID()"</span>, keyColumn = <span class="string">"id"</span>, keyProperty = <span class="string">"id"</span>, before = <span class="keyword">false</span>, resultType = Long<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">    <span class="title">int</span> <span class="title">insert</span>(<span class="title">Board</span> <span class="title">board</span>)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Delete</span>(<span class="string">"TRUNCATE TABLE board"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">truncate</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="MemberMapper"><a href="#MemberMapper" class="headerlink" title="MemberMapper"></a>MemberMapper</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">MemberMapper</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Insert</span>(<span class="string">"INSERT INTO member(name, age) VALUES(#&#123;name&#125;, #&#123;age&#125;)"</span>)</span><br><span class="line">    <span class="meta">@SelectKey</span>(statement = <span class="string">"SELECT LAST_INSERT_ID()"</span>, keyColumn = <span class="string">"id"</span>, keyProperty = <span class="string">"id"</span>, before = <span class="keyword">false</span>, resultType = Long<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">    <span class="title">int</span> <span class="title">insert</span>(<span class="title">Member</span> <span class="title">member</span>)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Delete</span>(<span class="string">"TRUNCATE TABLE member"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">truncate</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Service"><a href="#Service" class="headerlink" title="Service"></a>Service</h2><h3 id="MemberService"><a href="#MemberService" class="headerlink" title="MemberService"></a>MemberService</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="meta">@Transactional</span>(transactionManager = <span class="string">"memberTxManager"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MemberService</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> MemberMapper memberMapper;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">saveWithRequired</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        memberMapper.insert(Member.createForTest(<span class="number">1</span>));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Transactional</span>(transactionManager = <span class="string">"memberTxManager"</span>, propagation = Propagation.REQUIRES_NEW)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">saveWithRequiresNew</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        memberMapper.insert(Member.createForTest(<span class="number">1</span>));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Transactional</span>(transactionManager = <span class="string">"memberTxManager"</span>, propagation = Propagation.NESTED)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">saveWithNested</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        memberMapper.insert(Member.createForTest(<span class="number">1</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="BoardService"><a href="#BoardService" class="headerlink" title="BoardService"></a>BoardService</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="meta">@Transactional</span>(<span class="string">"boardTxManager"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BoardService</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> BoardMapper boardMapper;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">saveWithRequired</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        boardMapper.insert(Board.createForTest(<span class="number">1</span>));</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"this method throw exception"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Transactional</span>(transactionManager = <span class="string">"boardTxManager"</span>, propagation = Propagation.REQUIRES_NEW)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">saveWithRequiresNew</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        boardMapper.insert(Board.createForTest(<span class="number">1</span>));</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"this method throw exception"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Transactional</span>(transactionManager = <span class="string">"boardTxManager"</span>, propagation = Propagation.NESTED)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">saveWithNested</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        boardMapper.insert(Board.createForTest(<span class="number">1</span>));</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"this method throw exception"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="LogicService"><a href="#LogicService" class="headerlink" title="LogicService"></a>LogicService</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="meta">@Transactional</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LogicService</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> MemberService memberService;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> BoardService boardService;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">required_required</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        memberService.saveWithRequired();</span><br><span class="line">        boardService.saveWithRequired();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">required_requiresNew</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        memberService.saveWithRequired();</span><br><span class="line">        boardService.saveWithRequiresNew();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">required_nested</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        memberService.saveWithRequired();</span><br><span class="line">        boardService.saveWithNested();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">requiresNew_required</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        memberService.saveWithRequiresNew();</span><br><span class="line">        boardService.saveWithRequired();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">requiresNew_requiresNew</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        memberService.saveWithRequiresNew();</span><br><span class="line">        boardService.saveWithRequiresNew();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">requiresNew_nested</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        memberService.saveWithRequiresNew();</span><br><span class="line">        boardService.saveWithNested();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">nested_required</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        memberService.saveWithNested();</span><br><span class="line">        boardService.saveWithRequired();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">nested_requiresNew</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        memberService.saveWithNested();</span><br><span class="line">        boardService.saveWithRequiresNew();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">nested_nested</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        memberService.saveWithNested();</span><br><span class="line">        boardService.saveWithNested();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="결과"><a href="#결과" class="headerlink" title="결과"></a>결과</h2><h3 id="LogicService에-Transactional이-없는-경우"><a href="#LogicService에-Transactional이-없는-경우" class="headerlink" title="LogicService에 @Transactional이 없는 경우"></a>LogicService에 @Transactional이 없는 경우</h3><table>
+<thead>
+<tr>
+<th>member propagation</th>
+<th>board propagation</th>
+<th>member insert</th>
+<th>board insert</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>required</td>
+<td>required</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>required</td>
+<td>requires-new</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>required</td>
+<td>nested</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>requires-new</td>
+<td>required</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>requires-new</td>
+<td>requires-new</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>requires-new</td>
+<td>nested</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>nested</td>
+<td>required</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>nested</td>
+<td>requires-new</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>nested</td>
+<td>nested</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+</tbody></table>
+<h4 id="설명"><a href="#설명" class="headerlink" title="설명"></a>설명</h4><p>logicalService에서는 transaction이 시작되지 않는다. 따라서 memberService와 boardService는 각각 별개의 transaction에서 독립적으로 실행된다. 예외가 발생한 boardService의 내용만 rollback된다.</p>
+<h3 id="LogicService에-Transactional이-있는-경우-memberTxManager"><a href="#LogicService에-Transactional이-있는-경우-memberTxManager" class="headerlink" title="LogicService에 @Transactional이 있는 경우(memberTxManager)"></a>LogicService에 @Transactional이 있는 경우(memberTxManager)</h3><table>
+<thead>
+<tr>
+<th>member propagation</th>
+<th>board propagation</th>
+<th>member insert</th>
+<th>board insert</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>required</td>
+<td>required</td>
+<td>rollback</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>required</td>
+<td>requires-new</td>
+<td>rollback</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>required</td>
+<td>nested</td>
+<td>rollback</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>requires-new</td>
+<td>required</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>requires-new</td>
+<td>requires-new</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>requires-new</td>
+<td>nested</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>nested</td>
+<td>required</td>
+<td>rollback</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>nested</td>
+<td>requires-new</td>
+<td>rollback</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>nested</td>
+<td>nested</td>
+<td>rollback</td>
+<td>rollback</td>
+</tr>
+</tbody></table>
+<h4 id="설명-1"><a href="#설명-1" class="headerlink" title="설명"></a>설명</h4><ul>
+<li><code>memberService</code>가 <code>REQUIRED</code>인 경우에는, <code>logicService</code>의 transaction의 영향을 받아서 rollback된다. </li>
+<li><code>REQUIRES_NEW</code>인 경우에는 새로운 transaction을 생성하기 때문에 자신의 method execution이 종료됨과 함께 commit을 해버린다.</li>
+<li><code>NESTED</code>의 경우, 부모 transaction의 영향을 받기 때문에 memberService의 내용은 rollback된다.</li>
+</ul>
+<p><strong>주의</strong></p>
+<p>여기까지 테스트를 해보면, 정상적으로 동작하는 것처럼 보인다. 속지말자.</p>
+<h3 id="LogicService에-Transactional이-있는-경우-boardTxManager"><a href="#LogicService에-Transactional이-있는-경우-boardTxManager" class="headerlink" title="LogicService에 @Transactional이 있는 경우(boardTxManager)"></a>LogicService에 @Transactional이 있는 경우(boardTxManager)</h3><table>
+<thead>
+<tr>
+<th>member propagation</th>
+<th>board propagation</th>
+<th>member insert</th>
+<th>board insert</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>required</td>
+<td>required</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>required</td>
+<td>requires-new</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>required</td>
+<td>nested</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>requires-new</td>
+<td>required</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>requires-new</td>
+<td>requires-new</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>requires-new</td>
+<td>nested</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>nested</td>
+<td>required</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>nested</td>
+<td>requires-new</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>nested</td>
+<td>nested</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+</tbody></table>
+<h4 id="설명-2"><a href="#설명-2" class="headerlink" title="설명"></a>설명</h4><p>확인하고 싶었던 부분 1이다. 서로 다른 transactionManager에서 관리하는 transaction context에 참여할 수 있을까? 결과를 확인해보니 불가능했다.</p>
+<h3 id="전체-Transactional에서-boardTxManager를-쓰는-경우"><a href="#전체-Transactional에서-boardTxManager를-쓰는-경우" class="headerlink" title="전체 @Transactional에서 boardTxManager를 쓰는 경우"></a>전체 @Transactional에서 boardTxManager를 쓰는 경우</h3><table>
+<thead>
+<tr>
+<th>member propagation</th>
+<th>board propagation</th>
+<th>member insert</th>
+<th>board insert</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>required</td>
+<td>required</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>required</td>
+<td>requires-new</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>required</td>
+<td>nested</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>requires-new</td>
+<td>required</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>requires-new</td>
+<td>requires-new</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>requires-new</td>
+<td>nested</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>nested</td>
+<td>required</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>nested</td>
+<td>requires-new</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>nested</td>
+<td>nested</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+</tbody></table>
+<h4 id="설명-3"><a href="#설명-3" class="headerlink" title="설명"></a>설명</h4><p>확인하고 싶었던 부분 2다. <code>boardTxManager</code>가 <code>memberDataSource</code>에 대한 작업을 rollback할 수 있을까? 불가능하다.</p>
+<h2 id="결론"><a href="#결론" class="headerlink" title="결론"></a>결론</h2><p>별다른 장치 없이 <code>DataSource</code> 두 개, <code>TransactionManager</code> 두 개를 사용하면 100% 위험하다. 원하는 동작을 장담할 수 없다. 이 방법은 얼른 벗어나야 한다. 이러한 설정을 사용하면서 어디에서 버그가 나고 있는지 찾지 않길 바란다.</p>
+<h1 id="구현-2-ChainedTransactionManager-사용"><a href="#구현-2-ChainedTransactionManager-사용" class="headerlink" title="구현 2 - ChainedTransactionManager 사용"></a>구현 2 - ChainedTransactionManager 사용</h1><p>구현 2에서는 <code>spring-data-commons</code>에서 제공해주는 <code>ChainedTransactionManager</code>를 사용하려고 한다. javadoc을 읽어보면 다음과 같이 설명하고 있다.</p>
+<blockquote><p>PlatformTransactionManager 구현체로 transaction 생성, commit, rollback을 위임자 패턴으로 구성한다. 이 구현체를 사용하는 것의 전제되는 가정은, transaction의 rollback을 야기하는 오류는 대부분 transaction이 완료되기 전, 혹은 가장 안쪽의 PlatformTransactionManager에서 발생한다는 것이다.</p>
+<p>이 구현체의 인스턴스는 지정된 순서대로 transaction을 시작하고, 역순으로 commit/rollback한다. 즉, transaction을 중단시킬 가능성이 가장 큰 PlatformTransactionManager가 마지막에 설정되어야 한다. commit 중에 예외를 던지는 PlatformTransactionManager는 자동으로 다른 transaction manager의 rollback을 일으킨다.</p>
+<footer><strong>ChainedTransactionManager</strong><cite><a href="https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/transaction/ChainedTransactionManager.html" target="_blank" rel="noopener">javadoc</a></cite></footer></blockquote>
+<br>
+javadoc의 설명대로라면 원하는 구현을 할 수 있다. 하지만 한가지 유의할 점이 있다. 소스를 까보면 `for`문을 돌면서 `.getTransaction()`을 호출하는 데, 이는 성능 문제를 야기할 수 있다. 알 사람은 다 아는 `LazyConnectionDataSourceProxy`를 사용할 차례다. spring은 기본적으로 `transaction`을 미리 가져오는데, 저 `DataSource`의 구현체는 필요한 때에 `transaction`을 가져오도록 connection 호출 시점을 뒤로 미룰 수 있다. 따로 `LazyConnectionDataSourceProxy`를 상세히 설명하기 보다는, 이 구현체를 알게된 [블로그](http://kwon37xi.egloos.com/m/5364167)를 소개하겠다. 
+
+<h2 id="의존성-추가"><a href="#의존성-추가" class="headerlink" title="의존성 추가"></a>의존성 추가</h2><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">dependencies</span> &#123;</span><br><span class="line">    <span class="keyword">compile</span>(<span class="string">'org.springframework.data:spring-data-commons'</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Spring-Application-설정"><a href="#Spring-Application-설정" class="headerlink" title="Spring Application 설정"></a>Spring Application 설정</h2><h3 id="DataSouceCreator"><a href="#DataSouceCreator" class="headerlink" title="DataSouceCreator"></a>DataSouceCreator</h3><p><code>LazyConnectionDataSourceProxy</code>를 반환하도록 변경한다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@UtilityClass</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DataSourceCreator</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> DataSource <span class="title">createHikariDataSource</span><span class="params">(DataSourceProperties properties)</span> </span>&#123;</span><br><span class="line">        HikariDataSource dataSource = <span class="keyword">new</span> HikariDataSource();</span><br><span class="line">        dataSource.setJdbcUrl(properties.getUrl());</span><br><span class="line">        dataSource.setUsername(properties.getUsername());</span><br><span class="line">        dataSource.setPassword(properties.getPassword());</span><br><span class="line">        dataSource.setDriverClassName(properties.getDriverClassName());</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> LazyConnectionDataSourceProxy(dataSource);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="ChainedTxConfig"><a href="#ChainedTxConfig" class="headerlink" title="ChainedTxConfig"></a>ChainedTxConfig</h3><p><code>ChainedTransactionManager</code>를 primary로 등록하자.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ChainedTxConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="meta">@Primary</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> PlatformTransactionManager <span class="title">transactionManager</span><span class="params">(PlatformTransactionManager memberTxManager, PlatformTransactionManager boardTxManager)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> ChainedTransactionManager(memberTxManager, boardTxManager);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="LogicService-MemberService-BoardService-수정"><a href="#LogicService-MemberService-BoardService-수정" class="headerlink" title="LogicService, MemberService, BoardService 수정"></a>LogicService, MemberService, BoardService 수정</h2><p><code>ChainedTransactionManager</code> bean을 primary로 등록했으니, <code>@Transactional</code>에서 지정했던 transactionManager 설정을 지우자.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="meta">@Transactional</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LogicService</span> </span>&#123; ... &#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="meta">@Transactional</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MemberService</span> </span>&#123; ... &#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="meta">@Transactional</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BoardService</span> </span>&#123; ... &#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="결과-1"><a href="#결과-1" class="headerlink" title="결과"></a>결과</h2><table>
+<thead>
+<tr>
+<th>member propagation</th>
+<th>board propagation</th>
+<th>member insert</th>
+<th>board insert</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>required</td>
+<td>required</td>
+<td>rollback</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>required</td>
+<td>requires-new</td>
+<td>rollback</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>required</td>
+<td>nested</td>
+<td>rollback</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>requires-new</td>
+<td>required</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>requires-new</td>
+<td>requires-new</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>requires-new</td>
+<td>nested</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>nested</td>
+<td>required</td>
+<td>rollback</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>nested</td>
+<td>requires-new</td>
+<td>rollback</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>nested</td>
+<td>nested</td>
+<td>rollback</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>not-supported</td>
+<td>required</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>not-supported</td>
+<td>requires-new</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>not-supported</td>
+<td>nested</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>not-supported</td>
+<td>not-supported</td>
+<td>commit</td>
+<td>commit</td>
+</tr>
+</tbody></table>
+<h4 id="설명-4"><a href="#설명-4" class="headerlink" title="설명"></a>설명</h4><p>일부러 <code>NOT_SUPPORTED</code>를 추가해봤다. 부모의 영향을 받는 부분(<code>REQUIRED</code>, <code>NESTED</code>)는 모두 rollback이 동작하고, 나머지는 모두 commit되었다. <code>ChainedTransactionManager</code>가 아주 잘 동작하고 있다.</p>
+<h1 id="구현-3-JtaTransactionManager"><a href="#구현-3-JtaTransactionManager" class="headerlink" title="구현 3 - JtaTransactionManager"></a>구현 3 - JtaTransactionManager</h1><p>JTA(Java Transaction Api)는 자바 표준으로써, 분산 transaction을 가능하게 해준다. 매우 간단하게 설명하자면, JTA를 지원하는 자원을 가리키는 XA Resource 인터페이스의 구현체들을 등록하면, 해당 구현체들에 대해서 전역 transaction을 지원해준다. 때문에 어떤 자원이든 transaction을 지원할 수 있도록 정의한 셈인데, DataSource, JMS 외에는 쓰고 있는 곳이 없는 것 같다.<br>Java EE Application Server에서는 전역 tranction을 지원하기 위해서, JTA를 사용하기도 한다. Spring에서는 JNDI에서 Java EE Container가 사용 중인 DataSource를 가져와, JtaTransactionManager에 설정할 수도 있다.</p>
+<p>JTA에 대해서 설명하는 것은 여기까지 하고, 직접 사용하면서 여러 DataSource를 대상으로 하는 transaction이 잘 동작하는지 확인해보자.</p>
+<h2 id="의존성-추가-1"><a href="#의존성-추가-1" class="headerlink" title="의존성 추가"></a>의존성 추가</h2><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">dependencies</span> &#123;</span><br><span class="line">    <span class="keyword">compile</span>(<span class="string">'org.springframework.boot:spring-boot-starter-jta-atomikos'</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Spring-Application-설정-1"><a href="#Spring-Application-설정-1" class="headerlink" title="Spring Application 설정"></a>Spring Application 설정</h2><h3 id="application-yml-1"><a href="#application-yml-1" class="headerlink" title="application.yml"></a>application.yml</h3><figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">jta:</span></span><br><span class="line">    <span class="attr">enabled:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">atomikos:</span></span><br><span class="line">      <span class="attr">datasource:</span></span><br><span class="line">        <span class="attr">member:</span></span><br><span class="line">          <span class="attr">unique-resource-name:</span> <span class="string">memberDataSource</span></span><br><span class="line">          <span class="attr">xa-data-source-class-name:</span> <span class="string">com.mysql.jdbc.jdbc2.optional.MysqlXADataSource</span></span><br><span class="line">          <span class="attr">xa-properties:</span></span><br><span class="line">            <span class="attr">user:</span> <span class="string">root</span></span><br><span class="line">            <span class="attr">password:</span> <span class="string">multitxtest</span></span><br><span class="line">            <span class="attr">url:</span> <span class="string">jdbc:mysql://127.0.0.1:11306/multi_tx_test?useSSL=false</span></span><br><span class="line">        <span class="attr">board:</span></span><br><span class="line">          <span class="attr">unique-resource-name:</span> <span class="string">boardDataSource</span></span><br><span class="line">          <span class="attr">xa-data-source-class-name:</span> <span class="string">com.mysql.jdbc.jdbc2.optional.MysqlXADataSource</span></span><br><span class="line">          <span class="attr">xa-properties:</span></span><br><span class="line">            <span class="attr">user:</span> <span class="string">root</span></span><br><span class="line">            <span class="attr">password:</span> <span class="string">multitxtest</span></span><br><span class="line">            <span class="attr">url:</span> <span class="string">jdbc:mysql://127.0.0.1:11307/multi_tx_test?useSSL=false</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="BoardSqlSessionConfig"><a href="#BoardSqlSessionConfig" class="headerlink" title="BoardSqlSessionConfig"></a>BoardSqlSessionConfig</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@EnableConfigurationProperties</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BoardSqlSessionConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="meta">@ConfigurationProperties</span>(prefix = <span class="string">"spring.jta.atomikos.datasource.board"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> DataSource <span class="title">boardDataSource</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> AtomikosDataSourceBean();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="MemberSqlSessionConfig"><a href="#MemberSqlSessionConfig" class="headerlink" title="MemberSqlSessionConfig"></a>MemberSqlSessionConfig</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@EnableConfigurationProperties</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MemberSqlSessionConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="meta">@ConfigurationProperties</span>(prefix = <span class="string">"spring.jta.atomikos.datasource.member"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> DataSource <span class="title">memberDataSource</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> AtomikosDataSourceBean();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="결과-2"><a href="#결과-2" class="headerlink" title="결과"></a>결과</h2><table>
+<thead>
+<tr>
+<th>member propagation</th>
+<th>board propagation</th>
+<th>member insert</th>
+<th>board insert</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>required</td>
+<td>required</td>
+<td>rollback</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>required</td>
+<td>requires-new</td>
+<td>rollback</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>required</td>
+<td>nested</td>
+<td>rollback</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>requires-new</td>
+<td>required</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>requires-new</td>
+<td>requires-new</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>requires-new</td>
+<td>nested</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>nested</td>
+<td>required</td>
+<td>rollback</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>nested</td>
+<td>requires-new</td>
+<td>rollback</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>nested</td>
+<td>nested</td>
+<td>rollback</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>not-supported</td>
+<td>required</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>not-supported</td>
+<td>requires-new</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>not-supported</td>
+<td>nested</td>
+<td>commit</td>
+<td>rollback</td>
+</tr>
+<tr>
+<td>not-supported</td>
+<td>not-supported</td>
+<td>commit</td>
+<td>commit</td>
+</tr>
+</tbody></table>
+<h3 id="설명-5"><a href="#설명-5" class="headerlink" title="설명"></a>설명</h3><p>잘 동작한다. 부모의 영향을 받는 전파 수준과 받지 않는 전파 수준에서 기대하는 동작이 잘 수행되고 있다.</p>
+<h1 id="마무리"><a href="#마무리" class="headerlink" title="마무리"></a>마무리</h1><p>여러 <code>DataSource</code>가 존재하는 상황에서 transaction 설정을 어떻게 가져가야 하는지에 대해 3가지 방법을 사용해서 살펴보았다. <code>ChainedTransactionManager</code>나 <code>JtaTransactionManager</code>를 사용해서, 전역 transaction을 지원하도록 설정하지 않는 한, 개발자가 원하는 동작을 하지 않음을 알 수 있었다.<br><code>ChainedTransactionManager</code>는 기본 개념이 쉽다. 내부 동작이 어떻게 돌고 있는지 간단하게 파악된다. 별다른 학습 비용 없이 쉽게 사용할 수 있다. 하지만 <code>JtaTransactionManager</code>의 경우에는 그에 비해 공부할 내용들이 꽤 있다. 결국은 둘 다 <code>PlatformTransactionManager</code>를 구현하고 있다. 개발자가 spring을 사용하는 한, 둘 다 유연하게 적용할 수 있다.<br>명심하자, DataSource를 두 개 이상 사용할 때에는 반드시 <code>ChainedTransactionManager</code>나 <code>JtaTransactionManager</code>로 전역 transaction 설정을 해야한다.</p>
+<p>소스 코드 : <a href="https://github.com/supawer0728/simple-multi-tx" target="_blank" rel="noopener">https://github.com/supawer0728/simple-multi-tx</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>작성자:</strong>
+    supawer0728
+  </li>
+  <li class="post-copyright-link">
+    <strong>원본링크:</strong>
+    <a href="https://supawer0728.github.io/2018/03/22/spring-multi-transaction/" title="(Spring)다중 DataSource 처리">https://supawer0728.github.io/2018/03/22/spring-multi-transaction/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>라이센스: </strong>
+    <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a>
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/spring/" rel="tag"># spring</a>
+          
+        </div>
+      
+
+      
+      
+        <div class="post-widgets">
+        
+
+        
+
+        
+          
+          <div id="needsharebutton-postbottom">
+            <span class="btn">
+              <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </span>
+          </div>
+        
+        </div>
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/20/spring-data-rest/" rel="next" title="spring-data-rest 소개">
+                <i class="fa fa-chevron-left"></i> spring-data-rest 소개
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/24/spring-event/" rel="prev" title="Spring Event + Async + AOP 적용해보기">
+                Spring Event + Async + AOP 적용해보기 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript" target="_blank" rel="noopener">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            목차
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            흝어보기
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="supawer0728" />
+            
+              <p class="site-author-name" itemprop="name">supawer0728</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">32</span>
+                  <span class="site-state-item-name">포스트</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">카테고리</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">50</span>
+                  <span class="site-state-item-name">태그</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/feed.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/supawer0728" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#서론"><span class="nav-number">1.</span> <span class="nav-text">서론</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#구현-1-Transactional의-propagation-이용"><span class="nav-number">2.</span> <span class="nav-text">구현 1 - @Transactional의 propagation 이용</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Transactional-propagation에-대한-간단한-설명"><span class="nav-number">2.1.</span> <span class="nav-text">Transactional.propagation에 대한 간단한 설명</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#요구-사항"><span class="nav-number">2.2.</span> <span class="nav-text">요구 사항</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#의존성"><span class="nav-number">2.3.</span> <span class="nav-text">의존성</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SpringApplication-설정"><span class="nav-number">2.4.</span> <span class="nav-text">SpringApplication 설정</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#application-yml"><span class="nav-number">2.4.1.</span> <span class="nav-text">application.yml</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#두-개의-SqlSession-생성"><span class="nav-number">2.4.2.</span> <span class="nav-text">두 개의 SqlSession 생성</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Board용-SqlSession"><span class="nav-number">2.4.2.1.</span> <span class="nav-text">Board용 SqlSession</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Member용-SqlSession"><span class="nav-number">2.4.2.2.</span> <span class="nav-text">Member용 SqlSession</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#DataSourceCreator"><span class="nav-number">2.4.2.3.</span> <span class="nav-text">DataSourceCreator</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DAO"><span class="nav-number">2.5.</span> <span class="nav-text">DAO</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#BoardMapper"><span class="nav-number">2.5.1.</span> <span class="nav-text">BoardMapper</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MemberMapper"><span class="nav-number">2.5.2.</span> <span class="nav-text">MemberMapper</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Service"><span class="nav-number">2.6.</span> <span class="nav-text">Service</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#MemberService"><span class="nav-number">2.6.1.</span> <span class="nav-text">MemberService</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#BoardService"><span class="nav-number">2.6.2.</span> <span class="nav-text">BoardService</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#LogicService"><span class="nav-number">2.6.3.</span> <span class="nav-text">LogicService</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#결과"><span class="nav-number">2.7.</span> <span class="nav-text">결과</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#LogicService에-Transactional이-없는-경우"><span class="nav-number">2.7.1.</span> <span class="nav-text">LogicService에 @Transactional이 없는 경우</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#설명"><span class="nav-number">2.7.1.1.</span> <span class="nav-text">설명</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#LogicService에-Transactional이-있는-경우-memberTxManager"><span class="nav-number">2.7.2.</span> <span class="nav-text">LogicService에 @Transactional이 있는 경우(memberTxManager)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#설명-1"><span class="nav-number">2.7.2.1.</span> <span class="nav-text">설명</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#LogicService에-Transactional이-있는-경우-boardTxManager"><span class="nav-number">2.7.3.</span> <span class="nav-text">LogicService에 @Transactional이 있는 경우(boardTxManager)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#설명-2"><span class="nav-number">2.7.3.1.</span> <span class="nav-text">설명</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#전체-Transactional에서-boardTxManager를-쓰는-경우"><span class="nav-number">2.7.4.</span> <span class="nav-text">전체 @Transactional에서 boardTxManager를 쓰는 경우</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#설명-3"><span class="nav-number">2.7.4.1.</span> <span class="nav-text">설명</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#결론"><span class="nav-number">2.8.</span> <span class="nav-text">결론</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#구현-2-ChainedTransactionManager-사용"><span class="nav-number">3.</span> <span class="nav-text">구현 2 - ChainedTransactionManager 사용</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#의존성-추가"><span class="nav-number">3.1.</span> <span class="nav-text">의존성 추가</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Spring-Application-설정"><span class="nav-number">3.2.</span> <span class="nav-text">Spring Application 설정</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#DataSouceCreator"><span class="nav-number">3.2.1.</span> <span class="nav-text">DataSouceCreator</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ChainedTxConfig"><span class="nav-number">3.2.2.</span> <span class="nav-text">ChainedTxConfig</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LogicService-MemberService-BoardService-수정"><span class="nav-number">3.3.</span> <span class="nav-text">LogicService, MemberService, BoardService 수정</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#결과-1"><span class="nav-number">3.4.</span> <span class="nav-text">결과</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#설명-4"><span class="nav-number">3.4.0.1.</span> <span class="nav-text">설명</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#구현-3-JtaTransactionManager"><span class="nav-number">4.</span> <span class="nav-text">구현 3 - JtaTransactionManager</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#의존성-추가-1"><span class="nav-number">4.1.</span> <span class="nav-text">의존성 추가</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Spring-Application-설정-1"><span class="nav-number">4.2.</span> <span class="nav-text">Spring Application 설정</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#application-yml-1"><span class="nav-number">4.2.1.</span> <span class="nav-text">application.yml</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#BoardSqlSessionConfig"><span class="nav-number">4.2.2.</span> <span class="nav-text">BoardSqlSessionConfig</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MemberSqlSessionConfig"><span class="nav-number">4.2.3.</span> <span class="nav-text">MemberSqlSessionConfig</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#결과-2"><span class="nav-number">4.3.</span> <span class="nav-text">결과</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#설명-5"><span class="nav-number">4.3.1.</span> <span class="nav-text">설명</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#마무리"><span class="nav-number">5.</span> <span class="nav-text">마무리</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">supawer0728</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+  <div class="footer-custom">To Improve Human Life</div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://supawer0728-github-com.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://supawer0728.github.io/2018/03/22/spring-multi-transaction/';
+          this.page.identifier = '2018/03/22/spring-multi-transaction/';
+          this.page.title = '(Spring)다중 DataSource 처리';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://supawer0728-github-com.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('-1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/needsharebutton/needsharebutton.css">
+
+  
+  
+  <script src="/lib/needsharebutton/needsharebutton.js"></script>
+
+  <script>
+    
+      pbOptions = {};
+      
+          pbOptions.iconStyle = "box";
+      
+          pbOptions.boxForm = "horizontal";
+      
+          pbOptions.position = "bottomCenter";
+      
+          pbOptions.networks = "Twitter,Facebook,GooglePlus,Evernote";
+      
+      new needShareButton('#needsharebutton-postbottom', pbOptions);
+    
+    
+  </script>
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

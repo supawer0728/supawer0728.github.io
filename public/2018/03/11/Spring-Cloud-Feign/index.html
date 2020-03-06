@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Nanum Gothic:300,300italic,400,400italic,700,700italic|Nanum Pen Script:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-icon-180x180.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.4">
+
+
+
+  <link rel="manifest" href="/images/manifest.json">
+
+
+  <meta name="msapplication-config" content="/images/browserconfig.xml" />
+
+
+
+  <meta name="keywords" content="spring,spring-cloud,netflix,feign," />
+
+
+
+
+
+  <link rel="alternate" href="/feed.xml" title="기록은 재산이다" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="Feign REST 기반 서비스 호출을 추상화한 Spring Cloud Netflix 라이브러리 선언적 방식 인터페이스를 통해 클라이언트 측 프로그램 작성 Spring이 런타임에 구현체를 제공">
+<meta property="og:type" content="article">
+<meta property="og:title" content="(Spring Cloud) Feign">
+<meta property="og:url" content="https://supawer0728.github.io/2018/03/11/Spring-Cloud-Feign/index.html">
+<meta property="og:site_name" content="기록은 재산이다">
+<meta property="og:description" content="Feign REST 기반 서비스 호출을 추상화한 Spring Cloud Netflix 라이브러리 선언적 방식 인터페이스를 통해 클라이언트 측 프로그램 작성 Spring이 런타임에 구현체를 제공">
+<meta property="og:locale" content="ko_KR">
+<meta property="article:published_time" content="2018-03-10T16:00:53.000Z">
+<meta property="article:modified_time" content="2020-03-04T08:18:02.742Z">
+<meta property="article:author" content="supawer0728">
+<meta property="article:tag" content="spring">
+<meta property="article:tag" content="spring-cloud">
+<meta property="article:tag" content="netflix">
+<meta property="article:tag" content="feign">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '작성자'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://supawer0728.github.io/2018/03/11/Spring-Cloud-Feign/"/>
+
+
+
+
+
+  <title>(Spring Cloud) Feign | 기록은 재산이다</title>
+  
+
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-115481794-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'UA-115481794-1');
+</script>
+
+
+
+
+
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script data-ad-client="" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="ko">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">기록은 재산이다</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">To Improve Human Life</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            홈
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            태그
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            카테고리
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            아카이브
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            검색
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="Searching..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://supawer0728.github.io/2018/03/11/Spring-Cloud-Feign/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="supawer0728">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="기록은 재산이다">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">(Spring Cloud) Feign</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">작성일&#58;</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-11T01:00:53+09:00">
+                2018-03-11
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">수정일&#58;</span>
+              
+              <time title="수정일" itemprop="dateModified" datetime="2020-03-04T17:18:02+09:00">
+              
+                2018-03-11
+              
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/" itemprop="url" rel="index">
+                    <span itemprop="name">spring</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/cloud/" itemprop="url" rel="index">
+                    <span itemprop="name">cloud</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/cloud/netflix/" itemprop="url" rel="index">
+                    <span itemprop="name">netflix</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/03/11/Spring-Cloud-Feign/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/03/11/Spring-Cloud-Feign/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="Feign"><a href="#Feign" class="headerlink" title="Feign"></a>Feign</h1><ul>
+<li>REST 기반 서비스 호출을 추상화한 Spring Cloud Netflix 라이브러리</li>
+<li>선언적 방식</li>
+<li>인터페이스를 통해 클라이언트 측 프로그램 작성</li>
+<li>Spring이 런타임에 구현체를 제공</li>
+</ul>
+<a id="more"></a>
+
+<h1 id="Dependencies"><a href="#Dependencies" class="headerlink" title="Dependencies"></a>Dependencies</h1><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">dependencyManagement &#123;</span><br><span class="line">  imports &#123;</span><br><span class="line">    mavenBom <span class="string">'spring-cloud-dependencies:Finchley.M7'</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">dependencies</span> &#123;</span><br><span class="line">    <span class="keyword">compile</span> <span class="string">'spring.framework.cloud:spring-cloud-starter-openfeign'</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="Example"><a href="#Example" class="headerlink" title="Example"></a>Example</h1><p><strong>@EnableFeignClients</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@EnableFeignClients</span></span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ApiGatewayApplication</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run(ApiGatewayApplication<span class="class">.<span class="keyword">class</span>, <span class="title">args</span>)</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>interface 정의</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@FeignClient</span>(name = <span class="string">"post-api"</span>, url = <span class="string">"$&#123;feign.post-api.url&#125;"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">PostClient</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/posts/&#123;id&#125;"</span>)</span><br><span class="line">    <span class="function">Post <span class="title">get</span><span class="params">(@PathVariable(<span class="string">"id"</span>)</span> Long id)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>사용</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping</span>(<span class="string">"/posts"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PostController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> PostClient postClient;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">PostController</span><span class="params">(PostClient postClient)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.postClient = postClient;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/&#123;id&#125;"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Post <span class="title">get</span><span class="params">(@PathVariable Long id)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> postClient.get(id);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="Feign-설정"><a href="#Feign-설정" class="headerlink" title="Feign 설정"></a>Feign 설정</h1><h2 id="FeignClient"><a href="#FeignClient" class="headerlink" title="@FeignClient"></a><code>@FeignClient</code></h2><ul>
+<li>name : 서비스ID 혹은 논리적인 이름, spring-cloud의 eureka, ribbon에 사용</li>
+<li>url : 실제 호출할 서비스의 URL, eureka, ribbon을 사용하지 않고서도 동작</li>
+<li>decode404 : 404응답이 올 때 <code>FeignExeption</code>을 발생시킬지, 아니면 응답을 decode할 지 여부</li>
+<li>configuration : feign configuration class 지정</li>
+<li>fallback : hystrix fallback class 지정</li>
+<li>fallbackFactory : hystrix fallbak factory 지정</li>
+</ul>
+<blockquote>
+<p>Hystrix란?<br><code>spring-cloud</code>의 서비스 중 하나. Circuit Breaker Pattern을 사용. 뒷단 API 서버가 장애 발생 등의 이유로 일정 시간(Time window) 내에 여러번 오류 응답을 주는 경우(timeout, bad gateway 등), 해당 API 서버로 요청을 보내지 않고 잠시 동안 대체(fallback) method를 실행. 일정 시간이 지나서 다시 뒷단 API 서버를 호출하는 등의, 일련의 작업을 제공해준다. <a href="https://martinfowler.com/bliki/CircuitBreaker.html" target="_blank" rel="noopener">Circuit Breaker Pattern(마틴 파울러)</a></p>
+</blockquote>
+<h3 id="application-yml-설정"><a href="#application-yml-설정" class="headerlink" title="application.yml 설정"></a>application.yml 설정</h3><p><code>.properties</code>로 하면 장황해질 것 같아, <code>yml</code>로 설명<br>아래 설정은 <code>@FeignClient(configuration = FooConfiguration.class)</code>으로 선언할 수 있음</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">feign:</span></span><br><span class="line">  <span class="attr">client:</span></span><br><span class="line">    <span class="attr">config:</span> </span><br><span class="line">      <span class="attr">feignName:</span> <span class="comment"># @FeignClient에서 name 값, 전역으로 설정하려면 default</span></span><br><span class="line">        <span class="attr">connectTimeout:</span> <span class="number">5000</span></span><br><span class="line">        <span class="attr">readTimeout:</span> <span class="number">5000</span></span><br><span class="line">        <span class="attr">loggerLevel:</span> <span class="string">full</span></span><br><span class="line">        <span class="attr">errorDecoder:</span> <span class="string">com.example.SimpleErrorDecoder</span></span><br><span class="line">        <span class="attr">retryer:</span> <span class="string">com.example.SimpleRetryer</span></span><br><span class="line">        <span class="attr">requestInterceptors:</span></span><br><span class="line">          <span class="bullet">-</span> <span class="string">com.example.FooRequestInterceptor</span></span><br><span class="line">          <span class="bullet">-</span> <span class="string">com.example.BarRequestInterceptor</span></span><br><span class="line">        <span class="attr">decode404:</span> <span class="literal">false</span></span><br><span class="line">        <span class="attr">encoder:</span> <span class="string">com.example.SimpleEncoder</span></span><br><span class="line">        <span class="attr">decoder:</span> <span class="string">com.example.SimpleDecoder</span></span><br><span class="line">        <span class="attr">contract:</span> <span class="string">com.example.SimpleContract</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>connectionTimeout, readTimeout : hystrix의 timeout 설정이 더 짧으면, hystirx 옵션을 따라감</li>
+<li>loggerLevel : NONE, BASIC, HEADER, FULL을 지정할 수 있음<ul>
+<li>NONE : default, 로그를 남기지 않음</li>
+<li>BASIC : Request Method, URL과 응답 코드, 실행 시간을 남김</li>
+<li>HEADERS : <code>BASIC</code>의 정보를 포함하여, 요청, 응답의 헤더를 남김</li>
+<li>FULL : 요청, 응답의 header, body, metadata를 남김</li>
+<li><code>logging.level.com.example.demo.PostClient: debug</code> 등의 debug logger 설정이 되어 있어야함</li>
+</ul>
+</li>
+<li>encoder, decode : body의 내용을 Object로 변경하는 class 지정, 각각 </li>
+<li>retryer : 요청이 실패했을 때 재시도에 대한 정책</li>
+</ul>
+<h3 id="java설정"><a href="#java설정" class="headerlink" title="java설정"></a>java설정</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FooConfiguration</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Contract <span class="title">feignContract</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> feign.Contract.Default();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> BasicAuthRequestInterceptor <span class="title">basicAuthRequestInterceptor</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> BasicAuthRequestInterceptor(<span class="string">"user"</span>, <span class="string">"password"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><code>@FeignClient(configuration = FooConfiguration.class)</code>와 <code>application.yml</code>이 같이 있을 시에는, <code>yml</code> 설정이 우선. 우선 순위를 변경하고 싶으면 <code>feign.client.default-to-properties: false</code>를 <code>yml</code>에 설정</p>
+</blockquote>
+<h3 id="java설정-spring-연동-없는-순수-open-feign-설정"><a href="#java설정-spring-연동-없는-순수-open-feign-설정" class="headerlink" title="java설정(spring 연동 없는 순수 open feign 설정)"></a>java설정(spring 연동 없는 순수 open feign 설정)</h3><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">PostClient</span> </span>&#123;</span><br><span class="line">    <span class="meta">@RequestLine</span>(<span class="string">"GET /posts/&#123;id&#125;"</span>)</span><br><span class="line">    <span class="function">Post <span class="title">get</span><span class="params">(@Param(<span class="string">"id"</span>)</span> Long id)</span>;</span><br><span class="line">&#125;</span><br><span class="line">...</span><br><span class="line">Feign.builder()</span><br><span class="line">             .contract(<span class="keyword">new</span> Contract.Default())</span><br><span class="line">             .retryer(<span class="keyword">new</span> Retryer.Default())</span><br><span class="line">             .options(<span class="keyword">new</span> Request.Options(<span class="number">1000</span>, <span class="number">1000</span>))</span><br><span class="line">             .encoder(<span class="keyword">new</span> Encoder.Default())</span><br><span class="line">             .decoder(<span class="keyword">new</span> Decoder.Default())</span><br><span class="line">             .decode404()</span><br><span class="line">             .logLevel(Logger.Level.BASIC)</span><br><span class="line">             .target(new Target.HardCodedTarget&lt;&gt;(PostClient.class, "post-api", "https://jsonplaceholder.typicode.com"));</span><br></pre></td></tr></table></figure>
+
+<h1 id="Feign-Hystrix-Support"><a href="#Feign-Hystrix-Support" class="headerlink" title="Feign Hystrix Support"></a>Feign Hystrix Support</h1><p>classpath 내에 hystrix가 있으며, <code>feign.hystrix.enabled: true</code> 설정이 되었다면 Hystrix를 사용 가능</p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">compile</span>(<span class="string">'org.springframework.cloud:spring-cloud-starter-netflix-hystrix'</span>)</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>Hystrix를 사용하는 경우 기본적으로 thread time out이 1초<br>때문에 기본 설정으로는 feign의 connection, read timeout이 1초 이상인 경우라도<br>1초 안에 응답이 오지 않으면 fallback이 실행되므로 주의</p>
+</blockquote>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">feign:</span></span><br><span class="line">  <span class="attr">hystrix:</span></span><br><span class="line">    <span class="attr">enabled:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">client:</span></span><br><span class="line">    <span class="attr">config:</span></span><br><span class="line">      <span class="attr">default:</span></span><br><span class="line">        <span class="attr">loggerLevel:</span> <span class="string">BASIC</span></span><br><span class="line">        <span class="comment"># feign의 전역 timeout 설정 : 5초</span></span><br><span class="line">        <span class="attr">connectTimeout:</span> <span class="number">5000</span></span><br><span class="line">        <span class="attr">readTimeout:</span> <span class="number">5000</span></span><br><span class="line">  <span class="attr">post-api.url:</span> <span class="string">https://jsonplaceholder.typicode.com</span></span><br><span class="line">  <span class="attr">http-bin-api.url:</span> <span class="string">https://httpbin.org</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># hystrix 명령의 기본 timeout을 10초로 변경</span></span><br><span class="line"><span class="attr">hystrix.command.default.execution.isolation.thread.timeoutInMilliseconds:</span> <span class="number">10000</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Fallback"><a href="#Fallback" class="headerlink" title="Fallback"></a>Fallback</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Feign 선언</span></span><br><span class="line"><span class="meta">@FeignClient</span>(name = <span class="string">"http-bin-api"</span>, url = <span class="string">"$&#123;feign.http-bin-api.url&#125;"</span>, fallback = HttpBinClientFallback<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">interface</span> <span class="title">HttpBinClient</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/delay/&#123;seconds&#125;"</span>)</span><br><span class="line">    <span class="function">DelayResponse <span class="title">delay</span><span class="params">(@PathVariable(<span class="string">"seconds"</span>)</span> <span class="keyword">int</span> seconds)</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Fallback 설정</span></span><br><span class="line"><span class="meta">@Slf</span>4j</span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HttpBinClientFallback</span> <span class="keyword">implements</span> <span class="title">HttpBinClient</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> DelayResponse <span class="title">delay</span><span class="params">(<span class="keyword">int</span> seconds)</span> </span>&#123;</span><br><span class="line">        log.debug(<span class="string">"fallback called"</span>);</span><br><span class="line">        <span class="keyword">return</span> DelayResponse.EMPTY;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 응답 모델</span></span><br><span class="line"><span class="meta">@Value</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DelayResponse</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> DelayResponse EMPTY = <span class="keyword">new</span> DelayResponse(<span class="keyword">null</span>, <span class="keyword">null</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String origin;</span><br><span class="line">    <span class="keyword">private</span> String url;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@JsonCreator</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">DelayResponse</span><span class="params">(@JsonProperty(<span class="string">"origin"</span>)</span> String origin, @<span class="title">JsonProperty</span><span class="params">(<span class="string">"url"</span>)</span> String url) </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.origin = origin;</span><br><span class="line">        <span class="keyword">this</span>.url = url;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong><code>http://localhost:8080/delay/1</code> 성공</strong></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line"><span class="attr">"origin"</span>: <span class="string">"106.249.33.22"</span>,</span><br><span class="line"><span class="attr">"url"</span>: <span class="string">"https://httpbin.org/delay/1"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">DEBUG 60528 --- [-http-bin-api-1] c.p.s.httpbin.client.HttpBinClient       : [HttpBinClient#delay] ---&gt; GET https:&#x2F;&#x2F;httpbin.org&#x2F;delay&#x2F;1 HTTP&#x2F;1.1</span><br><span class="line">DEBUG 60528 --- [-http-bin-api-1] c.p.s.httpbin.client.HttpBinClient       : [HttpBinClient#delay] &lt;--- HTTP&#x2F;1.1 200 OK (2343ms)</span><br></pre></td></tr></table></figure>
+
+<p><strong><code>http://localhost:8080/delay/5</code> timeout!!!</strong></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="attr">"origin"</span>:<span class="literal">null</span>, <span class="attr">"url"</span>:<span class="literal">null</span>&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">DEBUG 60528 --- [-http-bin-api-5] c.p.s.httpbin.client.HttpBinClient       : [HttpBinClient#delay] ---&gt; GET https:&#x2F;&#x2F;httpbin.org&#x2F;delay&#x2F;5 HTTP&#x2F;1.1</span><br><span class="line">DEBUG 60528 --- [-http-bin-api-5] c.p.s.httpbin.client.HttpBinClient       : [HttpBinClient#delay] &lt;--- ERROR SocketTimeoutException: Read timed out (5883ms)</span><br></pre></td></tr></table></figure>
+
+<h3 id="회로-열림-상태-Circuit-Open-Hystrix에-대해서"><a href="#회로-열림-상태-Circuit-Open-Hystrix에-대해서" class="headerlink" title="회로 열림 상태(Circuit Open) - Hystrix에 대해서"></a>회로 열림 상태(Circuit Open) - Hystrix에 대해서</h3><p>위 예제에 대해서 Hystrix의 동작을 아래와 같이 튜닝</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">hystrix:</span></span><br><span class="line">  <span class="attr">command:</span></span><br><span class="line">    <span class="string">"HttpBinClient#delay(int)"</span><span class="string">:</span></span><br><span class="line">      <span class="attr">execution.isolation.thread.timeoutInMilliseconds:</span> <span class="number">3000</span></span><br><span class="line">      <span class="attr">metrics.rollingStats.timeInMilliseconds:</span> <span class="number">60000</span></span><br><span class="line">      <span class="attr">circuitBreaker.requestVolumeThreshold:</span> <span class="number">5</span></span><br><span class="line">      <span class="attr">circuitBreaker.errorThresholdPercentage:</span> <span class="number">50</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>execution.isolation.thread.timeoutInMilliseconds</code> : hystirx명령에 대해 3초 timeout 설정</li>
+<li><code>metrics.rollingStats.timeInMilliseconds</code> : 60초의 window slice를 가짐(30초씩 감시)</li>
+<li><code>circuitBreaker.requestVolumeThreshold</code> : 최소 5번 이상의 요청이 있어야함</li>
+<li><code>circuitBreaker.errorThresholdPercentage</code> : 50% 이상 오류가 발생시 회로를 오픈(circuit open)</li>
+<li>즉 최근 1분 내에, 5번 이상의 요청이 있었고, 그 중 50% 이상이 오류가 발생했다면, command를 실행하지 않고 fallback을 실행하겠다는 의미임</li>
+<li>회로가 열린 후, 일정시간(<code>circuitBreaker.sleepWindowInMilliseconds</code>)동안 fallback 응답을 보내고 성공하면 회로를 닫음</li>
+</ul>
+<p><strong>timeout이 5번 이상 발생시 로그</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">2018-02-28 15:46:37.653 DEBUG 99893 --- [-http-bin-api-1] c.p.s.httpbin.client.HttpBinClient       : [HttpBinClient#delay] ---&gt; GET https:&#x2F;&#x2F;httpbin.org&#x2F;delay&#x2F;5 HTTP&#x2F;1.1</span><br><span class="line">2018-02-28 15:46:40.655 DEBUG 99893 --- [ HystrixTimer-1] c.p.s.h.client.HttpBinClientFallback     : fallback called</span><br><span class="line">2018-02-28 15:46:42.899 DEBUG 99893 --- [-http-bin-api-2] c.p.s.httpbin.client.HttpBinClient       : [HttpBinClient#delay] ---&gt; GET https:&#x2F;&#x2F;httpbin.org&#x2F;delay&#x2F;5 HTTP&#x2F;1.1</span><br><span class="line">2018-02-28 15:46:43.844 DEBUG 99893 --- [-http-bin-api-1] c.p.s.httpbin.client.HttpBinClient       : [HttpBinClient#delay] &lt;--- ERROR SocketTimeoutException: Read timed out (6190ms)</span><br><span class="line">2018-02-28 15:46:45.902 DEBUG 99893 --- [ HystrixTimer-1] c.p.s.h.client.HttpBinClientFallback     : fallback called</span><br><span class="line">2018-02-28 15:46:46.704 DEBUG 99893 --- [-http-bin-api-3] c.p.s.httpbin.client.HttpBinClient       : [HttpBinClient#delay] ---&gt; GET https:&#x2F;&#x2F;httpbin.org&#x2F;delay&#x2F;5 HTTP&#x2F;1.1</span><br><span class="line">2018-02-28 15:46:48.849 DEBUG 99893 --- [-http-bin-api-2] c.p.s.httpbin.client.HttpBinClient       : [HttpBinClient#delay] &lt;--- ERROR SocketTimeoutException: Read timed out (5950ms)</span><br><span class="line">2018-02-28 15:46:49.708 DEBUG 99893 --- [ HystrixTimer-2] c.p.s.h.client.HttpBinClientFallback     : fallback called</span><br><span class="line">2018-02-28 15:46:50.438 DEBUG 99893 --- [-http-bin-api-4] c.p.s.httpbin.client.HttpBinClient       : [HttpBinClient#delay] ---&gt; GET https:&#x2F;&#x2F;httpbin.org&#x2F;delay&#x2F;5 HTTP&#x2F;1.1</span><br><span class="line">2018-02-28 15:46:52.477 DEBUG 99893 --- [-http-bin-api-3] c.p.s.httpbin.client.HttpBinClient       : [HttpBinClient#delay] &lt;--- ERROR SocketTimeoutException: Read timed out (5772ms)</span><br><span class="line">2018-02-28 15:46:53.443 DEBUG 99893 --- [ HystrixTimer-1] c.p.s.h.client.HttpBinClientFallback     : fallback called</span><br><span class="line">2018-02-28 15:46:54.765 DEBUG 99893 --- [-http-bin-api-5] c.p.s.httpbin.client.HttpBinClient       : [HttpBinClient#delay] ---&gt; GET https:&#x2F;&#x2F;httpbin.org&#x2F;delay&#x2F;5 HTTP&#x2F;1.1</span><br><span class="line">2018-02-28 15:46:56.292 DEBUG 99893 --- [-http-bin-api-4] c.p.s.httpbin.client.HttpBinClient       : [HttpBinClient#delay] &lt;--- ERROR SocketTimeoutException: Read timed out (5853ms)</span><br><span class="line">2018-02-28 15:46:57.769 DEBUG 99893 --- [ HystrixTimer-3] c.p.s.h.client.HttpBinClientFallback     : fallback called</span><br><span class="line">2018-02-28 15:47:00.115 DEBUG 99893 --- [nio-8080-exec-6] c.p.s.h.client.HttpBinClientFallback     : fallback called</span><br><span class="line">2018-02-28 15:47:00.874 DEBUG 99893 --- [-http-bin-api-5] c.p.s.httpbin.client.HttpBinClient       : [HttpBinClient#delay] &lt;--- ERROR SocketTimeoutException: Read timed out (6108ms)</span><br><span class="line">2018-02-28 15:47:01.000 DEBUG 99893 --- [nio-8080-exec-7] c.p.s.h.client.HttpBinClientFallback     : fallback called</span><br><span class="line">2018-02-28 15:47:01.827 DEBUG 99893 --- [nio-8080-exec-8] c.p.s.h.client.HttpBinClientFallback     : fallback called</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><code>https://httpbin.org/delay/5</code>에서 5번 실패가 발생한 이후에는 바로 fallback을 호출</p>
+</blockquote>
+<h2 id="Fallback-Factory"><a href="#Fallback-Factory" class="headerlink" title="Fallback Factory"></a>Fallback Factory</h2><p>앞서 살펴보았던 Fallback은 어떤 Exception이 발생했는지 알 수가 없음</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@FeignClient</span>(name = <span class="string">"http-bin-api"</span>, url = <span class="string">"$&#123;feign.http-bin-api.url&#125;"</span>, fallbackFactory = HttpBinClientFallbackFactory<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">interface</span> <span class="title">HttpBinClient</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/delay/&#123;seconds&#125;"</span>)</span><br><span class="line">    <span class="function">DelayResponse <span class="title">delay</span><span class="params">(@PathVariable(<span class="string">"seconds"</span>)</span> <span class="keyword">int</span> seconds)</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Slf</span>4j</span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HttpBinClientFallbackFactory</span> <span class="keyword">implements</span> <span class="title">FallbackFactory</span>&lt;<span class="title">HttpBinClient</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> HttpBinClient <span class="title">create</span><span class="params">(Throwable cause)</span> </span>&#123;</span><br><span class="line">        log.error(cause.getMessage(), cause);</span><br><span class="line">        <span class="keyword">return</span> seconds -&gt; DelayResponse.EMPTY;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>오류 발생시 로그</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">2018-02-28 16:03:26.213 ERROR 14890 --- [ HystrixTimer-1] c.p.s.h.c.HttpBinClientFallbackFactory   : null</span><br><span class="line"></span><br><span class="line">com.netflix.hystrix.exception.HystrixTimeoutException: null</span><br><span class="line">	at com.netflix.hystrix.AbstractCommand$HystrixObservableTimeoutOperator$1$1.run(AbstractCommand.java:1154) [hystrix-core-1.5.12.jar:1.5.12]</span><br><span class="line">	at com.netflix.hystrix.strategy.concurrency.HystrixContextRunnable$1.call(HystrixContextRunnable.java:45) [hystrix-core-1.5.12.jar:1.5.12]</span><br><span class="line">	at com.netflix.hystrix.strategy.concurrency.HystrixContextRunnable$1.call(HystrixContextRunnable.java:41) [hystrix-core-1.5.12.jar:1.5.12]</span><br><span class="line">	at com.netflix.hystrix.strategy.concurrency.HystrixContextRunnable.run(HystrixContextRunnable.java:61) [hystrix-core-1.5.12.jar:1.5.12]</span><br><span class="line">	at com.netflix.hystrix.AbstractCommand$HystrixObservableTimeoutOperator$1.tick(AbstractCommand.java:1159) [hystrix-core-1.5.12.jar:1.5.12]</span><br><span class="line">	at com.netflix.hystrix.util.HystrixTimer$1.run(HystrixTimer.java:99) [hystrix-core-1.5.12.jar:1.5.12]</span><br><span class="line">	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511) [na:1.8.0_152]</span><br><span class="line">	at java.util.concurrent.FutureTask.runAndReset(FutureTask.java:308) [na:1.8.0_152]</span><br><span class="line">	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$301(ScheduledThreadPoolExecutor.java:180) [na:1.8.0_152]</span><br><span class="line">	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:294) [na:1.8.0_152]</span><br><span class="line">	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149) [na:1.8.0_152]</span><br><span class="line">	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624) [na:1.8.0_152]</span><br><span class="line">	at java.lang.Thread.run(Thread.java:748) [na:1.8.0_152]</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>fallbackFactory를 사용할 때에, Spring Application이 올라오면서 검증차원에서 일부러 fallbackFactory를 한 번 실행시킴.<br><code>Object exampleFallback = fallbackFactory.create(new RuntimeException());</code><br>때문에 불필요한 log가 올라오는데, 이를 배제할 방법을 모름…</p>
+</blockquote>
+<h1 id="Feign-상속-지원"><a href="#Feign-상속-지원" class="headerlink" title="Feign 상속 지원"></a>Feign 상속 지원</h1><p>Feign이 Spring MVC의 <code>@Controller</code>의 애너테이션들을 사용하는 것을 응용해서 다음과 같은 소스를 작성할 수 있음</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">UserService</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@RequestMapping</span>(method = RequestMethod.GET, value =<span class="string">"/users/&#123;id&#125;"</span>)</span><br><span class="line">    <span class="function">User <span class="title">getUser</span><span class="params">(@PathVariable(<span class="string">"id"</span>)</span> <span class="keyword">long</span> id)</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserController</span> <span class="keyword">implements</span> <span class="title">UserService</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@FeignClient</span>(<span class="string">"users"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">UserClient</span> <span class="keyword">extends</span> <span class="title">UserService</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>이처럼 다른 곳에 API client를 납품할 일이 있을때, Feign을 사용한다면<br><code>UserService</code>를 <code>serivce</code> 모듈에 넣고, 그를 구현한 <code>UserController</code>를 <code>api</code> 모듈에 넣고,<br>그에 대한 feign client인 <code>UserClient</code>를 <code>client</code> 모듈에 넣어<br><code>client</code>모듈을 외부에 공유하는 식의 개발도 가능</p>
+<p><strong>하지만 권장하지 않음. server-client 간의 커플링을 높이며, 현재 실질적으로 Spring MVC의 기능을 Feign이 모두 소화하고 있지 않음</strong></p>
+<h1 id="요청-응답-압축"><a href="#요청-응답-압축" class="headerlink" title="요청, 응답 압축"></a>요청, 응답 압축</h1><p>GZIP을 통해 요청, 응답을 압축</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">feign:</span></span><br><span class="line">  <span class="attr">compression:</span></span><br><span class="line">    <span class="attr">request:</span></span><br><span class="line">      <span class="attr">enabled:</span> <span class="literal">true</span></span><br><span class="line">      <span class="attr">mime-types:</span> <span class="string">text/xml,application/xml,application/json</span></span><br><span class="line">      <span class="attr">request.min-request-size:</span> <span class="number">2048</span></span><br><span class="line">    <span class="attr">response.enabled:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="Pageable"><a href="#Pageable" class="headerlink" title="Pageable"></a>Pageable</h1><p><code>spring-data</code>를 쓰는 환경이라면 <code>Pageable</code>을 빼놓을 수 없음<br>아쉽게도 요청이나, 응답을 받을 때 <code>Pageable</code>이나 <code>Page&lt;T&gt;</code>를 지원하지는 않음<br>직접 Encoder와 Jackson 설정을 해야함</p>
+<h2 id="Pageable-요청-보내기"><a href="#Pageable-요청-보내기" class="headerlink" title="Pageable 요청 보내기"></a>Pageable 요청 보내기</h2><p>아래와 같이 Encoder를 구현하여, Pageable로 요청을 만들 수 있음<br>참고 : <a href="https://github.com/spring-cloud/spring-cloud-netflix/issues/556" target="_blank" rel="noopener">https://github.com/spring-cloud/spring-cloud-netflix/issues/556</a></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@EnableFeignClients</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FeignClientConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> ObjectFactory&lt;HttpMessageConverters&gt; messageConverters;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Encoder <span class="title">feignEncoder</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> PageableQueryEncoder(<span class="keyword">new</span> SpringEncoder(messageConverters));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PageableQueryEncoder</span> <span class="keyword">implements</span> <span class="title">Encoder</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Encoder delegate;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">PageableQueryEncoder</span><span class="params">(Encoder delegate)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.delegate = delegate;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">encode</span><span class="params">(Object object, Type bodyType, RequestTemplate template)</span> <span class="keyword">throws</span> EncodeException </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (object <span class="keyword">instanceof</span> Pageable) &#123;</span><br><span class="line">            Pageable pageable = (Pageable) object;</span><br><span class="line">            template.query(<span class="string">"page"</span>, pageable.getPageNumber() + <span class="string">""</span>);</span><br><span class="line">            template.query(<span class="string">"size"</span>, pageable.getPageSize() + <span class="string">""</span>);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (pageable.getSort() != <span class="keyword">null</span>) &#123;</span><br><span class="line">                Collection&lt;String&gt; existingSorts = template.queries().get(<span class="string">"sort"</span>);</span><br><span class="line">                List&lt;String&gt; sortQueries = existingSorts != <span class="keyword">null</span> ? <span class="keyword">new</span> ArrayList&lt;&gt;(existingSorts) : <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">                <span class="keyword">for</span> (Sort.Order order : pageable.getSort()) &#123;</span><br><span class="line">                    sortQueries.add(order.getProperty() + <span class="string">","</span> + order.getDirection());</span><br><span class="line">                &#125;</span><br><span class="line">                template.query(<span class="string">"sort"</span>, sortQueries);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            delegate.encode(object, bodyType, template);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>Encoder</code>로 할 수 있는 일이 한정적이기 때문에, 실제 운영에서 사용하고자 않다면 아래와 같은 구현체를 만들어야함</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@EnableFeignClients</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FeignClientConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> ObjectFactory&lt;HttpMessageConverters&gt; messageConverters;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Encoder <span class="title">feignEncoder</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> CustomEncoder(<span class="keyword">new</span> SpringEncoder(messageConverters), <span class="keyword">new</span> PageableQueryEncoder());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CustomEncoder</span> <span class="keyword">implements</span> <span class="title">Encoder</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Encoder defaultEncoder;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;Class, TypeSupportEncoder&gt; encoders;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="title">CustomEncoder</span><span class="params">(Encoder defaultEncoder, TypeSupportEncoder... encoders)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">TypeSupportEncoder</span> <span class="keyword">extends</span> <span class="title">Encoder</span> </span>&#123;</span><br><span class="line">  <span class="function">Class <span class="title">getSupportType</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Page-응답-Json-파싱하기"><a href="#Page-응답-Json-파싱하기" class="headerlink" title="Page 응답 Json 파싱하기"></a>Page 응답 Json 파싱하기</h2><p>Jackson 설정<br>참고 : <a href="https://github.com/spring-cloud/spring-cloud-netflix/issues/556" target="_blank" rel="noopener">https://github.com/spring-cloud/spring-cloud-netflix/issues/556</a></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ApiConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Module <span class="title">customModule</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        SimpleModule <span class="keyword">module</span> = <span class="keyword">new</span> SimpleModule(<span class="string">"simple-feign"</span>, <span class="keyword">new</span> Version(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="string">"SNAPSHOT"</span>, <span class="string">"com.parfait"</span>, <span class="string">"simple-feign"</span>));</span><br><span class="line">        <span class="keyword">module</span>.setMixInAnnotation(Page<span class="class">.<span class="keyword">class</span>, <span class="title">SimplePageImpl</span>.<span class="title">class</span>)</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">module</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@JsonDeserialize</span>(as = SimplePageImpl<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">    <span class="title">private</span> <span class="title">interface</span> <span class="title">PageMixIn</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SimplePageImpl</span>&lt;<span class="title">T</span>&gt; <span class="keyword">implements</span> <span class="title">Page</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Page&lt;T&gt; delegate;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">SimplePageImpl</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">            @JsonProperty(<span class="string">"content"</span>)</span> List&lt;T&gt; content,</span></span><br><span class="line"><span class="function">            @<span class="title">JsonProperty</span><span class="params">(<span class="string">"page"</span>)</span> <span class="keyword">int</span> number,</span></span><br><span class="line"><span class="function">            @<span class="title">JsonProperty</span><span class="params">(<span class="string">"size"</span>)</span> <span class="keyword">int</span> size,</span></span><br><span class="line"><span class="function">            @<span class="title">JsonProperty</span><span class="params">(<span class="string">"totalElements"</span>)</span> <span class="keyword">long</span> totalElements) </span>&#123;</span><br><span class="line">        delegate = <span class="keyword">new</span> PageImpl&lt;&gt;(content, <span class="keyword">new</span> PageRequest(number, size), totalElements);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="meta">@JsonProperty</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getTotalPages</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> delegate.getTotalPages();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@JsonProperty</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">getTotalElements</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> delegate.getTotalElements();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@JsonProperty</span>(<span class="string">"page"</span>)</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getNumber</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> delegate.getNumber();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@JsonProperty</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getSize</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> delegate.getSize();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@JsonProperty</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getNumberOfElements</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> delegate.getNumberOfElements();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@JsonProperty</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> List&lt;T&gt; <span class="title">getContent</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> delegate.getContent();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@JsonProperty</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">hasContent</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> delegate.hasContent();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@JsonIgnore</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Sort <span class="title">getSort</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> delegate.getSort();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@JsonProperty</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isFirst</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> delegate.isFirst();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@JsonProperty</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isLast</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> delegate.isLast();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@JsonIgnore</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">hasNext</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> delegate.hasNext();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@JsonIgnore</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">hasPrevious</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> delegate.hasPrevious();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@JsonIgnore</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Pageable <span class="title">nextPageable</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> delegate.nextPageable();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@JsonIgnore</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Pageable <span class="title">previousPageable</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> delegate.previousPageable();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@JsonIgnore</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> &lt;S&gt; <span class="function">Page&lt;S&gt; <span class="title">map</span><span class="params">(Function&lt;? <span class="keyword">super</span> T, ? extends S&gt; converter)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> delegate.map(converter);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@JsonIgnore</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Iterator&lt;T&gt; <span class="title">iterator</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> delegate.iterator();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>작성자:</strong>
+    supawer0728
+  </li>
+  <li class="post-copyright-link">
+    <strong>원본링크:</strong>
+    <a href="https://supawer0728.github.io/2018/03/11/Spring-Cloud-Feign/" title="(Spring Cloud) Feign">https://supawer0728.github.io/2018/03/11/Spring-Cloud-Feign/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>라이센스: </strong>
+    <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a>
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/spring/" rel="tag"># spring</a>
+          
+            <a href="/tags/spring-cloud/" rel="tag"># spring-cloud</a>
+          
+            <a href="/tags/netflix/" rel="tag"># netflix</a>
+          
+            <a href="/tags/feign/" rel="tag"># feign</a>
+          
+        </div>
+      
+
+      
+      
+        <div class="post-widgets">
+        
+
+        
+
+        
+          
+          <div id="needsharebutton-postbottom">
+            <span class="btn">
+              <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </span>
+          </div>
+        
+        </div>
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/11/hazelcast/" rel="next" title="Hazelcast 공유">
+                <i class="fa fa-chevron-left"></i> Hazelcast 공유
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/11/Spring-Cloud-Hystrix/" rel="prev" title="(Spring Cloud) Hystrix">
+                (Spring Cloud) Hystrix <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript" target="_blank" rel="noopener">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            목차
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            흝어보기
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="supawer0728" />
+            
+              <p class="site-author-name" itemprop="name">supawer0728</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">32</span>
+                  <span class="site-state-item-name">포스트</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">카테고리</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">50</span>
+                  <span class="site-state-item-name">태그</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/feed.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/supawer0728" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Feign"><span class="nav-number">1.</span> <span class="nav-text">Feign</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Dependencies"><span class="nav-number">2.</span> <span class="nav-text">Dependencies</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Example"><span class="nav-number">3.</span> <span class="nav-text">Example</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Feign-설정"><span class="nav-number">4.</span> <span class="nav-text">Feign 설정</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#FeignClient"><span class="nav-number">4.1.</span> <span class="nav-text">@FeignClient</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#application-yml-설정"><span class="nav-number">4.1.1.</span> <span class="nav-text">application.yml 설정</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#java설정"><span class="nav-number">4.1.2.</span> <span class="nav-text">java설정</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#java설정-spring-연동-없는-순수-open-feign-설정"><span class="nav-number">4.1.3.</span> <span class="nav-text">java설정(spring 연동 없는 순수 open feign 설정)</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Feign-Hystrix-Support"><span class="nav-number">5.</span> <span class="nav-text">Feign Hystrix Support</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Fallback"><span class="nav-number">5.1.</span> <span class="nav-text">Fallback</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#회로-열림-상태-Circuit-Open-Hystrix에-대해서"><span class="nav-number">5.1.1.</span> <span class="nav-text">회로 열림 상태(Circuit Open) - Hystrix에 대해서</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Fallback-Factory"><span class="nav-number">5.2.</span> <span class="nav-text">Fallback Factory</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Feign-상속-지원"><span class="nav-number">6.</span> <span class="nav-text">Feign 상속 지원</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#요청-응답-압축"><span class="nav-number">7.</span> <span class="nav-text">요청, 응답 압축</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Pageable"><span class="nav-number">8.</span> <span class="nav-text">Pageable</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Pageable-요청-보내기"><span class="nav-number">8.1.</span> <span class="nav-text">Pageable 요청 보내기</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Page-응답-Json-파싱하기"><span class="nav-number">8.2.</span> <span class="nav-text">Page 응답 Json 파싱하기</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">supawer0728</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+  <div class="footer-custom">To Improve Human Life</div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://supawer0728-github-com.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://supawer0728.github.io/2018/03/11/Spring-Cloud-Feign/';
+          this.page.identifier = '2018/03/11/Spring-Cloud-Feign/';
+          this.page.title = '(Spring Cloud) Feign';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://supawer0728-github-com.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('-1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/needsharebutton/needsharebutton.css">
+
+  
+  
+  <script src="/lib/needsharebutton/needsharebutton.js"></script>
+
+  <script>
+    
+      pbOptions = {};
+      
+          pbOptions.iconStyle = "box";
+      
+          pbOptions.boxForm = "horizontal";
+      
+          pbOptions.position = "bottomCenter";
+      
+          pbOptions.networks = "Twitter,Facebook,GooglePlus,Evernote";
+      
+      new needShareButton('#needsharebutton-postbottom', pbOptions);
+    
+    
+  </script>
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

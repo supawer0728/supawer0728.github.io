@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Nanum Gothic:300,300italic,400,400italic,700,700italic|Nanum Pen Script:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-icon-180x180.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.4">
+
+
+
+  <link rel="manifest" href="/images/manifest.json">
+
+
+  <meta name="msapplication-config" content="/images/browserconfig.xml" />
+
+
+
+  <meta name="keywords" content="spring,aop,interceptor," />
+
+
+
+
+
+  <link rel="alternate" href="/feed.xml" title="기록은 재산이다" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="서론최근 들어 특정 콘텐츠에 부가 속성을 더하여 보여주는 UI가 증가하고 있다. 부가 속성의 예를 들자면 좋아요, 싫어요, 댓글, 공유 링크, 연관 게시물, 추천 게시물 등을 들 수 있다. 이러한 부가 속성들은 기획적 요구나 성능 이슈로 인하여 클라이언트마다 다른 UI를 보여줘야할 때가 있다. 웹 서버 개발자로써 자주 겪게되는 요구 사항 중 하나다. 이러한">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring에서 요청에 따른 부가 응답 추가하기 (1)">
+<meta property="og:url" content="https://supawer0728.github.io/2018/03/11/Spring-request-model1/index.html">
+<meta property="og:site_name" content="기록은 재산이다">
+<meta property="og:description" content="서론최근 들어 특정 콘텐츠에 부가 속성을 더하여 보여주는 UI가 증가하고 있다. 부가 속성의 예를 들자면 좋아요, 싫어요, 댓글, 공유 링크, 연관 게시물, 추천 게시물 등을 들 수 있다. 이러한 부가 속성들은 기획적 요구나 성능 이슈로 인하여 클라이언트마다 다른 UI를 보여줘야할 때가 있다. 웹 서버 개발자로써 자주 겪게되는 요구 사항 중 하나다. 이러한">
+<meta property="og:locale" content="ko_KR">
+<meta property="article:published_time" content="2018-03-10T17:48:41.000Z">
+<meta property="article:modified_time" content="2020-03-04T08:18:02.745Z">
+<meta property="article:author" content="supawer0728">
+<meta property="article:tag" content="spring">
+<meta property="article:tag" content="aop">
+<meta property="article:tag" content="interceptor">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '작성자'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://supawer0728.github.io/2018/03/11/Spring-request-model1/"/>
+
+
+
+
+
+  <title>Spring에서 요청에 따른 부가 응답 추가하기 (1) | 기록은 재산이다</title>
+  
+
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-115481794-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'UA-115481794-1');
+</script>
+
+
+
+
+
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script data-ad-client="" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="ko">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">기록은 재산이다</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">To Improve Human Life</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            홈
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            태그
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            카테고리
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            아카이브
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            검색
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="Searching..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://supawer0728.github.io/2018/03/11/Spring-request-model1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="supawer0728">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="기록은 재산이다">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Spring에서 요청에 따른 부가 응답 추가하기 (1)</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">작성일&#58;</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-11T02:48:41+09:00">
+                2018-03-11
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">수정일&#58;</span>
+              
+              <time title="수정일" itemprop="dateModified" datetime="2020-03-04T17:18:02+09:00">
+              
+                2018-03-11
+              
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/practice/" itemprop="url" rel="index">
+                    <span itemprop="name">practice</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/03/11/Spring-request-model1/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/03/11/Spring-request-model1/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="서론"><a href="#서론" class="headerlink" title="서론"></a>서론</h1><p>최근 들어 특정 콘텐츠에 부가 속성을 더하여 보여주는 UI가 증가하고 있다. 부가 속성의 예를 들자면 좋아요, 싫어요, 댓글, 공유 링크, 연관 게시물, 추천 게시물 등을 들 수 있다. 이러한 부가 속성들은 기획적 요구나 성능 이슈로 인하여 클라이언트마다 다른 UI를 보여줘야할 때가 있다. 웹 서버 개발자로써 자주 겪게되는 요구 사항 중 하나다. 이러한 요구 사항을 Java와 Spring Framework를 이용해서 어떻게 하면 OOP스럽게 풀어나갈 수 있을까. 당면 과제 해결과 리팩토링을 거쳐 조금씩 더 나은 애플리케이션을 만들어보고자 한다.</p>
+<a id="more"></a>
+
+<h1 id="요구-사항-정리"><a href="#요구-사항-정리" class="headerlink" title="요구 사항 정리"></a>요구 사항 정리</h1><ul>
+<li>게시판 상세 API</li>
+<li>Web에서는 댓글과 추천 게시글 목록을 보여줘야 함</li>
+<li>Mobile에서는 댓글만 보여줘야 함</li>
+</ul>
+<p><strong>서비스 구조</strong></p>
+<p>실제 도메인인 Board를 서비스하는 MicroService가 있고, 댓글, 회원 등의 다른 MicroService로 분리가 되어있다. BoardService는 자체로 하나의 서비스이자, 부가 속성들을 조합(API Ochestration)하는 역할을 한다.</p>
+<img  src=http://www.plantuml.com/plantuml/svg/Y_RDJyhCIOrLqDMrKuXsoayiIWbEBIfBBOhbGk4fw9OMW5J0b5iflEwP_6f70rTqU6gIWbDHVdanM1Lnfg3eWHcbysRRb3URvkYycJVnJSl6D_CceEi5wNJEpyrDpIl1OJf8HL1gCbXD2XurlgcvIQb5K240>
+
+<h1 id="해결법에-대한-생각"><a href="#해결법에-대한-생각" class="headerlink" title="해결법에 대한 생각"></a>해결법에 대한 생각</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 난 오늘만 사는 개발자(눈누난나~)</span></span><br><span class="line"><span class="keyword">if</span> (resolveDevice(request) == Device.APP) &#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>if</code>가 좋은 점이 있다. 이해하기 쉽다는 점이다. 하지만 위의 예제는 OCP를 지킬 수 없다. 시간이 촉박하다면 당장에 <code>if</code>를 쓰고 싶은 마음이 들겠지만, 미래를 생각하여 접어두자.</p>
+<h2 id="원칙"><a href="#원칙" class="headerlink" title="원칙"></a>원칙</h2><p>특정 클라이언트에서는 특정 부가 정보들이 보이게 해달라는 요구 사항들은 앞으로도 추가될 수 있다. 좋은 설계를 통해 앞으로의 대비, 로직을 추가할 때의 비용을 줄이도록 하자.</p>
+<ul>
+<li>가능한 OOP스럽게 : 작은 class들이 서로 협력하여 큰 문제를 해결하도록!</li>
+<li>마치 장식(decoration)을 추가하는 것처럼 동작을 할 수 있으면 좋겠다.</li>
+<li>client가 필요한 부가 정보를 요청하도록 구현하자.</li>
+</ul>
+<blockquote>
+<p>한 번 정해진 설계를 수정할 필요 없이 확장 가능하게</p>
+</blockquote>
+<h2 id="예상되는-API-형식"><a href="#예상되는-API-형식" class="headerlink" title="예상되는 API 형식"></a>예상되는 API 형식</h2><ul>
+<li>client가 필요한 부가 정보를 요청하도록 구현하자.</li>
+</ul>
+<p><strong>기본</strong></p>
+<p>Board는 <code>id</code>, <code>title</code>, <code>content</code> 속성을 가지고 있다.</p>
+<p><code>GET /boards/1</code></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"id"</span>: <span class="number">1</span>,</span><br><span class="line">  <span class="attr">"title"</span>: <span class="string">"title1"</span>,</span><br><span class="line">  <span class="attr">"content"</span>: <span class="string">"content1"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>댓글추가</strong></p>
+<p>클라이언트가 댓글(<code>comments</code>)을 추가 정보로 요청할 수 있다.</p>
+<p><code>GET /boards/1?attachment=comments</code></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"id"</span>: <span class="number">1</span>,</span><br><span class="line">    <span class="attr">"title"</span>: <span class="string">"title1"</span>,</span><br><span class="line">    <span class="attr">"content"</span>: <span class="string">"content1"</span>,</span><br><span class="line">    <span class="attr">"comments"</span>: [&#123;</span><br><span class="line">        <span class="attr">"id"</span>: <span class="number">1</span>,</span><br><span class="line">        <span class="attr">"email"</span>: <span class="string">"Eliseo@gardner.biz"</span>,</span><br><span class="line">        <span class="attr">"body"</span>: <span class="string">"laudantium enim quasi est quidem magnam voluptate ipsam eos\ntempora quo necessitatibus\ndolor quam autem quasi\nreiciendis et nam sapiente accusantium"</span></span><br><span class="line">    &#125;]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>댓글과 작성자정보</strong></p>
+<p>클라이언트가 댓글과 작성자정보(<code>writer</code>)를 추가 정보로 요청할 수 있다.</p>
+<p><code>GET /boards/1?attachment=comments,writer</code></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"id"</span>: <span class="number">1</span>,</span><br><span class="line">    <span class="attr">"title"</span>: <span class="string">"title1"</span>,</span><br><span class="line">    <span class="attr">"content"</span>: <span class="string">"content1"</span>,</span><br><span class="line">    <span class="attr">"comments"</span>: [&#123;</span><br><span class="line">        <span class="attr">"id"</span>: <span class="number">1</span>,</span><br><span class="line">        <span class="attr">"email"</span>: <span class="string">"Eliseo@gardner.biz"</span>,</span><br><span class="line">        <span class="attr">"body"</span>: <span class="string">"laudantium enim quasi est quidem magnam voluptate ipsam eos\ntempora quo necessitatibus\ndolor quam autem quasi\nreiciendis et nam sapiente accusantium"</span></span><br><span class="line">    &#125;],</span><br><span class="line">    <span class="attr">"writer"</span>: &#123;</span><br><span class="line">        <span class="attr">"id"</span>: <span class="number">1</span>,</span><br><span class="line">        <span class="attr">"username"</span>: <span class="string">"Bret"</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="기본-API-작성"><a href="#기본-API-작성" class="headerlink" title="기본 API 작성"></a>기본 API 작성</h1><p>천리 길도 한걸음부터다. 우선은 기본 API를 작성하자. 기본 API 작성에 관한 내용은 별다른 설명 없이 소스로 대체하고자 한다.</p>
+<h2 id="web-모듈-생성"><a href="#web-모듈-생성" class="headerlink" title="web 모듈 생성"></a>web 모듈 생성</h2><p><strong>의존성 설정</strong></p>
+<p>현재일(2018-03-10) 기준으로 최신 버전인 spring-boot 2.0.0.RELAESE 사용했다</p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">dependencies</span> &#123;</span><br><span class="line">  <span class="keyword">compile</span>(<span class="string">'org.springframework.boot:spring-boot-starter-data-jpa'</span>)</span><br><span class="line">  <span class="keyword">compile</span>(<span class="string">'org.springframework.boot:spring-boot-starter-web'</span>)  </span><br><span class="line">  compileOnly(<span class="string">'org.projectlombok:lombok'</span>)</span><br><span class="line">  <span class="keyword">runtime</span>(<span class="string">'com.h2database:h2'</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>Entity</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@NoArgsConstructor</span>(access = AccessLevel.PRIVATE)</span><br><span class="line"><span class="meta">@Table</span>(name = <span class="string">"board"</span>)</span><br><span class="line"><span class="meta">@Entity</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Board</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Id</span></span><br><span class="line">    <span class="meta">@GeneratedValue</span></span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String title;</span><br><span class="line">    <span class="keyword">private</span> String content;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Board</span><span class="params">(@NonNull String title, @NonNull String content)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.title = title;</span><br><span class="line">        <span class="keyword">this</span>.content = content;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>Controller</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping</span>(<span class="string">"/boards"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BoardController</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> BoardRepository boardRepository;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/&#123;id&#125;"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Board <span class="title">getOne</span><span class="params">(@PathVariable(<span class="string">"id"</span>)</span> Board board) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> board;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>미리 데이터 넣어두기</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SimpleAttachmentApplication</span> <span class="keyword">implements</span> <span class="title">CommandLineRunner</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> BoardRepository boardRepository;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run(SimpleAttachmentApplication<span class="class">.<span class="keyword">class</span>, <span class="title">args</span>)</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">(String... args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line"></span><br><span class="line">        boardRepository.save(<span class="keyword">new</span> Board(<span class="string">"title1"</span>, <span class="string">"content1"</span>));</span><br><span class="line">        boardRepository.save(<span class="keyword">new</span> Board(<span class="string">"title2"</span>, <span class="string">"content2"</span>));</span><br><span class="line">        boardRepository.save(<span class="keyword">new</span> Board(<span class="string">"title3"</span>, <span class="string">"content3"</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>서버띄워 실행</strong></p>
+<p><code>GET /borads/1</code></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"id"</span>: <span class="number">1</span>,</span><br><span class="line">  <span class="attr">"title"</span>: <span class="string">"title1"</span>,</span><br><span class="line">  <span class="attr">"content"</span>: <span class="string">"content1"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>소스 : <a href="https://github.com/supawer0728/simple-attachment/tree/base-api" target="_blank" rel="noopener">https://github.com/supawer0728/simple-attachment/tree/base-api</a></p>
+<h2 id="기본-API에-attachment-구현하기"><a href="#기본-API에-attachment-구현하기" class="headerlink" title="기본 API에 attachment 구현하기"></a>기본 API에 attachment 구현하기</h2><p>attachment를 구현하기 위한 사항들을 Spring의 MVC 요청을 처리하는 흐름에 따라 정리해보았다.</p>
+<ol>
+<li>필요한 경우 Interceptor에서 <code>attachment</code>를 해석하고 저장한다<br> 1-1 필요한 경우가 언젠지 정의해야 함.<br> 1-2 <code>attachment</code>를 해석할 class를 정의해야 함(AttachmentType)</li>
+<li><code>attachment</code>는 <code>Request Scope</code> bean에 담아두고, 필요할 때 꺼내 사용(AttachmentTypeHolder class 정의)</li>
+<li>Controller에서 객체가 반환되면, 필요한 속성을 추가<br> 3-1 Controller의 로직은 변경하지 않음<br> 3-2 AOP를 통해서, <code>1-1</code>의 <code>필요한 경우</code>를 파악하여, attachment를 위한 서비스 로직을 실행<br> 3-3 <code>Board</code> 엔티티는 생성, 수정, 삭제 용도로 남겨두고, 읽기 요청에 대해서는 comments, writer 등을 추가할 수 있는 BoardDto로 변환해서 보내자.(<a href="https://martinfowler.com/bliki/CQRS.html" target="_blank" rel="noopener">CQRS 적용</a>)</li>
+</ol>
+<h1 id="attachment를-해석해서-저장하기"><a href="#attachment를-해석해서-저장하기" class="headerlink" title="attachment를 해석해서 저장하기"></a>attachment를 해석해서 저장하기</h1><h2 id="AttachmentType"><a href="#AttachmentType" class="headerlink" title="AttachmentType"></a>AttachmentType</h2><p>서버에서 정의한 값들만 <code>attachment</code>로 해석할 것이다. enum이 안성맞춤일 것 같다. enum으로 <code>AttachmentType</code>을 정의하자.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> AttachmentType &#123;</span><br><span class="line">    COMMENTS;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="AttachmentTypeHolder"><a href="#AttachmentTypeHolder" class="headerlink" title="AttachmentTypeHolder"></a>AttachmentTypeHolder</h2><p>요청에서 해석한 <code>attachment</code>를 저장할 <code>@RequestScope</code> bean이 필요하다. <code>AttachmentTypeHolder</code>에 요청된 <code>attachment</code>의 내용을 담아둘 것이다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RequestScope</span></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AttachmentTypeHolder</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Set&lt;AttachmentType&gt; types;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Attach"><a href="#Attach" class="headerlink" title="@Attach"></a>@Attach</h2><p>어떤 경우에 attachment를 해석할 것이지를 정의해야 한다. 실행하고자 하는 Controller의 메서드에 <code>@Attach</code>가 있으면, 해석이 필요한 경우로 정의했다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Target</span>(&#123;ElementType.METHOD&#125;)</span><br><span class="line"><span class="meta">@Retention</span>(RetentionPolicy.RUNTIME)</span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> Attach &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping</span>(<span class="string">"/boards"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BoardController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// `/boards/&#123;id&#125;`로 요청이 들어오면 요청에 있는 attachment를 해석하려 할 것이다.</span></span><br><span class="line">    <span class="meta">@Attach</span> </span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/&#123;id&#125;"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> BoardDto <span class="title">getOne</span><span class="params">(@PathVariable(<span class="string">"id"</span>)</span> Board board) </span>&#123; <span class="keyword">return</span> board;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="AttachInterceptor"><a href="#AttachInterceptor" class="headerlink" title="AttachInterceptor"></a>AttachInterceptor</h2><p>이제 요청에서 <code>attachment</code>를 해석해서 <code>AttachmentTypeHolder</code>에 저장하자. 편의상 성능 관련 로직은 배제했다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AttachInterceptor</span> <span class="keyword">extends</span> <span class="title">HandlerInterceptorAdapter</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String TARGET_PARAMETER_NAME = <span class="string">"attachment"</span>;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> AttachmentTypeHolder attachmentTypeHolder;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">preHandle</span><span class="params">(HttpServletRequest request, HttpServletResponse response, Object handler)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (!(handler <span class="keyword">instanceof</span> HandlerMethod)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        HandlerMethod handlerMethod = (HandlerMethod) handler;</span><br><span class="line">        <span class="comment">// hasMethodAnnotation()의 호출 스택이 꽤 길어서, Map&lt;HandlerMethod, Boolean&gt;으로 캐싱하시면 살짝 성능이 좋아짐</span></span><br><span class="line">        <span class="keyword">if</span> (!key.hasMethodAnnotation(Attachable<span class="class">.<span class="keyword">class</span>)) </span>&#123;  </span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        Set&lt;AttachmentType&gt; types = resolveAttachmentType(request);</span><br><span class="line">        attachmentTypeHolder.setTypes(types);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> Set&lt;AttachmentType&gt; <span class="title">resolveAttachmentType</span><span class="params">(HttpServletRequest request)</span> </span>&#123;</span><br><span class="line">        String attachments = request.getParameter(TARGET_PARAMETER_NAME);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (StringUtils.isBlank(attachments)) &#123;</span><br><span class="line">            <span class="keyword">return</span> Collections.emptySet();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 기본적으로 enum의 valueOf는 찾는 값이 없을 시 IllegalArgumentException을 throw</span></span><br><span class="line">        <span class="comment">// attachment 때문에 장애가 나면 넌센스, 실제로 구현할 때에는 exception을 던지지 않게 해야함</span></span><br><span class="line">        <span class="comment">// github 소스에서는 exception을 던지지 않음</span></span><br><span class="line">        <span class="keyword">return</span> Stream.of(attachments.split(<span class="string">","</span>))</span><br><span class="line">                     .map(String::toUpperCase)</span><br><span class="line">                     .map(AttachmentType::valueOf)</span><br><span class="line">                     .collect(Collectors.toSet());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Test"><a href="#Test" class="headerlink" title="Test"></a>Test</h2><p>앞서 정의한 인터셉터가 잘 동작하는 지 확인해보자.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AttachInterceptorTest</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@InjectMocks</span></span><br><span class="line">    <span class="keyword">private</span> AttachInterceptor attachInterceptor;</span><br><span class="line">    <span class="meta">@Spy</span></span><br><span class="line">    <span class="keyword">private</span> AttachmentTypeHolder attachmentTypeHolder;</span><br><span class="line">    <span class="meta">@Mock</span></span><br><span class="line">    <span class="keyword">private</span> HandlerMethod handlerMethod;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Before</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setUp</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        MockitoAnnotations.initMocks(<span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">preHandle</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="comment">// given</span></span><br><span class="line">        given(handlerMethod.hasMethodAnnotation(Attachable<span class="class">.<span class="keyword">class</span>)).<span class="title">willReturn</span>(<span class="title">true</span>)</span>;</span><br><span class="line">        MockHttpServletRequest request = <span class="keyword">new</span> MockHttpServletRequest();</span><br><span class="line">        request.setParameter(AttachInterceptor.TARGET_PARAMETER_NAME, AttachmentType.COMMENTS.name().toLowerCase());</span><br><span class="line">        MockHttpServletResponse response = <span class="keyword">new</span> MockHttpServletResponse();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// when</span></span><br><span class="line">        attachInterceptor.preHandle(request, response, handlerMethod);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// then</span></span><br><span class="line">        assertThat(attachmentTypeHolder.getTypes(), hasItem(AttachmentType.COMMENTS));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>소스 : <a href="https://github.com/supawer0728/simple-attachment/tree/save-attachment-request" target="_blank" rel="noopener">https://github.com/supawer0728/simple-attachment/tree/save-attachment-request</a></p>
+<h1 id="Controller에서-BoardDto를-반환하게-만들기"><a href="#Controller에서-BoardDto를-반환하게-만들기" class="headerlink" title="Controller에서 BoardDto를 반환하게 만들기"></a>Controller에서 BoardDto를 반환하게 만들기</h1><h2 id="BoardDto-정의"><a href="#BoardDto-정의" class="headerlink" title="BoardDto 정의"></a>BoardDto 정의</h2><p>앞에서 정의했던 <code>Board</code>는 엔티티이다. 엔티티는 생성, 수정시 사용하도록 두고, 부가 정보인 댓글, 추천정보를 담을 모델을 <code>BoardDto</code>로 정의해서 응답을 주자.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@JsonInclude</span>(JsonInclude.Include.NON_NULL)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BoardDto</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String title;</span><br><span class="line">    <span class="keyword">private</span> String content;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Setter</span>(AccessLevel.PRIVATE)</span><br><span class="line">    <span class="meta">@JsonIgnore</span></span><br><span class="line">    <span class="keyword">private</span> Map&lt;AttachmentType, Attachment&gt; attachmentMap = <span class="keyword">new</span> EnumMap&lt;&gt;(AttachmentType<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>위에서는 왜 <code>attachmentMap</code>을 썼을까? 만약 <code>attachmentMap</code>이 없었다면 아래와 같이 각각 다른 멤버로 선언이 되었을 것이고, 이는 아래와 같이 소스를 attach할 모델이 추가될 때, 소스를 <code>수정</code>하게 만드는 원인이 된다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BoardDto</span> </span>&#123;</span><br><span class="line">  ...</span><br><span class="line">  List&lt;CommentDto&gt; comments;</span><br><span class="line">  Writer writer;</span><br><span class="line">  <span class="comment">// 추후에 추천목록이 생긴다면 List&lt;RecommendationDto&gt; recommendations;가 추가됨</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>Map</code>을 가져다 쓰는게 마음에 들지 않는다거나, 별도의 클래스를 정의해서 쓰고 싶다면, <code>AttachmentWrapper</code> 등의 클래스를 정의해서 <code>Map</code>을 래핑하고 delegate 패턴을 구현한 클래스를 사용할 수도 있다. lombok의 <code>@Delegate</code>는 이런 경우 편리하게 사용할 수 있다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AttachmentWrapper</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="class"><span class="keyword">interface</span> <span class="title">AttachmentMap</span> </span>&#123;</span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">put</span><span class="params">(AttachmentType type, Attachment attachment)</span></span>;</span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">putAll</span><span class="params">(Map&lt;? extends AttachmentType, ? extends Attachment&gt; attachmentMap)</span></span>;</span><br><span class="line">        <span class="function"><span class="keyword">boolean</span> <span class="title">isEmpty</span><span class="params">()</span></span>;</span><br><span class="line">        Set&lt;Map.Entry&lt;AttachmentType, Attachment&gt;&gt; entrySet();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Delegate</span>(types = AttachmentMap<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">    <span class="title">private</span> <span class="title">Map</span>&lt;<span class="title">AttachmentType</span>, <span class="title">Attachment</span>&gt; <span class="title">value</span> </span>= <span class="keyword">new</span> EnumMap&lt;&gt;(AttachmentType<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>BoardDto</code>에 적용하자.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@JsonInclude</span>(JsonInclude.Include.NON_NULL)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BoardDto</span> <span class="keyword">implements</span> <span class="title">Attachable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String title;</span><br><span class="line">    <span class="keyword">private</span> String content;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Setter</span>(AccessLevel.PRIVATE)</span><br><span class="line">    <span class="meta">@JsonIgnore</span></span><br><span class="line">    <span class="keyword">private</span> AttachmentWrapper attachmentWrapper = <span class="keyword">new</span> AttachmentWrapper();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>Attcahment</strong></p>
+<p>부가 정보 클래스를 나타내기 위한 마크 인터페이스가 있으면 좋겠다.<br><code>Attachment</code>라고 이름을 짓자.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Attachment</span> </span>&#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>부가 정보, 예를 들어 댓글 DTO를 정의한다면 다음과 같이 선언하게 된다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CommentDto</span> <span class="keyword">implements</span> <span class="title">Attachment</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String email;</span><br><span class="line">    <span class="keyword">private</span> String body;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>Attachment</code>의 내용물은 <code>Collection</code>의 자료구조가 될 수도 있다. 예를 들어, 댓글 목록을 추가할 수 있어야 한다. 그러기 위한 자료구조도 정의하자.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">AttachmentCollection</span>&lt;<span class="title">T</span> <span class="keyword">extends</span> <span class="title">Attachment</span>&gt; <span class="keyword">extends</span> <span class="title">Attachment</span>, <span class="title">Collection</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="meta">@JsonUnwrapped</span></span><br><span class="line">    <span class="function">Collection&lt;T&gt; <span class="title">getValue</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Value</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SimpleAttachmentCollection</span>&lt;<span class="title">T</span> <span class="keyword">extends</span> <span class="title">Attachment</span>&gt; <span class="keyword">implements</span> <span class="title">AttachmentCollection</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="meta">@Delegate</span></span><br><span class="line">    <span class="keyword">private</span> Collection&lt;T&gt; value;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Converter-정의"><a href="#Converter-정의" class="headerlink" title="Converter 정의"></a>Converter 정의</h2><p>A 오브젝트를 B 오브젝트로 변환하는 것은 여러 방법이 있다.<br>별다른 모듈에 의존하지 않고, 간단히 spring의 converter를 구현해서 정의했다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BoardDtoConverter</span> <span class="keyword">implements</span> <span class="title">Converter</span>&lt;<span class="title">Board</span>, <span class="title">BoardDto</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> BoardDto <span class="title">convert</span><span class="params">(@NonNull Board board)</span> </span>&#123;</span><br><span class="line">        BoardDto boardDto = <span class="keyword">new</span> BoardDto();</span><br><span class="line">        boardDto.setId(board.getId());</span><br><span class="line">        boardDto.setTitle(board.getTitle());</span><br><span class="line">        boardDto.setContent(board.getContent());</span><br><span class="line">        <span class="keyword">return</span> boardDto;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>Spring의 Converter를 구현한 것은 단순한 개인취향이다.<br><code>board.toDto()</code> 등의 메서드를 작성해서 변환해도 무관하나<br>Board와 BoardDto 사이에 결합도가 생기는 게 싫었다.<br>그 정도의 결합도를 용납할 수 있다면 <code>board.toDto()</code>도 좋은 선택이다.</p>
+</blockquote>
+<h2 id="Controller의-반환값-수정"><a href="#Controller의-반환값-수정" class="headerlink" title="Controller의 반환값 수정"></a>Controller의 반환값 수정</h2><p>앞서 정의한 Converter를 주입받아, <code>Board</code>를 <code>BoardDto</code>로 변환 후 반환한다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping</span>(<span class="string">"/boards"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BoardController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span> <span class="keyword">private</span> BoardRepository boardRepository;</span><br><span class="line">    <span class="meta">@Autowired</span> <span class="keyword">private</span> BoardDtoConverter boardDtoConverter;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Attachable</span></span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/&#123;id&#125;"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> BoardDto <span class="title">getOne</span><span class="params">(@PathVariable(<span class="string">"id"</span>)</span> Board board) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> boardDtoConverter.convert(board);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="AOP로-반환된-값에-모델-추가하기"><a href="#AOP로-반환된-값에-모델-추가하기" class="headerlink" title="AOP로 반환된 값에 모델 추가하기"></a>AOP로 반환된 값에 모델 추가하기</h1><p><strong>AOP 사용 설정</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@EnableAspectJAutoProxy</span>(proxyTargetClass = <span class="keyword">true</span>)</span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SimpleAttachmentApplication</span> <span class="keyword">implements</span> <span class="title">CommandLineRunner</span> </span>&#123; ... &#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="AOP로-Advice-작성하기"><a href="#AOP로-Advice-작성하기" class="headerlink" title="AOP로 Advice 작성하기"></a>AOP로 Advice 작성하기</h2><p><code>@Attach</code>가 있는 메서드를 pointcut으로 잡아 advice가 실행되도록 정의한다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="meta">@Aspect</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AttachmentAspect</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span> <span class="keyword">private</span> <span class="keyword">final</span> AttachmentTypeHolder attachmentTypeHolder;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Pointcut</span>(<span class="string">"@annotation(com.parfait.study.simpleattachment.attachment.Attach)"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">pointcut</span><span class="params">()</span> </span>&#123; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@AfterReturning</span>(pointcut = <span class="string">"pointcut()"</span>, returning = <span class="string">"returnValue"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">afterReturning</span><span class="params">(Object returnValue)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (attachmentTypeHolder.isEmpty() &amp;&amp; !(returnValue <span class="keyword">instanceof</span> Attachable)) &#123;</span><br><span class="line">            <span class="keyword">return</span> returnValue;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        executeAttach((Attachable) returnValue);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> returnValue;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">executeAttach</span><span class="params">(Attachable attachable)</span> </span>&#123;</span><br><span class="line">      <span class="comment">// TODO : 로직 작성</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>이제 1/2는 끝났다. 사실상 핵심로직인 저 <code>TODO</code> 안의 내용만 채우면 된다.</p>
+<h2 id="어떻게-모델을-추가할까"><a href="#어떻게-모델을-추가할까" class="headerlink" title="어떻게 모델을 추가할까?"></a>어떻게 모델을 추가할까?</h2><p>우선은 BoardDto를 먼저 손을 봐야할 것 같다.</p>
+<p><code>BoardDto</code>에 <code>CommentDto</code>를 추가하기 위한 동작을 interface로 뽑아내자.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Attachable</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function">AttachmentWrapper <span class="title">getAttachmentWrapper</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">default</span> <span class="keyword">void</span> <span class="title">attach</span><span class="params">(AttachmentType type, Attachment attachment)</span> </span>&#123;</span><br><span class="line">        getAttachmentWrapper().put(type, attachment);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">default</span> <span class="keyword">void</span> <span class="title">attach</span><span class="params">(Map&lt;? extends AttachmentType, ? extends Attachment&gt; attachment)</span> </span>&#123;</span><br><span class="line">        getAttachmentWrapper().putAll(attachment);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@JsonAnyGetter</span></span><br><span class="line">    <span class="function"><span class="keyword">default</span> Map&lt;String, Object&gt; <span class="title">getAttachment</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        AttachmentWrapper wrapper = getAttachmentWrapper();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (wrapper.isEmpty()) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> wrapper.entrySet()</span><br><span class="line">                      .stream()</span><br><span class="line">                      .collect(Collectors.toMap(e -&gt; e.getKey().lowerCaseName(), Map.Entry::getValue));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@JsonInclude</span>(JsonInclude.Include.NON_NULL)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BoardDto</span> <span class="keyword">implements</span> <span class="title">Attachable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String title;</span><br><span class="line">    <span class="keyword">private</span> String content;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Setter</span>(AccessLevel.PRIVATE)</span><br><span class="line">    <span class="meta">@JsonIgnore</span></span><br><span class="line">    <span class="keyword">private</span> AttachmentWrapper attachmentWrapper = <span class="keyword">new</span> AttachmentWrapper();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>Attachable</code> 인터페이스에 필요한 동작들을 default로 선언했기 때문에, <code>BoardDto</code>에는 별다른 수정을 할 필요가 없다. <code>BoardDto</code>에 댓글을 추가할 때에는 <code>BoardDto.attach(AttachmentType.COMMENTS, new CommentsDto())</code>를 호출하면 된다.</p>
+<h2 id="AttachService-정의"><a href="#AttachService-정의" class="headerlink" title="AttachService 정의"></a>AttachService 정의</h2><p>첨가 로직(attach)을 선언하고 실행할 <code>AttachmentService</code>가 있어야할 것 같다. AttachService가 가져야할 요건을 3가지로 나눌 수 있다.</p>
+<ol>
+<li>어떤 <code>AttachmentType</code>에 대해 동작하는가?</li>
+<li>어떤 class에 대해 작업을 수행할 수 있는가?</li>
+<li>attachment를 가져옴(생성)</li>
+</ol>
+<p>이를 interface로 뽑아내면 아래와 같이 선언할 수 있다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">AttachService</span>&lt;<span class="title">T</span> <span class="keyword">extends</span> <span class="title">Attachable</span>&gt; </span>&#123;</span><br><span class="line">    <span class="function">AttachmentType <span class="title">getSupportAttachmentType</span><span class="params">()</span></span>; <span class="comment">// 1. 어떤 AttachmentType에 대해서 동작하는가</span></span><br><span class="line"></span><br><span class="line">    <span class="function">Class&lt;T&gt; <span class="title">getSupportType</span><span class="params">()</span></span>; <span class="comment">// 2. 어떤 Attachable 클래스에 대해 동작하는가</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 형안전성을 지킬 것</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> attachment</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> ClassCastException</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function">Attachement <span class="title">getAttachment</span><span class="params">(Object attachment)</span></span>; <span class="comment">// 3. attachment를 가져옴</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>2번이 왜있지? 1번만 보고 댓글이 필요하면 추가하면 되는거 아냐?</code> 라고 생각할 수 있을 것 같다. 하지만 댓글은 쪽지의 댓글이 있을 수도 있고, 뉴스의 댓글이 될 수도 있고, 동영상의 댓글이 될 수도 있다. 이러한 댓글들마다 불러오는 방법이 다를 수 있다. 즉 클래스 별로 다른 방식으로 불러와야 하는 것이다. 구현체가 어떤 객체에 대해서 attach를 실행할 수 있을지 조금더 상세히 정의하기 위해 <code>Class&lt;T&gt; getSupportType()</code>를 정의했다.</p>
+<p>아래와 같이 <code>AttachService</code>의 구현체를 정의할 수 있다.</p>
+<p><strong>AttachCommentsToBoardService.java</strong></p>
+<p><code>CommentClient</code>는 <a href="https://cloud.spring.io/spring-cloud-netflix/multi/multi_spring-cloud-feign.html" target="_blank" rel="noopener">FeignClient</a>를 사용했다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AttachCommentsToBoardService</span> <span class="keyword">implements</span> <span class="title">AttachService</span>&lt;<span class="title">BoardDto</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> AttachmentType supportAttachmentType = AttachmentType.COMMENTS;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Class&lt;BoardDto&gt; supportType = BoardDto<span class="class">.<span class="keyword">class</span></span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> CommentClient commentClient; <span class="comment">// feign client 사용</span></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">AttachCommentsToBoardService</span><span class="params">(@NonNull CommentClient commentClient)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.commentClient = commentClient;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> AttachmentType <span class="title">getSupportAttachmentType</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> supportAttachmentType;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Class&lt;BoardDto&gt; <span class="title">getSupportType</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> supportType;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Attachment <span class="title">getAttachment</span><span class="params">(Attachable attachment)</span> </span>&#123;</span><br><span class="line">        BoardDto boardDto = supportType.cast(attachment);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> SimpleAttachmentCollection&lt;&gt;(commentClient.getComments(boardDto.getId()));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Advice-나머지-부분-작성하기"><a href="#Advice-나머지-부분-작성하기" class="headerlink" title="Advice 나머지 부분 작성하기"></a>Advice 나머지 부분 작성하기</h2><p>앞서 작성했던 <code>AttachmentAspect</code>의 <code>//TODO</code> 부분을 채울 차례다.<br>List를 사용해서 spring에 등록된 모든 <code>AttachService</code>를 주입받아, <code>AttachmentType</code>과 <code>Attachable</code>의 타입으로 필터링해서 attach를 실행한다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="meta">@Aspect</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AttachmentAspect</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> AttachmentTypeHolder attachmentTypeHolder;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;AttachmentType, List&lt;AttachService&lt;? extends Attachable&gt;&gt;&gt; typeToServiceMap;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 생성자에서 모든 AttachService를 주입받아 지원하는 AttachmentType에 맞추어 `typeToServiceMap`에 저장</span></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">AttachmentAspect</span><span class="params">(@NonNull AttachmentTypeHolder attachmentTypeHolder,</span></span></span><br><span class="line"><span class="function"><span class="params">                            @NonNull List&lt;AttachService&lt;? extends Attachable&gt;&gt; attachService)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.attachmentTypeHolder = attachmentTypeHolder;</span><br><span class="line">        <span class="keyword">this</span>.typeToServiceMap = attachService.stream()</span><br><span class="line">                                             .collect(Collectors.groupingBy(AttachService::getSupportAttachmentType, Collectors.toList()));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Pointcut</span>(<span class="string">"@annotation(com.parfait.study.simpleattachment.attachment.Attach)"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">pointcut</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@AfterReturning</span>(pointcut = <span class="string">"pointcut()"</span>, returning = <span class="string">"returnValue"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">afterReturning</span><span class="params">(Object returnValue)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (attachmentTypeHolder.isEmpty() &amp;&amp; !(returnValue <span class="keyword">instanceof</span> Attachable)) &#123;</span><br><span class="line">            <span class="keyword">return</span> returnValue;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        executeAttach((Attachable) returnValue);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> returnValue;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">executeAttach</span><span class="params">(Attachable attachable)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        Set&lt;AttachmentType&gt; types = attachmentTypeHolder.getTypes();</span><br><span class="line">        Class attachableClass = attachable.getClass();</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// Stream API를 사용해 손쉽게 필터링을 하고 알맞은 `AttachService.attach()`를 실행</span></span><br><span class="line">        Map&lt;AttachmentType, Attachment&gt; attachmentMap =</span><br><span class="line">                types.stream()</span><br><span class="line">                     .flatMap(type -&gt; typeToServiceMap.get(type).stream())</span><br><span class="line">                     .filter(service -&gt; service.getSupportType().isAssignableFrom(attachableClass))</span><br><span class="line">                     .collect(Collectors.toMap(AttachService::getSupportAttachmentType, service -&gt; service.getAttachment(attachable)));</span><br><span class="line"></span><br><span class="line">        attachable.attach(attachmentMap);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="실행해보기"><a href="#실행해보기" class="headerlink" title="실행해보기"></a>실행해보기</h2><p><code>GET /boards/1?attachment=comments</code></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#123;  </span><br><span class="line">   <span class="attr">"id"</span>:<span class="number">1</span>,</span><br><span class="line">   <span class="attr">"title"</span>:<span class="string">"title1"</span>,</span><br><span class="line">   <span class="attr">"content"</span>:<span class="string">"content1"</span>,</span><br><span class="line">   <span class="attr">"comments"</span>:[  </span><br><span class="line">      &#123;  </span><br><span class="line">         <span class="attr">"id"</span>:<span class="number">1</span>,</span><br><span class="line">         <span class="attr">"email"</span>:<span class="string">"Eliseo@gardner.biz"</span>,</span><br><span class="line">         <span class="attr">"body"</span>:<span class="string">"laudantium enim quasi est quidem magnam voluptate ipsam eos\ntempora quo necessitatibus\ndolor quam autem quasi\nreiciendis et nam sapiente accusantium"</span></span><br><span class="line">      &#125;</span><br><span class="line">   ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>소스 : <a href="https://github.com/supawer0728/simple-attachment/tree/attach-writer" target="_blank" rel="noopener">https://github.com/supawer0728/simple-attachment/tree/attach-writer</a></p>
+<h1 id="Writer를-추가해보자"><a href="#Writer를-추가해보자" class="headerlink" title="Writer를 추가해보자"></a>Writer를 추가해보자</h1><p>여태까지 장황한 소스를 작성했다. 한번 구조를 잡았으니 새로운 <code>attachment</code>를 추가하는 것은 어렵지 않다. 그러기 위해 설계를 하는 것이고, OOP를 하는 거니까.</p>
+<h2 id="AttachmentType-수정-WRITER-추가"><a href="#AttachmentType-수정-WRITER-추가" class="headerlink" title="AttachmentType 수정(WRITER 추가)"></a>AttachmentType <code>수정</code>(WRITER 추가)</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> AttachmentType &#123;</span><br><span class="line">    COMMENTS, WRITER;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="WriterDto-추가"><a href="#WriterDto-추가" class="headerlink" title="WriterDto 추가"></a>WriterDto <code>추가</code></h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">WriterDto</span> <span class="keyword">implements</span> <span class="title">Attachment</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String username;</span><br><span class="line">    <span class="keyword">private</span> String email;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="WriterClient-추가"><a href="#WriterClient-추가" class="headerlink" title="WriterClient 추가"></a>WriterClient <code>추가</code></h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@FeignClient</span>(name = <span class="string">"writer-api"</span>, url = <span class="string">"https://jsonplaceholder.typicode.com"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">WriterClient</span> </span>&#123;</span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/users/&#123;id&#125;"</span>)</span><br><span class="line">    <span class="function">WriterDto <span class="title">getWriter</span><span class="params">(@PathVariable(<span class="string">"id"</span>)</span> <span class="keyword">long</span> id)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="AttachWriterToBoardService-추가"><a href="#AttachWriterToBoardService-추가" class="headerlink" title="AttachWriterToBoardService 추가"></a>AttachWriterToBoardService <code>추가</code></h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AttachWriterToBoardService</span> <span class="keyword">implements</span> <span class="title">AttachService</span>&lt;<span class="title">BoardDto</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> AttachmentType supportAttachmentType = AttachmentType.WRITER;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Class&lt;BoardDto&gt; supportType = BoardDto<span class="class">.<span class="keyword">class</span></span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> WriterClient writerClient;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">AttachWriterToBoardService</span><span class="params">(@NonNull WriterClient writerClient)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.writerClient = writerClient;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> AttachmentType <span class="title">getSupportAttachmentType</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> supportAttachmentType;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Class&lt;BoardDto&gt; <span class="title">getSupportType</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> supportType;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Attachment <span class="title">getAttachment</span><span class="params">(Attachable attachment)</span> </span>&#123;</span><br><span class="line">        BoardDto boardDto = supportType.cast(attachment);</span><br><span class="line">        <span class="keyword">return</span> writerClient.getWriter(boardDto.getWriterId());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>기존의 소스를 수정하는 곳은 딱 한 군데다. enum에 <code>WRITER</code>를 추가했는데, 이것도 사실상 수정이 아니라 추가라고 볼 수 있지 않을까?<br>Spring이 의존성 주입은 모두 담당하기 때문에 필요한 모델을 추가로 작성할 때는 어떻게 부가 정보를 가져올지, 어떻게 모델을 정의할지만 POJO로 잘 작성하면 된다.</p>
+<h2 id="실행"><a href="#실행" class="headerlink" title="실행"></a>실행</h2><p><code>GET /boards/1?attachment=comments,writer</code></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"id"</span>: <span class="number">1</span>,</span><br><span class="line">  <span class="attr">"title"</span>: <span class="string">"title1"</span>,</span><br><span class="line">  <span class="attr">"content"</span>: <span class="string">"content1"</span>,</span><br><span class="line">  <span class="attr">"comments"</span>:[</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">"id"</span>: <span class="number">1</span>,</span><br><span class="line">      <span class="attr">"email"</span>: <span class="string">"Eliseo@gardner.biz"</span>,</span><br><span class="line">      <span class="attr">"body"</span>: <span class="string">"laudantium enim quasi est quidem magnam voluptate ipsam eos\ntempora quo necessitatibus\ndolor quam autem quasi\nreiciendis et nam sapiente accusantium"</span></span><br><span class="line">    &#125;</span><br><span class="line">  ],</span><br><span class="line">  <span class="attr">"writer"</span>:&#123;</span><br><span class="line">    <span class="attr">"id"</span>: <span class="number">1</span>,</span><br><span class="line">    <span class="attr">"username"</span>: <span class="string">"Bret"</span>,</span><br><span class="line">    <span class="attr">"email"</span>: <span class="string">"Sincere@april.biz"</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>소스 : <a href="https://github.com/supawer0728/simple-attachment/tree/attach-writer" target="_blank" rel="noopener">https://github.com/supawer0728/simple-attachment/tree/attach-writer</a></p>
+<h1 id="마무리"><a href="#마무리" class="headerlink" title="마무리"></a>마무리</h1><p>HTTP 요청에서 client가 원하는 모델을 추가하는 로직을 구성해보았다. 다음 글에서는 여기서 성능 튜닝을 위한 몇가지 로직을 추가하려고 한다.  현재 소스에는 엄청난 단점이 적어도 두 개나 존재하는데, 바로 <code>AttachmentAspect</code>에서 외부와 통신하여 <code>Attachment</code>를 가져오는 부분이다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Map&lt;AttachmentType, Attachment&gt; attachmentMap =</span><br><span class="line">        types.stream()</span><br><span class="line">             .flatMap(type -&gt; typeToServiceMap.get(type).stream())</span><br><span class="line">             .filter(service -&gt; service.getSupportType().isAssignableFrom(attachable.getClass()))</span><br><span class="line">             .collect(Collectors.toMap(AttachService::getSupportAttachmentType, service -&gt; service.getAttachment(attachable)));</span><br></pre></td></tr></table></figure>
+
+<p>이 부분이 왜 엄청난 단점인지 살펴보자.</p>
+<ol>
+<li>Network I/O를 순차 실행<ul>
+<li>O(n) 시간이 걸린다 : timeout * attachment 개수</li>
+<li>Asynch로 O(1)만에 끝내도록 튜닝 필요하다</li>
+</ul>
+</li>
+<li>Failover<ul>
+<li><code>attachment</code>는 단순 부가 정보임에도 불구하고 attachmentService에서 exception이 발생하면, 아무 정보도 내려줄 수 없음<br><code>attach</code>는 실패해도 <code>Board</code> 정보와 나머지 성공한 <code>attachment</code>는 보여줘야 한다</li>
+</ul>
+</li>
+</ol>
+<p>아래는 100번 writer가 없어서(404) 오류가 난 예제이다.</p>
+<p><code>GET /boards/100?attachment=comments,writer</code> </p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#123;  </span><br><span class="line">   <span class="attr">"id"</span>:<span class="number">1</span>,</span><br><span class="line">   <span class="attr">"title"</span>:<span class="string">"title1"</span>,</span><br><span class="line">   <span class="attr">"content"</span>:<span class="string">"content1"</span>,</span><br><span class="line">   <span class="attr">"comments"</span>:[  </span><br><span class="line">      &#123;  </span><br><span class="line">         <span class="attr">"id"</span>:<span class="number">1</span>,</span><br><span class="line">         <span class="attr">"email"</span>:<span class="string">"Eliseo@gardner.biz"</span>,</span><br><span class="line">         <span class="attr">"body"</span>:<span class="string">"laudantium enim quasi est quidem magnam voluptate ipsam eos\ntempora quo necessitatibus\ndolor quam autem quasi\nreiciendis et nam sapiente accusantium"</span></span><br><span class="line">      &#125;</span><br><span class="line">   ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>부가 정보</code>인 댓글을 가져오려고 하는데 실패해서 중요한 게시글도 못 가져오면 좋은 설계라고 할 수 있을까? 다음번에는 위의 두 가지 단점을 중점으로 개선해나가려고 한다.</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>작성자:</strong>
+    supawer0728
+  </li>
+  <li class="post-copyright-link">
+    <strong>원본링크:</strong>
+    <a href="https://supawer0728.github.io/2018/03/11/Spring-request-model1/" title="Spring에서 요청에 따른 부가 응답 추가하기 (1)">https://supawer0728.github.io/2018/03/11/Spring-request-model1/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>라이센스: </strong>
+    <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a>
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/spring/" rel="tag"># spring</a>
+          
+            <a href="/tags/aop/" rel="tag"># aop</a>
+          
+            <a href="/tags/interceptor/" rel="tag"># interceptor</a>
+          
+        </div>
+      
+
+      
+      
+        <div class="post-widgets">
+        
+
+        
+
+        
+          
+          <div id="needsharebutton-postbottom">
+            <span class="btn">
+              <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </span>
+          </div>
+        
+        </div>
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/11/Spring-Framework-5.0.4.RELEASE-Reference-Web-Servlet(Chapter1)/" rel="next" title="Spring Framework 5.0.4.RELEASE Reference Web Servlet (Chapter1)">
+                <i class="fa fa-chevron-left"></i> Spring Framework 5.0.4.RELEASE Reference Web Servlet (Chapter1)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/11/Spring-request-model2/" rel="prev" title="Spring에서 요청에 따른 부가 응답 추가하기(2) - reactor 적용">
+                Spring에서 요청에 따른 부가 응답 추가하기(2) - reactor 적용 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript" target="_blank" rel="noopener">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            목차
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            흝어보기
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="supawer0728" />
+            
+              <p class="site-author-name" itemprop="name">supawer0728</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">32</span>
+                  <span class="site-state-item-name">포스트</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">카테고리</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">50</span>
+                  <span class="site-state-item-name">태그</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/feed.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/supawer0728" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#서론"><span class="nav-number">1.</span> <span class="nav-text">서론</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#요구-사항-정리"><span class="nav-number">2.</span> <span class="nav-text">요구 사항 정리</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#해결법에-대한-생각"><span class="nav-number">3.</span> <span class="nav-text">해결법에 대한 생각</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#원칙"><span class="nav-number">3.1.</span> <span class="nav-text">원칙</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#예상되는-API-형식"><span class="nav-number">3.2.</span> <span class="nav-text">예상되는 API 형식</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#기본-API-작성"><span class="nav-number">4.</span> <span class="nav-text">기본 API 작성</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#web-모듈-생성"><span class="nav-number">4.1.</span> <span class="nav-text">web 모듈 생성</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#기본-API에-attachment-구현하기"><span class="nav-number">4.2.</span> <span class="nav-text">기본 API에 attachment 구현하기</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#attachment를-해석해서-저장하기"><span class="nav-number">5.</span> <span class="nav-text">attachment를 해석해서 저장하기</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#AttachmentType"><span class="nav-number">5.1.</span> <span class="nav-text">AttachmentType</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AttachmentTypeHolder"><span class="nav-number">5.2.</span> <span class="nav-text">AttachmentTypeHolder</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Attach"><span class="nav-number">5.3.</span> <span class="nav-text">@Attach</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AttachInterceptor"><span class="nav-number">5.4.</span> <span class="nav-text">AttachInterceptor</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Test"><span class="nav-number">5.5.</span> <span class="nav-text">Test</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Controller에서-BoardDto를-반환하게-만들기"><span class="nav-number">6.</span> <span class="nav-text">Controller에서 BoardDto를 반환하게 만들기</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#BoardDto-정의"><span class="nav-number">6.1.</span> <span class="nav-text">BoardDto 정의</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Converter-정의"><span class="nav-number">6.2.</span> <span class="nav-text">Converter 정의</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Controller의-반환값-수정"><span class="nav-number">6.3.</span> <span class="nav-text">Controller의 반환값 수정</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#AOP로-반환된-값에-모델-추가하기"><span class="nav-number">7.</span> <span class="nav-text">AOP로 반환된 값에 모델 추가하기</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#AOP로-Advice-작성하기"><span class="nav-number">7.1.</span> <span class="nav-text">AOP로 Advice 작성하기</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#어떻게-모델을-추가할까"><span class="nav-number">7.2.</span> <span class="nav-text">어떻게 모델을 추가할까?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AttachService-정의"><span class="nav-number">7.3.</span> <span class="nav-text">AttachService 정의</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Advice-나머지-부분-작성하기"><span class="nav-number">7.4.</span> <span class="nav-text">Advice 나머지 부분 작성하기</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#실행해보기"><span class="nav-number">7.5.</span> <span class="nav-text">실행해보기</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Writer를-추가해보자"><span class="nav-number">8.</span> <span class="nav-text">Writer를 추가해보자</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#AttachmentType-수정-WRITER-추가"><span class="nav-number">8.1.</span> <span class="nav-text">AttachmentType 수정(WRITER 추가)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#WriterDto-추가"><span class="nav-number">8.2.</span> <span class="nav-text">WriterDto 추가</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#WriterClient-추가"><span class="nav-number">8.3.</span> <span class="nav-text">WriterClient 추가</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AttachWriterToBoardService-추가"><span class="nav-number">8.4.</span> <span class="nav-text">AttachWriterToBoardService 추가</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#실행"><span class="nav-number">8.5.</span> <span class="nav-text">실행</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#마무리"><span class="nav-number">9.</span> <span class="nav-text">마무리</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">supawer0728</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+  <div class="footer-custom">To Improve Human Life</div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://supawer0728-github-com.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://supawer0728.github.io/2018/03/11/Spring-request-model1/';
+          this.page.identifier = '2018/03/11/Spring-request-model1/';
+          this.page.title = 'Spring에서 요청에 따른 부가 응답 추가하기 (1)';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://supawer0728-github-com.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('-1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/needsharebutton/needsharebutton.css">
+
+  
+  
+  <script src="/lib/needsharebutton/needsharebutton.js"></script>
+
+  <script>
+    
+      pbOptions = {};
+      
+          pbOptions.iconStyle = "box";
+      
+          pbOptions.boxForm = "horizontal";
+      
+          pbOptions.position = "bottomCenter";
+      
+          pbOptions.networks = "Twitter,Facebook,GooglePlus,Evernote";
+      
+      new needShareButton('#needsharebutton-postbottom', pbOptions);
+    
+    
+  </script>
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

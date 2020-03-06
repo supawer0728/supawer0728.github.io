@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Nanum Gothic:300,300italic,400,400italic,700,700italic|Nanum Pen Script:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-icon-180x180.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.4">
+
+
+
+  <link rel="manifest" href="/images/manifest.json">
+
+
+  <meta name="msapplication-config" content="/images/browserconfig.xml" />
+
+
+
+  <meta name="keywords" content="spring,spring-boot,error,error-handling," />
+
+
+
+
+
+  <link rel="alternate" href="/feed.xml" title="기록은 재산이다" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="서론오류 처리는 어플리케이션 개발에 있어 매우 큰 부분을 차지한다.오류를 예측하는 것과 예방하는 것, 그리고 오류를 빨리 발견하고 고칠 수 있는 것은 훌륭한 개발자의 필수조건이라고 생각한다.본 문서에서는 Spring에서 어떻게 예외처리 잘 할 수 있도록 도와주는지를 알아보고 공유하려한다.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="(Spring Boot)오류 처리에 대해">
+<meta property="og:url" content="https://supawer0728.github.io/2019/04/04/spring-error-handling/index.html">
+<meta property="og:site_name" content="기록은 재산이다">
+<meta property="og:description" content="서론오류 처리는 어플리케이션 개발에 있어 매우 큰 부분을 차지한다.오류를 예측하는 것과 예방하는 것, 그리고 오류를 빨리 발견하고 고칠 수 있는 것은 훌륭한 개발자의 필수조건이라고 생각한다.본 문서에서는 Spring에서 어떻게 예외처리 잘 할 수 있도록 도와주는지를 알아보고 공유하려한다.">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:image" content="https://supawer0728.github.io/images/spring-error-handling/notfound.png">
+<meta property="og:image" content="https://supawer0728.github.io/images/spring-error-handling/error-html.png">
+<meta property="og:image" content="https://supawer0728.github.io/images/spring-filter-interceptor/spring-request-lifecycle.jpg">
+<meta property="article:published_time" content="2019-04-04T07:07:41.000Z">
+<meta property="article:modified_time" content="2020-03-04T13:27:27.496Z">
+<meta property="article:author" content="supawer0728">
+<meta property="article:tag" content="spring">
+<meta property="article:tag" content="spring-boot">
+<meta property="article:tag" content="error">
+<meta property="article:tag" content="error-handling">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://supawer0728.github.io/images/spring-error-handling/notfound.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '작성자'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://supawer0728.github.io/2019/04/04/spring-error-handling/"/>
+
+
+
+
+
+  <title>(Spring Boot)오류 처리에 대해 | 기록은 재산이다</title>
+  
+
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-115481794-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'UA-115481794-1');
+</script>
+
+
+
+
+
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script data-ad-client="" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="ko">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">기록은 재산이다</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">To Improve Human Life</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            홈
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            태그
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            카테고리
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            아카이브
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            검색
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="Searching..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://supawer0728.github.io/2019/04/04/spring-error-handling/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="supawer0728">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="기록은 재산이다">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">(Spring Boot)오류 처리에 대해</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">작성일&#58;</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-04-04T16:07:41+09:00">
+                2019-04-04
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">수정일&#58;</span>
+              
+              <time title="수정일" itemprop="dateModified" datetime="2020-03-04T22:27:27+09:00">
+              
+                2020-03-04
+              
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/" itemprop="url" rel="index">
+                    <span itemprop="name">spring</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/boot/" itemprop="url" rel="index">
+                    <span itemprop="name">boot</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/04/04/spring-error-handling/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2019/04/04/spring-error-handling/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="서론"><a href="#서론" class="headerlink" title="서론"></a>서론</h1><p>오류 처리는 어플리케이션 개발에 있어 매우 큰 부분을 차지한다.<br>오류를 예측하는 것과 예방하는 것, 그리고 <code>오류를 빨리 발견하고 고칠 수 있는 것</code>은 훌륭한 개발자의 필수조건이라고 생각한다.<br>본 문서에서는 Spring에서 어떻게 예외처리 잘 할 수 있도록 도와주는지를 알아보고 공유하려한다.</p>
+<a id="more"></a>
+
+<h1 id="ErrorController"><a href="#ErrorController" class="headerlink" title="ErrorController"></a>ErrorController</h1><p>먼저 아래 Spring Boot에서 기본적으로 오류처리를 어떻게 해주는지 살펴보자.<br>아래는 404 Not Found에 대해서 html, json 응답 예제이다.</p>
+<p><strong>GET /123</strong></p>
+<p><img src="/images/spring-error-handling/notfound.png" alt="image.png"></p>
+<p><strong>GET /123 - json 응답</strong></p>
+<ul>
+<li>Content-Type: application/json</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"timestamp"</span>: <span class="string">"2019-02-15T21:48:44.447+0000"</span>,</span><br><span class="line">  <span class="attr">"status"</span>: <span class="number">404</span>,</span><br><span class="line">  <span class="attr">"error"</span>: <span class="string">"Not Found"</span>,</span><br><span class="line">  <span class="attr">"message"</span>: <span class="string">"No message available"</span>,</span><br><span class="line">  <span class="attr">"path"</span>: <span class="string">"/123"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>위에서 살펴본 것과 같이 별다른 설정 없이 spring boot에서 웹 어플리케이션을 실행하면 기본적으로 오류 처리가 되고 있음을 알 수 있다.<br>그렇다면 어떠한 설정으로 spring boot에서 오류를 처리하는지 먼저 spring boot의 오류 처리에 대한 properties를 살펴보자.</p>
+<p><strong>Spring Boot의 기본 오류 처리 properties</strong></p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># spring boot의 기본 properties</span></span><br><span class="line"><span class="attr">server.error:</span></span><br><span class="line">  <span class="attr">include-exception:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">include-stacktrace:</span> <span class="string">never</span> <span class="comment"># 오류 응답에 stacktrace 내용을 포함할 지 여부</span></span><br><span class="line">  <span class="attr">path:</span> <span class="string">'/error'</span> <span class="comment"># 오류 응답을 처리할 Handler의 경로</span></span><br><span class="line">  <span class="attr">whitelabel.enabled:</span> <span class="literal">true</span> <span class="comment"># 서버 오류 발생시 브라우저에 보여줄 기본 페이지 생성 여부</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>server.error.include-exception</code> : 응답에 exception의 내용을 포함할지 여부</li>
+<li><code>server.error.include-stacktrace</code> : 응답에 stacktrace 내용을 포함할지 여부</li>
+<li><code>server.error.path</code> : 오류 응답을 처리할 핸들러(ErrorController)의 path</li>
+<li><code>server.error.whitelabel.enabled</code> : 브라우저 요청에 대해 서버 오류시 기본으로 노출할 페이지를 사용할지 여부</li>
+</ul>
+<p><code>server.error.whitelabel.enabled</code>의 기본값이 <code>true</code>이기 때문에 위에서와 같이 오류 페이지가 노출되고 있었다<br>아래 스크린샷은 <code>include-exception</code>과 <code>include-stacktrace</code>를 활성화하면 아래와 같이 응답을 받을 수 있다.</p>
+<p><strong>HTML 응답</strong></p>
+<p><img src="/images/spring-error-handling/error-html.png" alt="errorhtml"></p>
+<p><strong>json 응답</strong></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"timestamp"</span>: <span class="string">"2019-04-04T09:31:27.931+0000"</span>,</span><br><span class="line">  <span class="attr">"status"</span>: <span class="number">500</span>,</span><br><span class="line">  <span class="attr">"error"</span>: <span class="string">"Internal Server Error"</span>,</span><br><span class="line">  <span class="attr">"exception"</span>: <span class="string">"java.lang.IllegalStateException"</span>,</span><br><span class="line">  <span class="attr">"message"</span>: <span class="string">"test"</span>,</span><br><span class="line">  <span class="attr">"trace"</span>: <span class="string">"java.lang.IllegalStateException: test ...(길어서 줄임)"</span>,</span><br><span class="line">  <span class="attr">"path"</span>: <span class="string">"/rest-test"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Spring-Boot의-기본-오류-처리-BasicErrorController"><a href="#Spring-Boot의-기본-오류-처리-BasicErrorController" class="headerlink" title="Spring Boot의 기본 오류 처리 - BasicErrorController"></a>Spring Boot의 기본 오류 처리 - BasicErrorController</h2><p>그렇다면 Spring Boot에서는 어떻게 이런 기본 처리를 하고 있는 것일까.<br>Spring Boot는 오류가 발생하면 <code>server.error.path</code>에 설정된 경로에서 요청을 처리하게 한다.<br>Spring Boot에서는 기본적으로 BasicErrorController가 등록이 되어 해당 요청을 처리하게 된다.<br>BasicErrorController는 대략적으로 아래와 같이 구현되어 있다.<br>전반적으로 소스코드를 모두 읽어보면 좋겠지만 주요한 곳에 번호를 붙여 아래에 설명을 달아두었다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Controller</span></span><br><span class="line"><span class="meta">@RequestMapping</span>(<span class="string">"$&#123;server.error.path:$&#123;error.path:/error&#125;&#125;"</span>) <span class="comment">// 1)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BasicErrorController</span> <span class="keyword">extends</span> <span class="title">AbstractErrorController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> String <span class="title">getErrorPath</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>.errorProperties.getPath();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@RequestMapping</span>(produces = MediaType.TEXT_HTML_VALUE) <span class="comment">// 2)</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> ModelAndView <span class="title">errorHtml</span><span class="params">(HttpServletRequest request, HttpServletResponse response)</span> </span>&#123;</span><br><span class="line">            </span><br><span class="line">    HttpStatus status = getStatus(request);</span><br><span class="line">    Map&lt;String, Object&gt; model =</span><br><span class="line">      getErrorAttributes(request, isIncludeStackTrace(request, MediaType.TEXT_HTML)));</span><br><span class="line">		</span><br><span class="line">    response.setStatus(status.value());</span><br><span class="line">    ModelAndView modelAndView = resolveErrorView(request, response, status, model);</span><br><span class="line">    <span class="keyword">return</span> (modelAndView != <span class="keyword">null</span>) ? modelAndView : <span class="keyword">new</span> ModelAndView(<span class="string">"error"</span>, model);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@RequestMapping</span> <span class="comment">// 3)</span></span><br><span class="line">  <span class="keyword">public</span> ResponseEntity&lt;Map&lt;String, Object&gt;&gt; error(HttpServletRequest request) &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 4)</span></span><br><span class="line">    Map&lt;String, Object&gt; body =</span><br><span class="line">      getErrorAttributes(request, isIncludeStackTrace(request, MediaType.ALL));</span><br><span class="line">    HttpStatus status = getStatus(request);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> ResponseEntity&lt;&gt;(body, status);</span><br><span class="line">  &#125;    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>Spring 환경 내에 <code>server.error.path</code> 혹은 <code>error.path</code>로 등록된 property의 값을 넣거나, 없는 경우 <code>/error</code>를 사용한다.</li>
+<li>HTML로 응답을 주는 경우 <code>errorHtml</code>에서 응답을 처리한다.</li>
+<li>HTML 외의 응답이 필요한 경우 <code>error</code>에서 처리한다.</li>
+<li>실질적으로 view에 보낼 model을 생성한다</li>
+</ol>
+<blockquote>
+<p><strong>BasicErrorController 정리</strong><br><code>BasicErrorController</code>에서는 HTML 요청, 그 외의 요청을 나누어서 처리할 핸들러를 등록하고 <code>getErrorAttributes</code>를 통해 응답을 위한 모델을 생성한다.</p>
+</blockquote>
+<h2 id="Spring-Boot의-기본-오류-처리-AbstractErrorController와-ErrorAttributes"><a href="#Spring-Boot의-기본-오류-처리-AbstractErrorController와-ErrorAttributes" class="headerlink" title="Spring Boot의 기본 오류 처리 - AbstractErrorController와 ErrorAttributes"></a>Spring Boot의 기본 오류 처리 - AbstractErrorController와 ErrorAttributes</h2><p><code>getErrorAttributes</code>를 조금 더 깊게 살펴보자.<br><code>getErrorAttributes</code>는 <code>BasicErrorController</code>의 상위 클래스인 <code>AbstractErrorController</code>에 구현되어 있다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractErrorController</span> <span class="keyword">implements</span> <span class="title">ErrorController</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> ErrorAttributes errorAttributes;</span><br><span class="line">    </span><br><span class="line">  <span class="function"><span class="keyword">protected</span> Map&lt;String, Object&gt; <span class="title">getErrorAttributes</span><span class="params">(HttpServletRequest request,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">boolean</span> includeStackTrace)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    WebRequest webRequest = <span class="keyword">new</span> ServletWebRequest(request);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>.errorAttributes.getErrorAttributes(webRequest, includeStackTrace);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>구현된 내용을 보면 <code>ErrorAttributes</code> 인터페이스의 <code>getErrorAttributes</code>를 호출하는 것을 알 수 있다.(위임자 패턴)<br>별도로 <code>ErrorAttributes</code>를 등록하지 않았다면 Spring Boot는 <code>DefaultErrorAttributes</code>를 사용한다.<br>아래는 <code>DefaultErrorAttributes</code>의 일부 내용이다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ErrorAttributes</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 요청을 기반으로 모델을 생성</span></span><br><span class="line">	<span class="function">Map&lt;String, Object&gt; <span class="title">getErrorAttributes</span><span class="params">(WebRequest webRequest, <span class="keyword">boolean</span> includeStackTrace)</span></span>;</span><br><span class="line">  <span class="comment">// 요청에서 Throwable을 획득</span></span><br><span class="line">	<span class="function">Throwable <span class="title">getError</span><span class="params">(WebRequest webRequest)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> DefaultErrorAttributes &#123;</span><br><span class="line">  <span class="comment">// 생성자 및 메서드</span></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> Map&lt;String, Object&gt; <span class="title">getErrorAttributes</span><span class="params">(WebRequest request, <span class="keyword">boolean</span> includeStackTrace)</span> </span>&#123;</span><br><span class="line">    Map&lt;String, Object&gt; errorAttributes = <span class="keyword">new</span> LinkedHashMap&lt;&gt;();</span><br><span class="line">    errorAttributes.put(<span class="string">"timestamp"</span>, <span class="keyword">new</span> Date()); <span class="comment">// timestamp 생성</span></span><br><span class="line">    addStatus(errorAttributes, request); <span class="comment">// status 생성</span></span><br><span class="line">    addErrorDetails(errorAttributes, request, includeStackTrace); <span class="comment">// 오류 상세 내용</span></span><br><span class="line">    addPath(errorAttributes, request); <span class="comment">// path 생성</span></span><br><span class="line">    <span class="keyword">return</span> errorAttributes;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>ErrorAttributes에서 가져온 모델로 응답을 생성</strong></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"timestamp"</span>: <span class="string">"2019-02-15T21:48:44.447+0000"</span>,</span><br><span class="line">  <span class="attr">"status"</span>: <span class="number">404</span>,</span><br><span class="line">  <span class="attr">"error"</span>: <span class="string">"Not Found"</span>,</span><br><span class="line">  <span class="attr">"message"</span>: <span class="string">"No message available"</span>,</span><br><span class="line">  <span class="attr">"path"</span>: <span class="string">"/123"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="확장-포인트-ErrorAttributes"><a href="#확장-포인트-ErrorAttributes" class="headerlink" title="확장 포인트 - ErrorAttributes"></a>확장 포인트 - ErrorAttributes</h2><p>위에서 살펴봤듯이 <code>ErrorAttributes</code>에서는 오류가 발생했을 때 응답을 내려줄 모델을 생성하고 있다.<br>여기서 우리는 <code>ErrorAttributes</code> 인터페이스를 마음껏 구현할 수 있다. Spring에서 제공하는 확장 포인트인 것이다.<br>개발자가 <code>ErrorAttributes</code>를 구현하여 bean으로 등록하면 <code>BasicErrorController</code>는 해당 <code>ErrorAttributes</code>를 사용한다.<br>아래는 임의로 모델에 <code>&quot;greeting&quot;: &quot;Hello&quot;</code>를 추가한 예제이다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CustomErrorAttributes</span> <span class="keyword">extends</span> <span class="title">DefaultErrorAttributes</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Map&lt;String, Object&gt; <span class="title">getErrorAttributes</span><span class="params">(WebRequest webRequest, <span class="keyword">boolean</span> includeStackTrace)</span> </span>&#123;</span><br><span class="line">        Map&lt;String, Object&gt; result = <span class="keyword">super</span>.getErrorAttributes(webRequest, includeStackTrace);</span><br><span class="line">        result.put(<span class="string">"greeting"</span>, <span class="string">"Hello"</span>);</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>응답 예제</strong></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"timestamp"</span>: <span class="string">"2019-02-15T22:24:41.275+0000"</span>,</span><br><span class="line">  <span class="attr">"status"</span>: <span class="number">404</span>,</span><br><span class="line">  <span class="attr">"error"</span>: <span class="string">"Not Found"</span>,</span><br><span class="line">  <span class="attr">"message"</span>: <span class="string">"No message available"</span>,</span><br><span class="line">  <span class="attr">"path"</span>: <span class="string">"/123"</span>,</span><br><span class="line">  <span class="attr">"greeting"</span>: <span class="string">"Hello"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="HTML-View-연계-404-html-4xx-html"><a href="#HTML-View-연계-404-html-4xx-html" class="headerlink" title="HTML View 연계 - 404.html, 4xx.html"></a>HTML View 연계 - 404.html, 4xx.html</h2><p>본 문서에서는 View Template Engine으로 <a href="https://mustache.github.io/" target="_blank" rel="noopener">Mustache</a>를 사용했다.<br>이 경우 Spring은 view를 <code>src/main/resources/templates</code> 하위 경로에서 찾는다.(View Template Engine 구현에 따라 다를 수 있다)<br>이 때 기본 경로 하위에 <code>/error/{응답코드}</code>로 view의 이름을 작성하는 경우<br><code>ErrorController</code>에서 응답 코드에 맞게 해당 view로 응답을 내려줄 수 있다.</p>
+<blockquote>
+<p>본 문서에서는 HTML view의 접미사(suffix)를 <code>.html</code>로 사용했다</p>
+</blockquote>
+<p><strong>src/main/resources<code>/templates/error/404.html</code> 작성</strong></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"en"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"UTF-8"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">title</span>&gt;</span>404오류<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">timestamp: &#123;&#123;timestamp&#125;&#125;</span><br><span class="line">error: &#123;&#123;error&#125;&#125;</span><br><span class="line">message: &#123;&#123;message&#125;&#125;</span><br><span class="line">path: &#123;&#123;path&#125;&#125;</span><br><span class="line">greeting: &#123;&#123;greeting&#125;&#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>위와 같이 응답코드로 view 이름을 작성한 경우 404 응답은 위 view로 응답이 처리된다.<br>더 넓게 <code>4xx.html</code>과 같은 명명으로 400번 대의 응답코드를 모두 처리할 수도 있다.</p>
+<h2 id="View를-가져오는-방법-TemplateAvailabilityProvider"><a href="#View를-가져오는-방법-TemplateAvailabilityProvider" class="headerlink" title="View를 가져오는 방법 - TemplateAvailabilityProvider"></a>View를 가져오는 방법 - TemplateAvailabilityProvider</h2><p>Spring은 어떻게 위와 같은 방식으로 view를 가져왔을까.<br>이는 <code>TemplateAvailablityProvider</code>로 구현되어 있다.<br><code>TemplateAvailabilityProvider</code> 인터페이스의 <code>isTemplateAvailable()</code>을 호출하여 view를 resolve할 수 있는지 여부를 파악한다.<br>현재 프로젝트에 쓰인 Mustache에 대해서는 <code>MustacheTemplateAvailabilityProvider</code> 구현체가 동작한다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MustacheTemplateAvailabilityProvider</span> <span class="keyword">implements</span> <span class="title">TemplateAvailabilityProvider</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isTemplateAvailable</span><span class="params">(String view Environment environment,</span></span></span><br><span class="line"><span class="function"><span class="params">      ClassLoader classLoader, ResourceLoader resourceLoader)</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    </span><br><span class="line">    String prefix = environment.getProperty(<span class="string">"spring.mustache.prefix"</span>, DEFAULT_PREFIX); <span class="comment">// 1)</span></span><br><span class="line">    String suffix = environment.getProperty(<span class="string">"spring.mustache.suffix"</span>, DEFAULT_SUFFIX); <span class="comment">// 2)</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> resourceLoader.getResource(prefix + view + suffix).exists(); <span class="comment">// 3)</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><code>spring.mustache.prefix</code>의 기본값 “classpath:/templates/“</li>
+<li><code>spring.mustache.suffix</code>는 <code>.html</code>로 설정</li>
+<li>view는 <code>error/{응답코드}</code>가 들어간다</li>
+</ol>
+<blockquote>
+<p>view를 resolve하기 위해 <code>classpath:/templates/error/404.html</code>이 호출된다</p>
+</blockquote>
+<h2 id="확장-포인트-BasicErrorController"><a href="#확장-포인트-BasicErrorController" class="headerlink" title="확장 포인트 - BasicErrorController"></a>확장 포인트 - BasicErrorController</h2><p><code>ErrorAttributes</code>와 마찬가지로 <code>ErrorController</code>의 구현체를 개발자가 bean으로 등록한다면<br>Spring Boot는 해당 빈을 먼저 찾아 <code>BasicErrorController</code> 대신 오류 처리를 위해 사용하게 된다.<br>위임자 패턴을 사용해서 기본적인 처리는 <code>BasicErrorController</code>에게 위임하고, 나머지 필요한 처리를 추가할 수 있다.<br>아래 소스에서는 로그를 추가해보았다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Slf</span>4j</span><br><span class="line"><span class="meta">@Controller</span></span><br><span class="line"><span class="meta">@RequestMapping</span>(<span class="string">"$&#123;server.error.path:$&#123;error.path:/error&#125;&#125;"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CustomErrorController</span> <span class="keyword">extends</span> <span class="title">BasicErrorController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">CustomErrorController</span><span class="params">(ErrorAttributes errorAttributes,</span></span></span><br><span class="line"><span class="function"><span class="params">                                 ServerProperties serverProperties,</span></span></span><br><span class="line"><span class="function"><span class="params">                                 List&lt;ErrorViewResolver&gt; errorViewResolvers)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(errorAttributes, serverProperties.getError(), errorViewResolvers);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@RequestMapping</span>(produces = MediaType.TEXT_HTML_VALUE)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> ModelAndView <span class="title">errorHtml</span><span class="params">(HttpServletRequest request,</span></span></span><br><span class="line"><span class="function"><span class="params">                                  HttpServletResponse response)</span> </span>&#123;</span><br><span class="line">        log(request); <span class="comment">// 로그 추가</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">super</span>.errorHtml(request, response);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> ResponseEntity&lt;Map&lt;String, Object&gt;&gt; error(HttpServletRequest request) &#123;</span><br><span class="line">        log(request);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">super</span>.error(request);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">log</span><span class="params">(HttpServletRequest request)</span> </span>&#123;</span><br><span class="line">        log.error(<span class="string">"error"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="spring-webflux에서는"><a href="#spring-webflux에서는" class="headerlink" title="spring-webflux에서는?"></a>spring-webflux에서는?</h2><p>여태까지는 <code>spring-mvc</code> 모듈을 통해 지원되는 내용이었다.<br>SpringFramework 5에 추가된 <code>spring-webflux</code>에서도 <code>spring-mvc</code>와의 로직에 대한 대칭성을 유지하는 클래스들이 있다.</p>
+<table>
+<thead>
+<tr>
+<th>설명</th>
+<th>spring-mvc</th>
+<th>spring-webflux</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>인터페이스</td>
+<td>ErrorController</td>
+<td>ErrorWebExceptionHandler extends WebExceptionHandler</td>
+</tr>
+<tr>
+<td>편의를 위해 추상화된 클래스</td>
+<td>AbstractErrorController</td>
+<td>AbstractErrorWebExceptionHandler</td>
+</tr>
+<tr>
+<td>기본 Bean으로 제공되는 클래스</td>
+<td>BasicErrorController</td>
+<td>DefaultErrorWebExceptionHandler</td>
+</tr>
+</tbody></table>
+<p><code>spring-mvc</code>와 마찬가지로 <code>ErrorAttributes</code>를 확장해서 사용할 수 있다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DefaultErrorWebExceptionHandler</span> <span class="keyword">extends</span> <span class="title">AbstractErrorWebExceptionHandler</span> </span>&#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="function"><span class="keyword">protected</span> RouterFunction&lt;ServerResponse&gt; <span class="title">getRoutingFunction</span><span class="params">(ErrorAttributes errorAttributes)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> RouterFunctions.route(<span class="keyword">this</span>.acceptsTextHtml(), <span class="keyword">this</span>::renderErrorView)</span><br><span class="line">                          .andRoute(RequestPredicates.all(), <span class="keyword">this</span>::renderErrorResponse);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="ErrorController에-대한-추가-설명"><a href="#ErrorController에-대한-추가-설명" class="headerlink" title="ErrorController에 대한 추가 설명"></a>ErrorController에 대한 추가 설명</h2><p><code>ErrorController</code>가 호출되기까지의 흐름을 설명하자면 다음과 같다.</p>
+<ol>
+<li>서블릿 컨테이너(ex: 톰캣)에서 등록된 서블릿에서 요청을 처리하다가</li>
+<li>오류가 발생했는데</li>
+<li>해당 서블릿에서 처리하지 못하고</li>
+<li>서블릿 컨테이너까지 오류가 전파되었을 때, 서블릿 컨테이너가 오류를 처리하기 위해 특정 경로(<code>server.error.path</code>)로 해당 요청처리를 위임할 때 사용된다.</li>
+</ol>
+<img  src=http://www.plantuml.com/plantuml/svg/YmvEBIhBIIrHSCxFAqdCp4ijYbNGrRLJY8QAnofOAHZgARoPDUNDfhKARpRDUBriZKQ2Vaf-WYONGerkQG6I7cIph1ICWBfdB7czT8R2wmrptZJFrKY0AdEjI4ujACdCpqCo2fypZE46GPm1TPI6kdvgKL5-aRec0000>
+
+<h1 id="spring-mvc-Exception-기반으로-오류-처리"><a href="#spring-mvc-Exception-기반으로-오류-처리" class="headerlink" title="spring-mvc Exception 기반으로 오류 처리"></a>spring-mvc Exception 기반으로 오류 처리</h1><p>앞의 추가 설명에서 봤듯이 <code>ErrorController</code>가 동작하는 것은 요청을 처리해야할 Servlet에서 오류가 발생했으나 해당 Servlet에서 오류를 처리하지 않아서 Servlet Container까지 오류가 전파되었을 때(<code>ServletException</code>으로 래핑된다), Servlet Container가 <code>ErrorController</code>를 호출한다. 이 때, 필자가 테스트한 Servlet Container(Tomcat 9.0.17)에서는 아래와 같은 로그를 남긴다</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2019-04-04 18:31:27.915 ERROR 21947 --- [nio-8080-exec-1] o.a.c.c.C.[.[.[&#x2F;].[dispatcherServlet]    : Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed; nested exception is java.lang.IllegalStateException: test] with root cause</span><br></pre></td></tr></table></figure>
+
+<p>해당 로그는 Servlet Container에서 남기고 있는 것으로, 개발자가 사용자화 하기 어려운 부분이다.<br>logging framework(log4j, logback) 등으로 해당 로그를 남기지 않거나 할 수는 있지만,<br>로그 내요을 변경하거나 하기는 어렵다는 것이다.</p>
+<p>Spring에서는 Handler(Controller의 <code>@RequestMapping</code>이 걸린 메서드)에서 처리하다 Exception이 발생한 경우, 이를 Servlet Container까지 전파하지 않고, 직접 Exception 별로 처리를 할 수 있도록 해준다. Spring에서 Exception 기반으로 오류를 처리하는 방법을 알아보자.</p>
+<h2 id="ExceptionHandler"><a href="#ExceptionHandler" class="headerlink" title="@ExceptionHandler"></a>@ExceptionHandler</h2><p>Spring에서는 발생한 Exception을 기반으로 오류를 처리할 수 있도록 <code>@ExceptionHandler</code>를 제공한다.</p>
+<p><strong>예외를 던지도록 소스 추가</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping</span>(<span class="string">"/boards"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BoardController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@GetMapping</span>(<span class="string">"/&#123;id&#125;"</span>)</span><br><span class="line">  <span class="function"><span class="keyword">public</span> Board <span class="title">get</span><span class="params">(@PathVariable Long id)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (id &lt; <span class="number">1L</span>) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> BoardNotFoundException(<span class="string">"invalid id: "</span> + id);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> Board(<span class="string">"title"</span>, <span class="string">"content"</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@ResponseStatus</span>(HttpStatus.NOT_FOUND)</span><br><span class="line">  <span class="meta">@ExceptionHandler</span>(BoardNotFoundException<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">  <span class="title">public</span> <span class="title">Map</span>&lt;<span class="title">String</span>, <span class="title">String</span>&gt; <span class="title">handle</span>(<span class="title">BoardNotFoundException</span> <span class="title">e</span>) </span>&#123;</span><br><span class="line">      log.error(e.getMessage(), e);</span><br><span class="line">      Map&lt;String, String&gt; errorAttributes = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">      errorAttributes.put(<span class="string">"code"</span>, <span class="string">"BOARD_NOT_FOUND"</span>);</span><br><span class="line">      errorAttributes.put(<span class="string">"message"</span>, e.getMessage());</span><br><span class="line">      <span class="keyword">return</span> errorAttribute;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>위와 같이 특정 Controller에서 예외가 발생한 경우, Spring은 <code>@ExceptionHandler</code>를 검색하여<br>해당 애너테이션에 선언된 예외 및 하위 예외에 대해서 특정 메서드가 처리할 수 있도록 한다.<br>또한 보통의 핸들러와 마찬가지로 <code>@ResponseStatus</code>를 통해 응답 코드를 정의하거나,<br><code>ModelAndView</code>, <code>String</code>을 반환하여 view를 resolve할 수 있고, <code>ResponseEntity&lt;T&gt;</code>를 반환할 수도 있다.</p>
+<p>이제 오류가 발생하도록 요청을 보내보자.</p>
+<p><strong>실행</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">HTTP&#x2F;1.1 404</span><br><span class="line">Content-Type: application&#x2F;json;charset&#x3D;UTF-8</span><br><span class="line">Transfer-Encoding: chunked</span><br><span class="line">Date: Sun, 17 Feb 2019 04:31:33 GMT</span><br><span class="line"></span><br><span class="line">&#123;&quot;code&quot;:&quot;BOARD_NOT_FOUND&quot;,&quot;message&quot;:&quot;invalid id: 0&quot;&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="ControllerAdvice"><a href="#ControllerAdvice" class="headerlink" title="ControllerAdvice"></a>ControllerAdvice</h2><p>Spring에서는 Bean으로 등록되는 <code>@Controller</code>들을 선택적으로, 혹은 전역으로 몇가지 공통 설정을 적용할 수 있도록 <code>@ControllerAdvice</code>를 사용할 수 있다<br>이 <code>@ControllerAdvice</code>에서 사용할 수 있는 것 중 하나가 <code>@ExceptionHandler</code>다</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Slf</span>4j</span><br><span class="line"><span class="meta">@ControllerAdvice</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">GlobalControllerAdvice</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@ResponseStatus</span>(HttpStatus.NOT_FOUND)</span><br><span class="line">  <span class="meta">@ExceptionHandler</span>(BoardNotFoundException<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">  <span class="title">public</span> <span class="title">Object</span> <span class="title">handle</span>(<span class="title">BoardNotFoundException</span> <span class="title">e</span>, <span class="title">HttpServletRequest</span> <span class="title">request</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (JSON_응답해야하는지(request)) &#123;</span><br><span class="line">      <span class="keyword">return</span> makeJson(e);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="string">"/error/404"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="ControllerAdvice-나누기"><a href="#ControllerAdvice-나누기" class="headerlink" title="ControllerAdvice 나누기"></a>ControllerAdvice 나누기</h2><p>앞의 예제에서는 하나의 method에서 JSON응답과 HTML응답을 해야하는 경우를 나누고 있었다.<br>HTML view를 사용할 경우와 json view를 사용할 경우를 나누어 <code>ControllerAdivce</code>를 등록하고,<br><code>@Order</code>를 사용하여 우선 순위를 부여하면 분기처리 없이 나누어 오류 처리를 할 수 있다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Slf</span>4j</span><br><span class="line"><span class="meta">@Order</span>(ORDER)</span><br><span class="line"><span class="meta">@RestControllerAdvice</span>(annotations = RestController<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">GlobalRestControllerAdvice</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> ORDER = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ResponseStatus</span>(HttpStatus.NOT_FOUND)</span><br><span class="line">    <span class="meta">@ExceptionHandler</span>(BoardNotFoundException<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">    <span class="title">public</span> <span class="title">Map</span>&lt;<span class="title">String</span>, <span class="title">String</span>&gt; <span class="title">handle</span>(<span class="title">BoardNotFoundException</span> <span class="title">e</span>) </span>&#123;</span><br><span class="line">        log.error(e.getMessage(), e);</span><br><span class="line">        Map&lt;String, String&gt; errorAttributes = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">        errorAttributes.put(<span class="string">"code"</span>, <span class="string">"BOARD_NOT_FOUND"</span>);</span><br><span class="line">        errorAttributes.put(<span class="string">"message"</span>, e.getMessage());</span><br><span class="line">        <span class="keyword">return</span> errorAttributes;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Slf</span>4j</span><br><span class="line"><span class="meta">@Order</span>(GlobalRestControllerAdvice.ORDER + <span class="number">1</span>)</span><br><span class="line"><span class="meta">@ControllerAdvice</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">GlobalHtmlControllerAdvice</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ResponseStatus</span>(HttpStatus.NOT_FOUND)</span><br><span class="line">    <span class="meta">@ExceptionHandler</span>(BoardNotFoundException<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">    <span class="title">public</span> <span class="title">String</span> <span class="title">handle</span>(<span class="title">BoardNotFoundException</span> <span class="title">e</span>, <span class="title">Model</span> <span class="title">model</span>, <span class="title">HttpServletRequest</span> <span class="title">request</span>) </span>&#123;</span><br><span class="line">        log.error(e.getMessage(), e);</span><br><span class="line">        model.addAttribute(<span class="string">"timestamp"</span>, LocalDateTime.now());</span><br><span class="line">        model.addAttribute(<span class="string">"error"</span>, <span class="string">"BOARD_NOT_FOUND"</span>);</span><br><span class="line">        model.addAttribute(<span class="string">"path"</span>, request.getRequestURI());</span><br><span class="line">        model.addAttribute(<span class="string">"message"</span>, e.getMessage());</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"/error/404"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Spring-MVC에서-제공해주는-ResponseEntityExceptionHandler"><a href="#Spring-MVC에서-제공해주는-ResponseEntityExceptionHandler" class="headerlink" title="Spring MVC에서 제공해주는 ResponseEntityExceptionHandler"></a>Spring MVC에서 제공해주는 ResponseEntityExceptionHandler</h2><p><code>ControllerAdvice</code>를 사용하여 Exception 처리를 한 곳으로 모으는 경우, <a href="https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/servlet/mvc/method/annotation/ResponseEntityExceptionHandler.html" target="_blank" rel="noopener">ResponseEntityExceptionHandler</a>를 상속받도록 하여 Spring MVC에서 기본으로 제공되는 Exception들의 처리를 간단하게 등록할 수 있다. 각 Exception 처리를 위한 메서드들은 모두 <code>protected</code>로 선언되어 있으며, 하위 클래스에서 필요에 따라 Override할 수 있다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">ResponseEntityExceptionHandler</span> </span>&#123;</span><br><span class="line">  <span class="meta">@ExceptionHandler</span>(&#123;</span><br><span class="line">    HttpRequestMethodNotSupportedException<span class="class">.<span class="keyword">class</span>,</span></span><br><span class="line"><span class="class">    <span class="title">HttpMediaTypeNotSupportedException</span>.<span class="title">class</span>,</span></span><br><span class="line"><span class="class">    <span class="title">HttpMediaTypeNotAcceptableException</span>.<span class="title">class</span>,</span></span><br><span class="line"><span class="class">    <span class="title">MissingPathVariableException</span>.<span class="title">class</span>,</span></span><br><span class="line"><span class="class">    <span class="title">MissingServletRequestParameterException</span>.<span class="title">class</span>,</span></span><br><span class="line"><span class="class">    <span class="title">ServletRequestBindingException</span>.<span class="title">class</span>,</span></span><br><span class="line"><span class="class">    <span class="title">ConversionNotSupportedException</span>.<span class="title">class</span>,</span></span><br><span class="line"><span class="class">    <span class="title">TypeMismatchException</span>.<span class="title">class</span>,</span></span><br><span class="line"><span class="class">    <span class="title">HttpMessageNotReadableException</span>.<span class="title">class</span>,</span></span><br><span class="line"><span class="class">    <span class="title">HttpMessageNotWritableException</span>.<span class="title">class</span>,</span></span><br><span class="line"><span class="class">    <span class="title">MethodArgumentNotValidException</span>.<span class="title">class</span>,</span></span><br><span class="line"><span class="class">    <span class="title">MissingServletRequestPartException</span>.<span class="title">class</span>,</span></span><br><span class="line"><span class="class">    <span class="title">BindException</span>.<span class="title">class</span>,</span></span><br><span class="line"><span class="class">    <span class="title">NoHandlerFoundException</span>.<span class="title">class</span>,</span></span><br><span class="line"><span class="class">    <span class="title">AsyncRequestTimeoutException</span>.<span class="title">class</span></span></span><br><span class="line"><span class="class">  &#125;)</span></span><br><span class="line"><span class="class">  @<span class="title">Nullable</span></span></span><br><span class="line"><span class="class">  <span class="title">public</span> <span class="title">final</span> <span class="title">ResponseEntity</span>&lt;<span class="title">Object</span>&gt; <span class="title">handleException</span>(<span class="title">Exception</span> <span class="title">ex</span>, <span class="title">WebRequest</span> <span class="title">request</span>) <span class="title">throws</span> <span class="title">Exception</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 각 예외에 대한 분기처리 로직(상속 구현 가능하도록 protected로 메서드가 선언되어 있음)</span></span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 각 예외 처리를 위한 protected 메서드들이 있음</span></span><br><span class="line">  <span class="function"><span class="keyword">protected</span> ResponseEntity&lt;Object&gt; <span class="title">handleHttpRequestMethodNotSupported</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">      HttpRequestMethodNotSupportedException ex, HttpHeaders headers, HttpStatus status, WebRequest request)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 예외 처리</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>각 Spring MVC Exception 설명</strong></p>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>설명</th>
+<th>응답코드</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>HttpRequestMethodNotSupportedException</td>
+<td>요청 경로는 있으나 지원하지 않는 Method인 경우 발생</td>
+<td>405 - Method Not Allowed</td>
+</tr>
+<tr>
+<td>HttpMediaTypeNotSupportedException</td>
+<td>요청의 Content Type을 핸들러가 지원하지 않는 경우 발생</td>
+<td>415 - Unsupported Media Type</td>
+</tr>
+<tr>
+<td>HttpMediaTypeNotAcceptableException</td>
+<td>핸들러가 Client가 요청한 Type으로 응답을 내려줄 수 없는 경우 발생</td>
+<td>406 - Not Acceptable</td>
+</tr>
+<tr>
+<td>MissingPathVariableException</td>
+<td>핸들러가 URL에서 기대한 Path Variable을 찾지 못한 경우 발생</td>
+<td>500 - Internal Server Error</td>
+</tr>
+<tr>
+<td>MissingServletRequestParameterException</td>
+<td>핸들러가 기대한 요청 Parameter를 찾지 못한 경우 발생</td>
+<td>400 - Bad Request</td>
+</tr>
+<tr>
+<td>ServletRequestBindingException</td>
+<td>복구 불가능한 치명적인 간주할 binding exception<br>Filter 등의 Servlet Resource에서 던지기 쉽도록 ServletException을 상속하고 있음</td>
+<td>400 - Bad Request</td>
+</tr>
+<tr>
+<td>ConversionNotSupportedException</td>
+<td>bean property로 요청 내용을 변경하기 위한<br><code>editor</code> 혹은 <code>converter</code>를 찾지 못한 경우 발생</td>
+<td>500 - Internal Server Error</td>
+</tr>
+<tr>
+<td>TypeMismatchException</td>
+<td>bean property로 값을 변경할 때, 핸들러가 예상한 class로 변경할 수 없는 경우 발생</td>
+<td>400 - Bad Request</td>
+</tr>
+<tr>
+<td>HttpMessageNotReadableException</td>
+<td><code>HttpMessageConverter</code>에서 발생하며 <code>read</code> 메서드가 실패한 경우 발생</td>
+<td>400 - Bad Request</td>
+</tr>
+<tr>
+<td>HttpMessageNotWritableException</td>
+<td><code>HttpMessageConverter</code>에서 발생하며 <code>write</code> 메서드가 실패한 경우 발생</td>
+<td>500 - Internal Server Error</td>
+</tr>
+<tr>
+<td>MethodArgumentNotValidException</td>
+<td><code>@Valid</code>가 붙은 파라미터에 대해 검증 실패시 발생</td>
+<td>400 - Bad Request</td>
+</tr>
+<tr>
+<td>MissingServletRequestPartException</td>
+<td><code>multipart/form-data</code> 요청의 일부가 손실(can’t be found)되었을 때 발생</td>
+<td>400 - Bad Request</td>
+</tr>
+<tr>
+<td>NoHandlerFoundException</td>
+<td>Dispatcher Servlet에서 핸들러를 찾지 못한 경우 기본적으로 404 응답을 내리지만<br>Dispatcher Servlet의 <code>throwExceptionIfNoHandlerFound</code> 값이 true인 경우 해당 예외를 발생</td>
+<td>404 - Not Found</td>
+</tr>
+<tr>
+<td>AsyncRequestTimeoutException</td>
+<td>비동기 요청의 응답시간이 초과될 때 발생</td>
+<td>503 - Service Unavailable</td>
+</tr>
+</tbody></table>
+<h2 id="HandlerExceptionResolver"><a href="#HandlerExceptionResolver" class="headerlink" title="HandlerExceptionResolver"></a>HandlerExceptionResolver</h2><p>애너테이션 기반으로 동작하는 <code>@ExceptionHandler</code> 외에도 <code>HandlerExceptionResolver</code> 인터페이스를 사용할 수 있다.<br>이 인터페이스는 요청, 응답, 핸들러, 예외를 받아 <code>ModelAndView</code>를 반환값으로 하는 <code>resolveException</code> 메서드를 가지고 있다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">HandlerExceptionResolver</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="function">ModelAndView <span class="title">resolveException</span><span class="params">(HttpServletRequest req, HttpServletResponse res, Object handler, Exception ex)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="HandlerExceptionResolver-구현체"><a href="#HandlerExceptionResolver-구현체" class="headerlink" title="HandlerExceptionResolver 구현체"></a>HandlerExceptionResolver 구현체</h3><ul>
+<li>ExceptionHandlerExceptionResolver : <code>@ExceptionHandler</code>가 붙은 메서드를 통해 예외 처리를 할 수 있도록 설정하는 클래스</li>
+<li>SimpleMappingExceptionResolver : 예외 이름과 view 이름을 매핑해주며, browser 요청을 view로 렌더링할 때 유용하게 쓸 수 있다</li>
+<li>ResponseStatusExceptionResolver : Exception 클래스에 <code>@ResponseStatus</code>를 달아 해당 응답 코드로 응답을 보낼 수 있도록 설정하는 클래스</li>
+<li>DefaultHandlerExceptionResolver : Spring MVC Exception에 대해 기본적인 처리를 해주는 클래스</li>
+</ul>
+<h4 id="Exception에-응답코드-달기"><a href="#Exception에-응답코드-달기" class="headerlink" title="Exception에 응답코드 달기"></a>Exception에 응답코드 달기</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@ResponseStatus</span>(HttpStatus.NOT_FOUND)</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">NotFoundException</span> <span class="keyword">extends</span> <span class="title">RuntimeException</span> </span>&#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BoardNotFoundException</span> <span class="keyword">extends</span> <span class="title">NotFoundException</span> </span>&#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>위와 같이 Exception에 <code>@ResponseStatus</code>가 붙어 있고, 해당 Exception이 발생하면<br>Spring에서는 해당 Response Code로 응답을 준다.</p>
+<blockquote>
+<p>이 경우 서비스 로직에서 사용할 Exception이 HTTP라고 하는 MVC 구현에 종속된다.<br>MVC Layer와 Service Layer의 커플링을 발생시키지 않도록 유의해야 한다.</p>
+</blockquote>
+<h3 id="사용자-정의-HandlerExceptionResolver-구현"><a href="#사용자-정의-HandlerExceptionResolver-구현" class="headerlink" title="사용자 정의 HandlerExceptionResolver 구현"></a>사용자 정의 HandlerExceptionResolver 구현</h3><h1 id="번외"><a href="#번외" class="headerlink" title="번외"></a>번외</h1><h2 id="Filter와-Interceptor"><a href="#Filter와-Interceptor" class="headerlink" title="Filter와 Interceptor"></a>Filter와 Interceptor</h2><p>Filter와 Interceptor는 실행되는 위치가 다르다.<br>때문에 Exception이 발생했을 때 처리하는 방법도 달라진다.</p>
+<p>Interceptor는 DispatcherServlet 내부에서 발생하기 때문에 <code>ControllerAdvice</code>를 적용할 수 있다.<br>하지만 Filter는 DispatcherServlet 외부에서 발생해서 <code>ErrorController</code>에서 처리해야 한다.</p>
+<p><img src="/images/spring-filter-interceptor/spring-request-lifecycle.jpg" alt="image"><br>이미지 출처: <a href="https://justforchangesake.files.wordpress.com/2014/05/spring-request-lifecycle.jpg" target="_blank" rel="noopener">https://justforchangesake.files.wordpress.com/2014/05/spring-request-lifecycle.jpg</a></p>
+<h1 id="정리"><a href="#정리" class="headerlink" title="정리"></a>정리</h1><p>Spring에서 예외처리를 하는 방법에 대해 훑어보았다.<br>Spring MVC 내에서는 <code>@HandlerException</code>을 통해 각 <code>@Controller</code>별로 예외 처리를 할 수 있었으며,<br><code>@HandlerException</code>을 <code>@ControllerAdvice</code>에 등록하여 전역적으로 예외를 처리할 수도 있었다.<br>또한 브라우저 요청과 REST API의 요청을 나누어서 <code>@ControllerAdvice</code>에서 처리할 수 있다.<br>이러한 기본 동작들은 <code>HandlerExceptionResolver</code>에 의해 이루어진다.</p>
+<p>Spring MVC 내에서 처리하지 못한 예외들은 <code>ServletException</code>으로 포장되어 서블릿 컨테이너까지 전파되며, 서블릿 컨테이너는 예외를 처리하기 위해나 경로로 예외 처리를 위임하게 된다. 이때 Spring boot를 기본설정으로 사용하는 경우, <code>BasicErrorController</code>가 이를 담당하게 된다.</p>
+<h1 id="마무리"><a href="#마무리" class="headerlink" title="마무리"></a>마무리</h1><p>예외 처리에 대해 잘 이해하고, 이를 잘 해내는 것은 견고한 어플리케이션을 작성하기 위한 밑거름이 된다고 생각한다.<br>경험있는 개발자들은 예외를 미리 예측하고 방지할 수 있다. 하지만 이러한 경험을 잘 쌓기 위해서는 그동안 발생하는 예외에 대해서 파악하기 쉬워야 한다.<br>예외 처리를 잘 해낸다면 같은 오류가 발생해도 더 빠르게 인지하고, 문제점을 정확하게 짚어낼 수 있을 것이다.<br>어플리케이션 개발이 운영 국면에 들어서면 기능만 잘 뽑아내는 것보다 예외 탐지, 트러블슈팅, 장애 방지를 잘하는 것이 얼마나 가치있는 것인지 깨닫게 되는 것 같다.</p>
+<h1 id="참고"><a href="#참고" class="headerlink" title="참고"></a>참고</h1><p>Spring framework reference </p>
+<ul>
+<li>mvc exceptions : <a href="https://docs.spring.io/spring/docs/current/spring-framework-reference/web.html#mvc-ann-exceptionhandler" target="_blank" rel="noopener">https://docs.spring.io/spring/docs/current/spring-framework-reference/web.html#mvc-ann-exceptionhandler</a></li>
+<li>controller exceptions : <a href="https://docs.spring.io/spring/docs/current/spring-framework-reference/web.html#mvc-ann-exceptionhandler" target="_blank" rel="noopener">https://docs.spring.io/spring/docs/current/spring-framework-reference/web.html#mvc-ann-exceptionhandler</a></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>작성자:</strong>
+    supawer0728
+  </li>
+  <li class="post-copyright-link">
+    <strong>원본링크:</strong>
+    <a href="https://supawer0728.github.io/2019/04/04/spring-error-handling/" title="(Spring Boot)오류 처리에 대해">https://supawer0728.github.io/2019/04/04/spring-error-handling/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>라이센스: </strong>
+    <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a>
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/spring/" rel="tag"># spring</a>
+          
+            <a href="/tags/spring-boot/" rel="tag"># spring-boot</a>
+          
+            <a href="/tags/error/" rel="tag"># error</a>
+          
+            <a href="/tags/error-handling/" rel="tag"># error-handling</a>
+          
+        </div>
+      
+
+      
+      
+        <div class="post-widgets">
+        
+
+        
+
+        
+          
+          <div id="needsharebutton-postbottom">
+            <span class="btn">
+              <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </span>
+          </div>
+        
+        </div>
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/12/spring-actuator/" rel="next" title="(Spring Boot)Spring Boot Actuator 소개">
+                <i class="fa fa-chevron-left"></i> (Spring Boot)Spring Boot Actuator 소개
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript" target="_blank" rel="noopener">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            목차
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            흝어보기
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="supawer0728" />
+            
+              <p class="site-author-name" itemprop="name">supawer0728</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">32</span>
+                  <span class="site-state-item-name">포스트</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">카테고리</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">50</span>
+                  <span class="site-state-item-name">태그</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/feed.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/supawer0728" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#서론"><span class="nav-number">1.</span> <span class="nav-text">서론</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ErrorController"><span class="nav-number">2.</span> <span class="nav-text">ErrorController</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Spring-Boot의-기본-오류-처리-BasicErrorController"><span class="nav-number">2.1.</span> <span class="nav-text">Spring Boot의 기본 오류 처리 - BasicErrorController</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Spring-Boot의-기본-오류-처리-AbstractErrorController와-ErrorAttributes"><span class="nav-number">2.2.</span> <span class="nav-text">Spring Boot의 기본 오류 처리 - AbstractErrorController와 ErrorAttributes</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#확장-포인트-ErrorAttributes"><span class="nav-number">2.3.</span> <span class="nav-text">확장 포인트 - ErrorAttributes</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HTML-View-연계-404-html-4xx-html"><span class="nav-number">2.4.</span> <span class="nav-text">HTML View 연계 - 404.html, 4xx.html</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#View를-가져오는-방법-TemplateAvailabilityProvider"><span class="nav-number">2.5.</span> <span class="nav-text">View를 가져오는 방법 - TemplateAvailabilityProvider</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#확장-포인트-BasicErrorController"><span class="nav-number">2.6.</span> <span class="nav-text">확장 포인트 - BasicErrorController</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#spring-webflux에서는"><span class="nav-number">2.7.</span> <span class="nav-text">spring-webflux에서는?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ErrorController에-대한-추가-설명"><span class="nav-number">2.8.</span> <span class="nav-text">ErrorController에 대한 추가 설명</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#spring-mvc-Exception-기반으로-오류-처리"><span class="nav-number">3.</span> <span class="nav-text">spring-mvc Exception 기반으로 오류 처리</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ExceptionHandler"><span class="nav-number">3.1.</span> <span class="nav-text">@ExceptionHandler</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ControllerAdvice"><span class="nav-number">3.2.</span> <span class="nav-text">ControllerAdvice</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ControllerAdvice-나누기"><span class="nav-number">3.3.</span> <span class="nav-text">ControllerAdvice 나누기</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Spring-MVC에서-제공해주는-ResponseEntityExceptionHandler"><span class="nav-number">3.4.</span> <span class="nav-text">Spring MVC에서 제공해주는 ResponseEntityExceptionHandler</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HandlerExceptionResolver"><span class="nav-number">3.5.</span> <span class="nav-text">HandlerExceptionResolver</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#HandlerExceptionResolver-구현체"><span class="nav-number">3.5.1.</span> <span class="nav-text">HandlerExceptionResolver 구현체</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Exception에-응답코드-달기"><span class="nav-number">3.5.1.1.</span> <span class="nav-text">Exception에 응답코드 달기</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#사용자-정의-HandlerExceptionResolver-구현"><span class="nav-number">3.5.2.</span> <span class="nav-text">사용자 정의 HandlerExceptionResolver 구현</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#번외"><span class="nav-number">4.</span> <span class="nav-text">번외</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Filter와-Interceptor"><span class="nav-number">4.1.</span> <span class="nav-text">Filter와 Interceptor</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#정리"><span class="nav-number">5.</span> <span class="nav-text">정리</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#마무리"><span class="nav-number">6.</span> <span class="nav-text">마무리</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#참고"><span class="nav-number">7.</span> <span class="nav-text">참고</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">supawer0728</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+  <div class="footer-custom">To Improve Human Life</div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://supawer0728-github-com.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://supawer0728.github.io/2019/04/04/spring-error-handling/';
+          this.page.identifier = '2019/04/04/spring-error-handling/';
+          this.page.title = '(Spring Boot)오류 처리에 대해';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://supawer0728-github-com.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('-1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/needsharebutton/needsharebutton.css">
+
+  
+  
+  <script src="/lib/needsharebutton/needsharebutton.js"></script>
+
+  <script>
+    
+      pbOptions = {};
+      
+          pbOptions.iconStyle = "box";
+      
+          pbOptions.boxForm = "horizontal";
+      
+          pbOptions.position = "bottomCenter";
+      
+          pbOptions.networks = "Twitter,Facebook,GooglePlus,Evernote";
+      
+      new needShareButton('#needsharebutton-postbottom', pbOptions);
+    
+    
+  </script>
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

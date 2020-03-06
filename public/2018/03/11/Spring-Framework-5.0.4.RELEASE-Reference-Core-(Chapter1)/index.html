@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Nanum Gothic:300,300italic,400,400italic,700,700italic|Nanum Pen Script:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-icon-180x180.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.4">
+
+
+
+  <link rel="manifest" href="/images/manifest.json">
+
+
+  <meta name="msapplication-config" content="/images/browserconfig.xml" />
+
+
+
+  <meta name="keywords" content="spring,reference," />
+
+
+
+
+
+  <link rel="alternate" href="/feed.xml" title="기록은 재산이다" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="글에 앞서서 본문은 Spring Framework Version 5의 습득을 위한 글이다. 이 글을 상업적 목적으로 쓰지 않았다AuthorsRod Johnson , Juergen Hoeller , Keith Donald , Colin Sampaleanu , Rob Harrop , Thomas Risberg , Alef Arendsen , Darren Dav">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Framework 5.0.4.RELEASE Reference Core (Chapter1)">
+<meta property="og:url" content="https://supawer0728.github.io/2018/03/11/Spring-Framework-5.0.4.RELEASE-Reference-Core-(Chapter1)/index.html">
+<meta property="og:site_name" content="기록은 재산이다">
+<meta property="og:description" content="글에 앞서서 본문은 Spring Framework Version 5의 습득을 위한 글이다. 이 글을 상업적 목적으로 쓰지 않았다AuthorsRod Johnson , Juergen Hoeller , Keith Donald , Colin Sampaleanu , Rob Harrop , Thomas Risberg , Alef Arendsen , Darren Dav">
+<meta property="og:locale" content="ko_KR">
+<meta property="article:published_time" content="2018-03-10T17:33:38.000Z">
+<meta property="article:modified_time" content="2020-03-04T08:18:02.744Z">
+<meta property="article:author" content="supawer0728">
+<meta property="article:tag" content="spring">
+<meta property="article:tag" content="reference">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '작성자'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://supawer0728.github.io/2018/03/11/Spring-Framework-5.0.4.RELEASE-Reference-Core-(Chapter1)/"/>
+
+
+
+
+
+  <title>Spring Framework 5.0.4.RELEASE Reference Core (Chapter1) | 기록은 재산이다</title>
+  
+
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-115481794-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'UA-115481794-1');
+</script>
+
+
+
+
+
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script data-ad-client="" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="ko">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">기록은 재산이다</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">To Improve Human Life</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            홈
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            태그
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            카테고리
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            아카이브
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            검색
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="Searching..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://supawer0728.github.io/2018/03/11/Spring-Framework-5.0.4.RELEASE-Reference-Core-(Chapter1)/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="supawer0728">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="기록은 재산이다">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Spring Framework 5.0.4.RELEASE Reference Core (Chapter1)</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">작성일&#58;</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-11T02:33:38+09:00">
+                2018-03-11
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">수정일&#58;</span>
+              
+              <time title="수정일" itemprop="dateModified" datetime="2020-03-04T17:18:02+09:00">
+              
+                2018-03-11
+              
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/" itemprop="url" rel="index">
+                    <span itemprop="name">spring</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/reference/" itemprop="url" rel="index">
+                    <span itemprop="name">reference</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/03/11/Spring-Framework-5.0.4.RELEASE-Reference-Core-(Chapter1)/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/03/11/Spring-Framework-5.0.4.RELEASE-Reference-Core-(Chapter1)/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="글에-앞서서"><a href="#글에-앞서서" class="headerlink" title="글에 앞서서"></a>글에 앞서서</h1><ul>
+<li>본문은 Spring Framework Version 5의 습득을 위한 글이다.</li>
+<li>이 글을 상업적 목적으로 쓰지 않았다<blockquote><p>Authors<br>Rod Johnson , Juergen Hoeller , Keith Donald , Colin Sampaleanu , Rob Harrop , Thomas Risberg , Alef Arendsen , Darren Davison , Dmitriy Kopylenko , Mark Pollack , Thierry Templier , Erwin Vervaet , Portia Tung , Ben Hale , Adrian Colyer , John Lewis , Costin Leau , Mark Fisher , Sam Brannen , Ramnivas Laddad , Arjen Poutsma , Chris Beams , Tareq Abedrabbo , Andy Clement , Dave Syer , Oliver Gierke , Rossen Stoyanchev , Phillip Webb , Rob Winch , Brian Clozel , Stephane Nicoll , Sebastien Deleuze</p>
+<p>Copyright © 2004-2016</p>
+<p>Copies of this document may be made for your own use and for distribution to others, provided that you do not charge any fee for such copies and further provided that each copy contains this Copyright Notice, whether distributed in print or electronically.</p>
+<footer><strong>원본</strong><cite><a href="https://docs.spring.io/spring/docs/5.0.4.RELEASE/spring-framework-reference/" target="_blank" rel="noopener">docs.spring.io/spring/docs/5.0.4.RELEASE/spring-framework-reference</a></cite></footer></blockquote>
+
+</li>
+</ul>
+<h1 id="1-The-IoC-container"><a href="#1-The-IoC-container" class="headerlink" title="1. The IoC container"></a>1. The IoC container</h1><h1 id="1-2-Container-overview"><a href="#1-2-Container-overview" class="headerlink" title="1.2. Container overview"></a>1.2. Container overview</h1><p><code>org.springframework.context.ApplicationContext</code> 인터페이스는 Spring IoC container이다. 구현체들은 bean을 인스턴스화, 설정, 조합하는 역할을 책임지고 있다.</p>
+<h2 id="1-2-2-Instantiating-a-container"><a href="#1-2-2-Instantiating-a-container" class="headerlink" title="1.2.2. Instantiating a container"></a>1.2.2. Instantiating a container</h2><p><code>ApplicationContext context = new ClassPathXmlApplicationContext(&quot;services.xml&quot;, &quot;daos.xml&quot;);</code></p>
+<a id="more"></a>
+
+<h1 id="1-3-Bean-overview"><a href="#1-3-Bean-overview" class="headerlink" title="1.3. Bean overview"></a>1.3. Bean overview</h1><h2 id="1-3-2-Instantiating-beans"><a href="#1-3-2-Instantiating-beans" class="headerlink" title="1.3.2. Instantiating beans"></a>1.3.2. Instantiating beans</h2><blockquote>
+<p><code>static inner class</code>를 bean으로 등록하기 위해서는 <code>FQDN$내부클래스명</code>으로 표기해야한다<br><code>com.example.Foo$Bar</code></p>
+</blockquote>
+<h1 id="1-5-Bean-scopes"><a href="#1-5-Bean-scopes" class="headerlink" title="1.5. Bean scopes"></a>1.5. Bean scopes</h1><h2 id="1-5-1-Bean-scopes"><a href="#1-5-1-Bean-scopes" class="headerlink" title="1.5.1. Bean scopes"></a>1.5.1. Bean scopes</h2><table>
+<thead>
+<tr>
+<th>Scope</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>singleton</td>
+<td>(Default) Spring IoC container 당 하나의 객체 인스턴스만 생성</td>
+</tr>
+<tr>
+<td>prototype</td>
+<td>다수의 객체 인스턴스를 생성<code>(any number)</code></td>
+</tr>
+<tr>
+<td>request</td>
+<td><code>HTTP Request</code>과 동일한 lifecycle을 가짐. web 환경의 Spring ApplicationContext에서만 동작함</td>
+</tr>
+<tr>
+<td>session</td>
+<td><code>HTTP Session</code>과 동일한 lifecycle을 가짐. web 환경의 Spring ApplicationContext에서만 동작함</td>
+</tr>
+<tr>
+<td>application</td>
+<td><code>ServletContext</code>와 동일한 lifecycle을 가짐. web 환경의 Spring ApplicationContext에서만 동작함</td>
+</tr>
+<tr>
+<td>webcoket</td>
+<td><code>WebSocket</code>과 동일한 lifecycle을 가짐. web 환경의 Spring ApplicationContext에서만 동작함</td>
+</tr>
+</tbody></table>
+<h2 id="1-5-3-Singleton-beans-with-prototype-bean-dependencies"><a href="#1-5-3-Singleton-beans-with-prototype-bean-dependencies" class="headerlink" title="1.5.3. Singleton beans with prototype-bean dependencies"></a>1.5.3. Singleton beans with prototype-bean dependencies</h2><p><code>singleton bean</code>이 <code>prototype bean</code>에 의존하고 있는 경우 어떻게 될까?<br>의존성은 초기화 시점(instantiation time)에 정의된다는 점을 기억해야한다.</p>
+<p>즉, <code>singleton bean</code>이 초기화 될때 새로운 <code>prototype bean</code>이 생성되겠지만,<br>한 번 초기화 된 이후에는 항상 같은 <code>prototype bean</code>을 사용하게 될 것이다.</p>
+<p><code>singleton bean</code>이 매번 다른 인스턴스를 바라보도록 하고 싶다면 <a href="https://docs.spring.io/spring/docs/5.0.4.RELEASE/spring-framework-reference/core.html#beans-factory-method-injection" target="_blank" rel="noopener">Method Injection</a>항목을 참고할 수 있다.<br>스포를 하자면 <code>IoC</code>를 하지 않는 것이다.</p>
+<h2 id="1-5-4-Request-session-application-and-WebSocket-scopes"><a href="#1-5-4-Request-session-application-and-WebSocket-scopes" class="headerlink" title="1.5.4. Request, session, application, and WebSocket scopes"></a>1.5.4. Request, session, application, and WebSocket scopes</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RequestScope</span></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RequestScopeBean</span> </span>&#123; </span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">@SessionScope</span></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RequestScopeBean</span> </span>&#123; </span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">@ApplicationScope</span></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RequestScopeBean</span> </span>&#123; </span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Scoped-beans-as-dependencies"><a href="#Scoped-beans-as-dependencies" class="headerlink" title="Scoped beans as dependencies"></a>Scoped beans as dependencies</h2><p><code>Request</code>, <code>Session</code> 등의 bean이 자신보다 더 긴 lifecycle을 가지고 있는 bean에 속해질 때,<br>Spring IoC는 <code>AOP Proxy</code>로 이를 대체하여 문제를 해결한다.<br>즉 실제 Instance를 주입받는 것이 아니라, Proxy 객체를 주입받게되며, 이 프록시는 실제 instance를 가리키도록 되어 있다.</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">beans</span> <span class="attr">xmlns</span>=<span class="string">"http://www.springframework.org/schema/beans"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">xmlns:xsi</span>=<span class="string">"http://www.w3.org/2001/XMLSchema-instance"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">xmlns:aop</span>=<span class="string">"http://www.springframework.org/schema/aop"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">xsi:schemaLocation</span>=<span class="string">"http://www.springframework.org/schema/beans</span></span></span><br><span class="line"><span class="tag"><span class="string">        http://www.springframework.org/schema/beans/spring-beans.xsd</span></span></span><br><span class="line"><span class="tag"><span class="string">        http://www.springframework.org/schema/aop</span></span></span><br><span class="line"><span class="tag"><span class="string">        http://www.springframework.org/schema/aop/spring-aop.xsd"</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!-- an HTTP Session-scoped bean exposed as a proxy --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"userPreferences"</span> <span class="attr">class</span>=<span class="string">"com.foo.UserPreferences"</span> <span class="attr">scope</span>=<span class="string">"session"</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- instructs the container to proxy the surrounding bean --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">aop:scoped-proxy</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">bean</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!-- a singleton-scoped bean injected with a proxy to the above bean --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"userService"</span> <span class="attr">class</span>=<span class="string">"com.foo.SimpleUserService"</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- a reference to the proxied userPreferences bean --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"userPreferences"</span> <span class="attr">ref</span>=<span class="string">"userPreferences"</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">bean</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">beans</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="1-9-Annotation-based-container-configuration"><a href="#1-9-Annotation-based-container-configuration" class="headerlink" title="1.9. Annotation-based container configuration"></a>1.9. Annotation-based container configuration</h1><h2 id="Annotation-기반-설정이-XML-기반-설정보다-더-나은가"><a href="#Annotation-기반-설정이-XML-기반-설정보다-더-나은가" class="headerlink" title="Annotation 기반 설정이 XML 기반 설정보다 더 나은가?"></a>Annotation 기반 설정이 XML 기반 설정보다 더 나은가?</h2><p>그런거 없음<br>개발자가 알아서 선택할 일</p>
+<h2 id="1-9-1-Required"><a href="#1-9-1-Required" class="headerlink" title="1.9.1 @Required"></a>1.9.1 <code>@Required</code></h2><p>bean이 초기화될 때, 반드시 의존성이 설정되어야함.<br>속성이 없는 경우, container가 예외를 던짐.<br>NPE를 회피할 수 있음.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SimpleMovieLister</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> MovieFinder movieFinder;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Required</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMovieFinder</span><span class="params">(MovieFinder movieFinder)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.movieFinder = movieFinder;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="1-9-2-Autowired"><a href="#1-9-2-Autowired" class="headerlink" title="1.9.2 @Autowired"></a>1.9.2 <code>@Autowired</code></h2><p>생성자</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MovieRecommender</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> CustomerPreferenceDao customerPreferenceDao;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">MovieRecommender</span><span class="params">(CustomerPreferenceDao customerPreferenceDao)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.customerPreferenceDao = customerPreferenceDao;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>setter</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SimpleMovieLister</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> MovieFinder movieFinder;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMovieFinder</span><span class="params">(MovieFinder movieFinder)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.movieFinder = movieFinder;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>목록(<code>@Order</code>로 순서를 정할 수 있음)</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Adder</span> </span>&#123;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AdderA</span> <span class="keyword">implements</span> <span class="title">Adder</span> </span>&#123;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AdderB</span> <span class="keyword">implements</span> <span class="title">Adder</span> </span>&#123;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AdderService</span> </span>&#123;</span><br><span class="line">  <span class="meta">@Autowired</span></span><br><span class="line">  Set&lt;Adder&gt; Adders; <span class="comment">// Adder[] adders, List&lt;Adder&gt; adders</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="1-9-3-Fine-tuning-annotation-based-autowiring-wigh-Primary"><a href="#1-9-3-Fine-tuning-annotation-based-autowiring-wigh-Primary" class="headerlink" title="1.9.3. Fine-tuning annotation-based autowiring wigh @Primary"></a>1.9.3. Fine-tuning annotation-based autowiring wigh <code>@Primary</code></h2><p><code>Autowired</code>받을 수 있는 후보가 여럿 있을 때, 주로 사용할 bean을 <code>@Primary</code>로 지정 가능</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MovieConfiguration</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="meta">@Primary</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> MovieCatalog <span class="title">firstMovieCatalog</span><span class="params">()</span> </span>&#123; ... &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> MovieCatalog <span class="title">secondMovieCatalog</span><span class="params">()</span> </span>&#123; ... &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="1-9-4-Fine-tuning-annotation-based-autowiring-with-qualifiers"><a href="#1-9-4-Fine-tuning-annotation-based-autowiring-with-qualifiers" class="headerlink" title="1.9.4. Fine-tuning annotation-based autowiring with qualifiers"></a>1.9.4. Fine-tuning annotation-based autowiring with qualifiers</h2><p>보다 정교하게 bean selection을 제어하고 싶다면, <code>@Qualifier</code>를 사용할 수 있다</p>
+<p><strong>field에 사용</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MovieRecommender</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="meta">@Qualifier</span>(<span class="string">"main"</span>)</span><br><span class="line">    <span class="keyword">private</span> MovieCatalog movieCatalog;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>생성자에 사용</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MovieRecommender</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> MovieCatalog movieCatalog;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> CustomerPreferenceDao customerPreferenceDao;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">prepare</span><span class="params">(@Qualifier(<span class="string">"main"</span>)</span>MovieCatalog movieCatalog,</span></span><br><span class="line"><span class="function">            CustomerPreferenceDao customerPreferenceDao) </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.movieCatalog = movieCatalog;</span><br><span class="line">        <span class="keyword">this</span>.customerPreferenceDao = customerPreferenceDao;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="1-9-4-Fine-tuning-annotation-based-autowiring-with-qualifiers-1"><a href="#1-9-4-Fine-tuning-annotation-based-autowiring-with-qualifiers-1" class="headerlink" title="1.9.4. Fine-tuning annotation-based autowiring with qualifiers"></a>1.9.4. Fine-tuning annotation-based autowiring with qualifiers</h2><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">beans</span> <span class="attr">xmlns</span>=<span class="string">"http://www.springframework.org/schema/beans"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">xmlns:xsi</span>=<span class="string">"http://www.w3.org/2001/XMLSchema-instance"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">xmlns:context</span>=<span class="string">"http://www.springframework.org/schema/context"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">xsi:schemaLocation</span>=<span class="string">"http://www.springframework.org/schema/beans</span></span></span><br><span class="line"><span class="tag"><span class="string">        http://www.springframework.org/schema/beans/spring-beans.xsd</span></span></span><br><span class="line"><span class="tag"><span class="string">        http://www.springframework.org/schema/context</span></span></span><br><span class="line"><span class="tag"><span class="string">        http://www.springframework.org/schema/context/spring-context.xsd"</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">context:annotation-config</span>/&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">bean</span> <span class="attr">class</span>=<span class="string">"example.SimpleMovieCatalog"</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">qualifier</span> <span class="attr">value</span>=<span class="string">"main"</span>/&gt;</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">&lt;!-- inject any dependencies required by this bean --&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">bean</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">bean</span> <span class="attr">class</span>=<span class="string">"example.SimpleMovieCatalog"</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">qualifier</span> <span class="attr">value</span>=<span class="string">"action"</span>/&gt;</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">&lt;!-- inject any dependencies required by this bean --&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">bean</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"movieRecommender"</span> <span class="attr">class</span>=<span class="string">"example.MovieRecommender"</span>/&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">beans</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="1-9-4-Fine-tuning-annotation-based-autowiring-with-qualifiers-2"><a href="#1-9-4-Fine-tuning-annotation-based-autowiring-with-qualifiers-2" class="headerlink" title="1.9.4. Fine-tuning annotation-based autowiring with qualifiers"></a>1.9.4. Fine-tuning annotation-based autowiring with qualifiers</h2><p><code>@Autowired</code>와 <code>@Qualifier</code>를 같이 사용하는 경우</p>
+<ol>
+<li><code>@Autowired</code>는 type을 기반으로 bean을 찾는다</li>
+<li><code>@Qualifier</code>는 기본적으로 bean name을 사용하여 bean을 찾는다</li>
+</ol>
+<h2 id="1-9-4-Fine-tuning-annotation-based-autowiring-with-qualifiers-3"><a href="#1-9-4-Fine-tuning-annotation-based-autowiring-with-qualifiers-3" class="headerlink" title="1.9.4. Fine-tuning annotation-based autowiring with qualifiers"></a>1.9.4. Fine-tuning annotation-based autowiring with qualifiers</h2><p><strong><code>@Qualifier</code></strong>를 사용한 custom annotation 작성</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Target</span>(&#123;ElementType.FIELD, ElementType.PARAMETER&#125;)</span><br><span class="line"><span class="meta">@Retention</span>(RetentionPolicy.RUNTIME)</span><br><span class="line"><span class="meta">@Qualifier</span></span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> Genre &#123;</span><br><span class="line">    <span class="function">String <span class="title">value</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MovieRecommender</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="meta">@Genre</span>(<span class="string">"Action"</span>)</span><br><span class="line">    <span class="keyword">private</span> MovieCatalog actionCatalog;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> MovieCatalog comedyCatalog;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setComedyCatalog</span><span class="params">(@Genre(<span class="string">"Comedy"</span>)</span> MovieCatalog comedyCatalog) </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.comedyCatalog = comedyCatalog;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">beans</span> <span class="attr">xmlns</span>=<span class="string">"http://www.springframework.org/schema/beans"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">xmlns:xsi</span>=<span class="string">"http://www.w3.org/2001/XMLSchema-instance"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">xmlns:context</span>=<span class="string">"http://www.springframework.org/schema/context"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">xsi:schemaLocation</span>=<span class="string">"http://www.springframework.org/schema/beans</span></span></span><br><span class="line"><span class="tag"><span class="string">        http://www.springframework.org/schema/beans/spring-beans.xsd</span></span></span><br><span class="line"><span class="tag"><span class="string">        http://www.springframework.org/schema/context</span></span></span><br><span class="line"><span class="tag"><span class="string">        http://www.springframework.org/schema/context/spring-context.xsd"</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">context:annotation-config</span>/&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">bean</span> <span class="attr">class</span>=<span class="string">"example.SimpleMovieCatalog"</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">qualifier</span> <span class="attr">type</span>=<span class="string">"Genre"</span> <span class="attr">value</span>=<span class="string">"Action"</span>/&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- inject any dependencies required by this bean --&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">bean</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">bean</span> <span class="attr">class</span>=<span class="string">"example.SimpleMovieCatalog"</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">qualifier</span> <span class="attr">type</span>=<span class="string">"example.Genre"</span> <span class="attr">value</span>=<span class="string">"Comedy"</span>/&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- inject any dependencies required by this bean --&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">bean</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"movieRecommender"</span> <span class="attr">class</span>=<span class="string">"example.MovieRecommender"</span>/&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">beans</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="1-9-7-Resource"><a href="#1-9-7-Resource" class="headerlink" title="1.9.7. @Resource"></a>1.9.7. <code>@Resource</code></h2><ul>
+<li><code>@Autowired</code>는 type으로 검색</li>
+<li><code>@Resource</code>는 bean name으로 검색</li>
+</ul>
+<h2 id="1-9-8-PostConstruct-and-PreDestroy"><a href="#1-9-8-PostConstruct-and-PreDestroy" class="headerlink" title="1.9.8. @PostConstruct and @PreDestroy"></a>1.9.8. @PostConstruct and @PreDestroy</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CachingMovieLister</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PostConstruct</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">populateMovieCache</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">// populates the movie cache upon initialization...</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PreDestroy</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">clearMovieCache</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">// clears the movie cache upon destruction...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="1-10-Classpath-scanning-and-managed-components"><a href="#1-10-Classpath-scanning-and-managed-components" class="headerlink" title="1.10. Classpath scanning and managed components"></a>1.10. Classpath scanning and managed components</h1><h2 id="1-10-1-Component-and-further-stereotype-annotations"><a href="#1-10-1-Component-and-further-stereotype-annotations" class="headerlink" title="1.10.1. @Component and further stereotype annotations"></a>1.10.1. @Component and further stereotype annotations</h2><ul>
+<li>Spring은 여러 stereotype의 annotation을 제공한다 : <code>@Component</code>, <code>@Service</code>, <code>@Controller</code> 등등.</li>
+<li><code>@Repository</code>, <code>@Service</code>는 <code>@Component</code>의 한정사이다</li>
+<li>custom annotation을 만들어 사용하거나, 기본 제공되는 stereotype annotation을 AOP를 사용하여, 초기화시 임의의 process를 수행하도록 할 수도 있다</li>
+</ul>
+<h2 id="1-10-2-Meta-annotations"><a href="#1-10-2-Meta-annotations" class="headerlink" title="1.10.2. Meta-annotations"></a>1.10.2. Meta-annotations</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Target</span>(ElementType.TYPE)</span><br><span class="line"><span class="meta">@Retention</span>(RetentionPolicy.RUNTIME)</span><br><span class="line"><span class="meta">@Documented</span></span><br><span class="line"><span class="meta">@Component</span> <span class="comment">// Spring will see this and treat @Service in the same way as @Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> Service &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Target</span>(ElementType.TYPE)</span><br><span class="line"><span class="meta">@Retention</span>(RetentionPolicy.RUNTIME)</span><br><span class="line"><span class="meta">@Documented</span></span><br><span class="line"><span class="meta">@Controller</span></span><br><span class="line"><span class="meta">@ResponseBody</span></span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> RestController &#123;</span><br><span class="line">	<span class="function">String <span class="title">value</span><span class="params">()</span> <span class="keyword">default</span> ""</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="1-10-4-Using-filters-to-customize-scanning"><a href="#1-10-4-Using-filters-to-customize-scanning" class="headerlink" title="1.10.4. Using filters to customize scanning"></a>1.10.4. Using filters to customize scanning</h2><table>
+<thead>
+<tr>
+<th>Filter Type</th>
+<th>Example Expression</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>annotation (default)</td>
+<td>org.example.SomeAnnotation</td>
+<td>An annotation to be present at the type level in target components</td>
+</tr>
+<tr>
+<td>assignable</td>
+<td>org.example.SomeClass</td>
+<td>A class (or interface) that the target components are assignable to (extend/implement)</td>
+</tr>
+<tr>
+<td>aspectj</td>
+<td><code>org.example..*Service+</code></td>
+<td>An AspectJ type expression to be matched by the target components</td>
+</tr>
+<tr>
+<td>regex</td>
+<td><code>org\.example\.Default.*</code></td>
+<td>A regex expression to be matched by the target components class names</td>
+</tr>
+<tr>
+<td>custom</td>
+<td>org.example.MyTypeFilter</td>
+<td>A custom implementation of the org.springframework.core.type .TypeFilter interface</td>
+</tr>
+</tbody></table>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span>(basePackages = <span class="string">"org.example"</span>,</span><br><span class="line">        includeFilters = <span class="meta">@Filter</span>(type = FilterType.REGEX, pattern = <span class="string">".*Stub.*Repository"</span>),</span><br><span class="line">        excludeFilters = <span class="meta">@Filter</span>(Repository<span class="class">.<span class="keyword">class</span>))</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">AppConfig</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">beans</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">context:component-scan</span> <span class="attr">base-package</span>=<span class="string">"org.example"</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">context:include-filter</span> <span class="attr">type</span>=<span class="string">"regex"</span></span></span><br><span class="line"><span class="tag">                <span class="attr">expression</span>=<span class="string">".*Stub.*Repository"</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">context:exclude-filter</span> <span class="attr">type</span>=<span class="string">"annotation"</span></span></span><br><span class="line"><span class="tag">                <span class="attr">expression</span>=<span class="string">"org.springframework.stereotype.Repository"</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">context:component-scan</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">beans</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="1-12-Java-based-container-configuration"><a href="#1-12-Java-based-container-configuration" class="headerlink" title="1.12. Java-based container configuration"></a>1.12. Java-based container configuration</h1><h2 id="1-12-4-Using-the-Configuration-annotation"><a href="#1-12-4-Using-the-Configuration-annotation" class="headerlink" title="1.12.4. Using the @Configuration annotation"></a>1.12.4. Using the <code>@Configuration</code> annotation</h2><h3 id="Further-information-about-how-Java-based-configuration-works-internally"><a href="#Further-information-about-how-Java-based-configuration-works-internally" class="headerlink" title="Further information about how Java-based configuration works internally"></a>Further information about how Java-based configuration works internally</h3><p>아래 소스에서 <code>clientDao()</code>가 2번 호출됨에도 불구하고, 캐시(<code>CGLIB</code>)를 통해서 동일한 객체(<code>singleton</code>)가 주입됨</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AppConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ClientService <span class="title">clientService1</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        ClientServiceImpl clientService = <span class="keyword">new</span> ClientServiceImpl();</span><br><span class="line">        clientService.setClientDao(clientDao());</span><br><span class="line">        <span class="keyword">return</span> clientService;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ClientService <span class="title">clientService2</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        ClientServiceImpl clientService = <span class="keyword">new</span> ClientServiceImpl();</span><br><span class="line">        clientService.setClientDao(clientDao());</span><br><span class="line">        <span class="keyword">return</span> clientService;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ClientDao <span class="title">clientDao</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> ClientDaoImpl();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="1-12-5-Composing-Java-based-configurations"><a href="#1-12-5-Composing-Java-based-configurations" class="headerlink" title="1.12.5. Composing Java-based configurations"></a>1.12.5. Composing Java-based configurations</h2><p><strong><code>@Import</code></strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ConfigA</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> A <span class="title">a</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> A();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@Import</span>(ConfigA<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">ConfigB</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> B <span class="title">b</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> B();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="1-13-Environment-abstraction"><a href="#1-13-Environment-abstraction" class="headerlink" title="1.13. Environment abstraction"></a>1.13. Environment abstraction</h1><p><code>Environment</code>는 <code>profiles</code>와 <code>properties</code>를 추상화하였다</p>
+<h2 id="1-13-1-Bean-definition-profiles"><a href="#1-13-1-Bean-definition-profiles" class="headerlink" title="1.13.1. Bean definition profiles"></a>1.13.1. Bean definition profiles</h2><h3 id="Profile"><a href="#Profile" class="headerlink" title="@Profile"></a><code>@Profile</code></h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@Profile</span>(<span class="string">"development"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StandaloneDataConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> DataSource <span class="title">dataSource</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> EmbeddedDatabaseBuilder()</span><br><span class="line">            .setType(EmbeddedDatabaseType.HSQL)</span><br><span class="line">            .addScript(<span class="string">"classpath:com/bank/config/sql/schema.sql"</span>)</span><br><span class="line">            .addScript(<span class="string">"classpath:com/bank/config/sql/test-data.sql"</span>)</span><br><span class="line">            .build();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@Profile</span>(<span class="string">"production"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">JndiDataConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span>(destroyMethod=<span class="string">""</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> DataSource <span class="title">dataSource</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        Context ctx = <span class="keyword">new</span> InitialContext();</span><br><span class="line">        <span class="keyword">return</span> (DataSource) ctx.lookup(<span class="string">"java:comp/env/jdbc/datasource"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// meta-annotation으로 사용</span></span><br><span class="line"><span class="meta">@Target</span>(ElementType.TYPE)</span><br><span class="line"><span class="meta">@Retention</span>(RetentionPolicy.RUNTIME)</span><br><span class="line"><span class="meta">@Profile</span>(<span class="string">"production"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> Production &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AppConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span>(<span class="string">"dataSource"</span>)</span><br><span class="line">    <span class="meta">@Development</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> DataSource <span class="title">standaloneDataSource</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> EmbeddedDatabaseBuilder()</span><br><span class="line">            .setType(EmbeddedDatabaseType.HSQL)</span><br><span class="line">            .addScript(<span class="string">"classpath:com/bank/config/sql/schema.sql"</span>)</span><br><span class="line">            .addScript(<span class="string">"classpath:com/bank/config/sql/test-data.sql"</span>)</span><br><span class="line">            .build();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span>(<span class="string">"dataSource"</span>)</span><br><span class="line">    <span class="meta">@Production</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> DataSource <span class="title">jndiDataSource</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        Context ctx = <span class="keyword">new</span> InitialContext();</span><br><span class="line">        <span class="keyword">return</span> (DataSource) ctx.lookup(<span class="string">"java:comp/env/jdbc/datasource"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Activating-a-profile"><a href="#Activating-a-profile" class="headerlink" title="Activating a profile"></a>Activating a profile</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ctx.getEnvironment().setActiveProfiles(&quot;profile1&quot;, &quot;profile2&quot;);</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-Dspring.profiles.active&#x3D;&quot;profile1,profile2&quot;</span><br></pre></td></tr></table></figure>
+
+<h1 id="1-15-Additional-capabilities-of-the-ApplicationContext"><a href="#1-15-Additional-capabilities-of-the-ApplicationContext" class="headerlink" title="1.15. Additional capabilities of the ApplicationContext"></a>1.15. Additional capabilities of the ApplicationContext</h1><h2 id="1-15-1-Internationalization-using-MessageSource"><a href="#1-15-1-Internationalization-using-MessageSource" class="headerlink" title="1.15.1. Internationalization using MessageSource"></a>1.15.1. Internationalization using MessageSource</h2><p><strong><code>MessageSource</code> 인터페이스</strong></p>
+<ul>
+<li><code>String getMessage(String code, Object[] args, String default, Locale loc)</code></li>
+<li><code>String getMessage(String code, Object[] args, Locale loc)</code></li>
+<li><code>String getMessage(MessageSourceResolvable resolvable, Locale locale)</code> - <code>BindingResult</code>의 <code>FieldError</code>가 <code>MessageSourceResolvable</code>을 구현하고 있음</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&lt;beans&gt;</span><br><span class="line">    &lt;bean id&#x3D;&quot;messageSource&quot;</span><br><span class="line">            class&#x3D;&quot;org.springframework.context.support.ResourceBundleMessageSource&quot;&gt;</span><br><span class="line">        &lt;property name&#x3D;&quot;basenames&quot;&gt;</span><br><span class="line">            &lt;list&gt;</span><br><span class="line">                &lt;value&gt;format&lt;&#x2F;value&gt;</span><br><span class="line">                &lt;value&gt;exceptions&lt;&#x2F;value&gt;</span><br><span class="line">                &lt;value&gt;windows&lt;&#x2F;value&gt;</span><br><span class="line">            &lt;&#x2F;list&gt;</span><br><span class="line">        &lt;&#x2F;property&gt;</span><br><span class="line">    &lt;&#x2F;bean&gt;</span><br><span class="line">&lt;&#x2F;beans&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="1-15-2-Standard-and-custom-events"><a href="#1-15-2-Standard-and-custom-events" class="headerlink" title="1.15.2. Standard and custom events"></a>1.15.2. Standard and custom events</h2><p><strong>Built-in Events</strong></p>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ContextRefreshedEvent</td>
+<td><code>ApplicationContext</code>가 초기화되거나, 갱신(refresh)될 때 발행됨.<br><code>ConfigurableApplicationContext</code> 인터페이스의 <code>refresh()</code> 메서드가 호출되는 상황을 예로 들 수 있음</td>
+</tr>
+<tr>
+<td>ContextStartedEvent</td>
+<td><code>ApplicationContext</code>가 시작될 때 발행됨<br><code>ConfigurableApplicationContext</code> 인터페이스의 <code>start()</code>메서드가 호출되는 상황을 예로 들 수 있음</td>
+</tr>
+<tr>
+<td>ContextStoppedEvent</td>
+<td><code>ApplicationContext</code>가 <code>ConfigurableApplicationContext</code> 인터페이스의 <code>stop()</code>이 호출되어 정지되는 경우 발행됨</td>
+</tr>
+<tr>
+<td>ContextClosedEvent</td>
+<td><code>ApplicationContext</code>가 <code>ConfigurableApplicationContext</code>의 <code>close()</code>가 호출되어 <code>close</code>되는 경우에 발행됨</td>
+</tr>
+<tr>
+<td>RequestHandledEvent</td>
+<td>웹 환경에서 <code>HTTP request</code>를 처리했을 때 발행됨<br>요청 완료 후 발행<br><code>DispatcherServlet</code>을 사용하는 웹 어플리케이션만 적용</td>
+</tr>
+</tbody></table>
+<p><strong>custom event</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">// Custom Event</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BlackListEvent</span> <span class="keyword">extends</span> <span class="title">ApplicationEvent</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String address;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String test;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">BlackListEvent</span><span class="params">(Object source, String address, String test)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(source);</span><br><span class="line">        <span class="keyword">this</span>.address = address;</span><br><span class="line">        <span class="keyword">this</span>.test = test;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Publish Event</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EmailService</span> <span class="keyword">implements</span> <span class="title">ApplicationEventPublisherAware</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> List&lt;String&gt; blackList;</span><br><span class="line">    <span class="keyword">private</span> ApplicationEventPublisher publisher;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setBlackList</span><span class="params">(List&lt;String&gt; blackList)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.blackList = blackList;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setApplicationEventPublisher</span><span class="params">(ApplicationEventPublisher publisher)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.publisher = publisher;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sendEmail</span><span class="params">(String address, String text)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (blackList.contains(address)) &#123;</span><br><span class="line">            BlackListEvent event = <span class="keyword">new</span> BlackListEvent(<span class="keyword">this</span>, address, text);</span><br><span class="line">            publisher.publishEvent(event);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// send email...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Handle Event</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BlackListNotifier</span> <span class="keyword">implements</span> <span class="title">ApplicationListener</span>&lt;<span class="title">BlackListEvent</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String notificationAddress;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setNotificationAddress</span><span class="params">(String notificationAddress)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.notificationAddress = notificationAddress;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onApplicationEvent</span><span class="params">(BlackListEvent event)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// notify appropriate parties via notificationAddress...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="1-15-2-Standard-and-custom-events-1"><a href="#1-15-2-Standard-and-custom-events-1" class="headerlink" title="1.15.2. Standard and custom events"></a>1.15.2. Standard and custom events</h2><h3 id="Annotation-based-event-listeners"><a href="#Annotation-based-event-listeners" class="headerlink" title="Annotation-based event listeners"></a>Annotation-based event listeners</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BlackListNotifier</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String notificationAddress;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setNotificationAddress</span><span class="params">(String notificationAddress)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.notificationAddress = notificationAddress;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@EventListener</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">processBlackListEvent</span><span class="params">(BlackListEvent event)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// notify appropriate parties via notificationAddress...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 여러 타입의 이벤트 처리</span></span><br><span class="line"><span class="meta">@EventListener</span>(&#123;ContextStartedEvent<span class="class">.<span class="keyword">class</span>, <span class="title">ContextRefreshedEvent</span>.<span class="title">class</span>&#125;)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">void</span> <span class="title">handleContextStart</span>() </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// SpEL 사용</span></span><br><span class="line"><span class="meta">@EventListener</span>(condition = <span class="string">"#blEvent.test == 'foo'"</span>)</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">processBlackListEvent</span><span class="params">(BlackListEvent blEvent)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// notify appropriate parties via notificationAddress...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Asynchronous-Listeners"><a href="#Asynchronous-Listeners" class="headerlink" title="Asynchronous Listeners"></a>Asynchronous Listeners</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@EventListener</span></span><br><span class="line"><span class="meta">@Async</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">processBlackListEvent</span><span class="params">(BlackListEvent event)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// BlackListEvent is processed in a separate thread</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>비동기 이벤트 리스너에서 예외가 발생시, caller로 전파되지 않는다. <code>AsyncUncaughtExceptionHandler</code> 참고할 것<br>처리 결과를 받기 위해서는 다시 비동기로 이벤트를 발생시켜야 한다</p>
+</blockquote>
+<h3 id="Ordering-listeners"><a href="#Ordering-listeners" class="headerlink" title="Ordering listeners"></a>Ordering listeners</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@EventListener</span></span><br><span class="line"><span class="meta">@Order</span>(<span class="number">42</span>)</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">processBlackListEvent</span><span class="params">(BlackListEvent event)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// notify appropriate parties via notificationAddress...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Generic-events"><a href="#Generic-events" class="headerlink" title="Generic events"></a>Generic events</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@EventListener</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onPersonCreated</span><span class="params">(EntityCreatedEvent&lt;Person&gt; event)</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EntityCreatedEvent</span>&lt;<span class="title">T</span>&gt;</span></span><br><span class="line"><span class="class">        <span class="keyword">extends</span> <span class="title">ApplicationEvent</span> <span class="keyword">implements</span> <span class="title">ResolvableTypeProvider</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">EntityCreatedEvent</span><span class="params">(T entity)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(entity);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ResolvableType <span class="title">getResolvableType</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> ResolvableType.forClassWithGenerics(getClass(),</span><br><span class="line">                ResolvableType.forInstance(getSource()));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>작성자:</strong>
+    supawer0728
+  </li>
+  <li class="post-copyright-link">
+    <strong>원본링크:</strong>
+    <a href="https://supawer0728.github.io/2018/03/11/Spring-Framework-5.0.4.RELEASE-Reference-Core-(Chapter1)/" title="Spring Framework 5.0.4.RELEASE Reference Core (Chapter1)">https://supawer0728.github.io/2018/03/11/Spring-Framework-5.0.4.RELEASE-Reference-Core-(Chapter1)/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>라이센스: </strong>
+    <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a>
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/spring/" rel="tag"># spring</a>
+          
+            <a href="/tags/reference/" rel="tag"># reference</a>
+          
+        </div>
+      
+
+      
+      
+        <div class="post-widgets">
+        
+
+        
+
+        
+          
+          <div id="needsharebutton-postbottom">
+            <span class="btn">
+              <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </span>
+          </div>
+        
+        </div>
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/11/Spring-Cloud-Zuul/" rel="next" title="(Spring Cloud) Zuul">
+                <i class="fa fa-chevron-left"></i> (Spring Cloud) Zuul
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/11/Spring-Framework-5.0.4.RELEASE-Reference-Core-(Chapter2)/" rel="prev" title="Spring Framework 5.0.4.RELEASE Reference Core (Chapter2)">
+                Spring Framework 5.0.4.RELEASE Reference Core (Chapter2) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript" target="_blank" rel="noopener">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            목차
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            흝어보기
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="supawer0728" />
+            
+              <p class="site-author-name" itemprop="name">supawer0728</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">32</span>
+                  <span class="site-state-item-name">포스트</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">카테고리</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">50</span>
+                  <span class="site-state-item-name">태그</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/feed.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/supawer0728" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#글에-앞서서"><span class="nav-number">1.</span> <span class="nav-text">글에 앞서서</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#1-The-IoC-container"><span class="nav-number">2.</span> <span class="nav-text">1. The IoC container</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#1-2-Container-overview"><span class="nav-number">3.</span> <span class="nav-text">1.2. Container overview</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-2-Instantiating-a-container"><span class="nav-number">3.1.</span> <span class="nav-text">1.2.2. Instantiating a container</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#1-3-Bean-overview"><span class="nav-number">4.</span> <span class="nav-text">1.3. Bean overview</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3-2-Instantiating-beans"><span class="nav-number">4.1.</span> <span class="nav-text">1.3.2. Instantiating beans</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#1-5-Bean-scopes"><span class="nav-number">5.</span> <span class="nav-text">1.5. Bean scopes</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-5-1-Bean-scopes"><span class="nav-number">5.1.</span> <span class="nav-text">1.5.1. Bean scopes</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-5-3-Singleton-beans-with-prototype-bean-dependencies"><span class="nav-number">5.2.</span> <span class="nav-text">1.5.3. Singleton beans with prototype-bean dependencies</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-5-4-Request-session-application-and-WebSocket-scopes"><span class="nav-number">5.3.</span> <span class="nav-text">1.5.4. Request, session, application, and WebSocket scopes</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Scoped-beans-as-dependencies"><span class="nav-number">5.4.</span> <span class="nav-text">Scoped beans as dependencies</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#1-9-Annotation-based-container-configuration"><span class="nav-number">6.</span> <span class="nav-text">1.9. Annotation-based container configuration</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Annotation-기반-설정이-XML-기반-설정보다-더-나은가"><span class="nav-number">6.1.</span> <span class="nav-text">Annotation 기반 설정이 XML 기반 설정보다 더 나은가?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-9-1-Required"><span class="nav-number">6.2.</span> <span class="nav-text">1.9.1 @Required</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-9-2-Autowired"><span class="nav-number">6.3.</span> <span class="nav-text">1.9.2 @Autowired</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-9-3-Fine-tuning-annotation-based-autowiring-wigh-Primary"><span class="nav-number">6.4.</span> <span class="nav-text">1.9.3. Fine-tuning annotation-based autowiring wigh @Primary</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-9-4-Fine-tuning-annotation-based-autowiring-with-qualifiers"><span class="nav-number">6.5.</span> <span class="nav-text">1.9.4. Fine-tuning annotation-based autowiring with qualifiers</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-9-4-Fine-tuning-annotation-based-autowiring-with-qualifiers-1"><span class="nav-number">6.6.</span> <span class="nav-text">1.9.4. Fine-tuning annotation-based autowiring with qualifiers</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-9-4-Fine-tuning-annotation-based-autowiring-with-qualifiers-2"><span class="nav-number">6.7.</span> <span class="nav-text">1.9.4. Fine-tuning annotation-based autowiring with qualifiers</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-9-4-Fine-tuning-annotation-based-autowiring-with-qualifiers-3"><span class="nav-number">6.8.</span> <span class="nav-text">1.9.4. Fine-tuning annotation-based autowiring with qualifiers</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-9-7-Resource"><span class="nav-number">6.9.</span> <span class="nav-text">1.9.7. @Resource</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-9-8-PostConstruct-and-PreDestroy"><span class="nav-number">6.10.</span> <span class="nav-text">1.9.8. @PostConstruct and @PreDestroy</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#1-10-Classpath-scanning-and-managed-components"><span class="nav-number">7.</span> <span class="nav-text">1.10. Classpath scanning and managed components</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-10-1-Component-and-further-stereotype-annotations"><span class="nav-number">7.1.</span> <span class="nav-text">1.10.1. @Component and further stereotype annotations</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-10-2-Meta-annotations"><span class="nav-number">7.2.</span> <span class="nav-text">1.10.2. Meta-annotations</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-10-4-Using-filters-to-customize-scanning"><span class="nav-number">7.3.</span> <span class="nav-text">1.10.4. Using filters to customize scanning</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#1-12-Java-based-container-configuration"><span class="nav-number">8.</span> <span class="nav-text">1.12. Java-based container configuration</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-12-4-Using-the-Configuration-annotation"><span class="nav-number">8.1.</span> <span class="nav-text">1.12.4. Using the @Configuration annotation</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Further-information-about-how-Java-based-configuration-works-internally"><span class="nav-number">8.1.1.</span> <span class="nav-text">Further information about how Java-based configuration works internally</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-12-5-Composing-Java-based-configurations"><span class="nav-number">8.2.</span> <span class="nav-text">1.12.5. Composing Java-based configurations</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#1-13-Environment-abstraction"><span class="nav-number">9.</span> <span class="nav-text">1.13. Environment abstraction</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-13-1-Bean-definition-profiles"><span class="nav-number">9.1.</span> <span class="nav-text">1.13.1. Bean definition profiles</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Profile"><span class="nav-number">9.1.1.</span> <span class="nav-text">@Profile</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Activating-a-profile"><span class="nav-number">9.1.2.</span> <span class="nav-text">Activating a profile</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#1-15-Additional-capabilities-of-the-ApplicationContext"><span class="nav-number">10.</span> <span class="nav-text">1.15. Additional capabilities of the ApplicationContext</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-15-1-Internationalization-using-MessageSource"><span class="nav-number">10.1.</span> <span class="nav-text">1.15.1. Internationalization using MessageSource</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-15-2-Standard-and-custom-events"><span class="nav-number">10.2.</span> <span class="nav-text">1.15.2. Standard and custom events</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-15-2-Standard-and-custom-events-1"><span class="nav-number">10.3.</span> <span class="nav-text">1.15.2. Standard and custom events</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Annotation-based-event-listeners"><span class="nav-number">10.3.1.</span> <span class="nav-text">Annotation-based event listeners</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Asynchronous-Listeners"><span class="nav-number">10.3.2.</span> <span class="nav-text">Asynchronous Listeners</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Ordering-listeners"><span class="nav-number">10.3.3.</span> <span class="nav-text">Ordering listeners</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Generic-events"><span class="nav-number">10.3.4.</span> <span class="nav-text">Generic events</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">supawer0728</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+  <div class="footer-custom">To Improve Human Life</div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://supawer0728-github-com.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://supawer0728.github.io/2018/03/11/Spring-Framework-5.0.4.RELEASE-Reference-Core-(Chapter1)/';
+          this.page.identifier = '2018/03/11/Spring-Framework-5.0.4.RELEASE-Reference-Core-(Chapter1)/';
+          this.page.title = 'Spring Framework 5.0.4.RELEASE Reference Core (Chapter1)';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://supawer0728-github-com.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('-1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/needsharebutton/needsharebutton.css">
+
+  
+  
+  <script src="/lib/needsharebutton/needsharebutton.js"></script>
+
+  <script>
+    
+      pbOptions = {};
+      
+          pbOptions.iconStyle = "box";
+      
+          pbOptions.boxForm = "horizontal";
+      
+          pbOptions.position = "bottomCenter";
+      
+          pbOptions.networks = "Twitter,Facebook,GooglePlus,Evernote";
+      
+      new needShareButton('#needsharebutton-postbottom', pbOptions);
+    
+    
+  </script>
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

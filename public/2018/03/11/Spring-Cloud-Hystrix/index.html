@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Nanum Gothic:300,300italic,400,400italic,700,700italic|Nanum Pen Script:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-icon-180x180.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.4">
+
+
+
+  <link rel="manifest" href="/images/manifest.json">
+
+
+  <meta name="msapplication-config" content="/images/browserconfig.xml" />
+
+
+
+  <meta name="keywords" content="spring,spring-cloud,hystrix,netflix," />
+
+
+
+
+
+  <link rel="alternate" href="/feed.xml" title="기록은 재산이다" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="Hystrix란Netflix에서 Circuit Breaker Pattern을 구현한 라이브러리이다. Micro Service Architecture에서 장애 전파 방지를 할 수 있다.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="(Spring Cloud) Hystrix">
+<meta property="og:url" content="https://supawer0728.github.io/2018/03/11/Spring-Cloud-Hystrix/index.html">
+<meta property="og:site_name" content="기록은 재산이다">
+<meta property="og:description" content="Hystrix란Netflix에서 Circuit Breaker Pattern을 구현한 라이브러리이다. Micro Service Architecture에서 장애 전파 방지를 할 수 있다.">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:image" content="https://martinfowler.com/bliki/images/circuitBreaker/sketch.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/spring-cloud/spring-cloud-netflix/master/docs/src/main/asciidoc/images/HystrixFallback.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/wiki/Netflix/Hystrix/images/hystrix-command-flow-chart.png">
+<meta property="og:image" content="https://github.com/Netflix/Hystrix/wiki/images/circuit-breaker-1280.png">
+<meta property="og:image" content="https://github.com/Netflix/Hystrix/wiki/images/soa-5-isolation-focused-640.png">
+<meta property="og:image" content="https://github.com/Netflix/Hystrix/wiki/images/request-example-with-latency-1280.png">
+<meta property="og:image" content="https://github.com/Netflix/Hystrix/wiki/images/isolation-options-1280.png">
+<meta property="article:published_time" content="2018-03-10T16:03:18.000Z">
+<meta property="article:modified_time" content="2020-03-04T08:18:02.743Z">
+<meta property="article:author" content="supawer0728">
+<meta property="article:tag" content="spring">
+<meta property="article:tag" content="spring-cloud">
+<meta property="article:tag" content="hystrix">
+<meta property="article:tag" content="netflix">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://martinfowler.com/bliki/images/circuitBreaker/sketch.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '작성자'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://supawer0728.github.io/2018/03/11/Spring-Cloud-Hystrix/"/>
+
+
+
+
+
+  <title>(Spring Cloud) Hystrix | 기록은 재산이다</title>
+  
+
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-115481794-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'UA-115481794-1');
+</script>
+
+
+
+
+
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script data-ad-client="" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="ko">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">기록은 재산이다</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">To Improve Human Life</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            홈
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            태그
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            카테고리
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            아카이브
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            검색
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="Searching..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://supawer0728.github.io/2018/03/11/Spring-Cloud-Hystrix/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="supawer0728">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="기록은 재산이다">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">(Spring Cloud) Hystrix</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">작성일&#58;</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-11T01:03:18+09:00">
+                2018-03-11
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">수정일&#58;</span>
+              
+              <time title="수정일" itemprop="dateModified" datetime="2020-03-04T17:18:02+09:00">
+              
+                2018-03-11
+              
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/" itemprop="url" rel="index">
+                    <span itemprop="name">spring</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/cloud/" itemprop="url" rel="index">
+                    <span itemprop="name">cloud</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/cloud/netflix/" itemprop="url" rel="index">
+                    <span itemprop="name">netflix</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/03/11/Spring-Cloud-Hystrix/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/03/11/Spring-Cloud-Hystrix/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="Hystrix란"><a href="#Hystrix란" class="headerlink" title="Hystrix란"></a>Hystrix란</h1><p>Netflix에서 <a href="https://martinfowler.com/bliki/CircuitBreaker.html" target="_blank" rel="noopener">Circuit Breaker Pattern</a>을 구현한 라이브러리이다. Micro Service Architecture에서 장애 전파 방지를 할 수 있다.</p>
+<a id="more"></a>
+<h2 id="Circuit-Breaker-Pattern"><a href="#Circuit-Breaker-Pattern" class="headerlink" title="Circuit Breaker Pattern"></a>Circuit Breaker Pattern</h2><table>
+<thead>
+<tr>
+<th><img src="https://martinfowler.com/bliki/images/circuitBreaker/sketch.png" alt="Inline-image-2018-02-28 17.38.25.834.png"></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>출처 : <a href="https://martinfowler.com/bliki/images/circuitBreaker" target="_blank" rel="noopener">https://martinfowler.com/bliki/images/circuitBreaker</a></em></td>
+</tr>
+</tbody></table>
+<h1 id="장애-연쇄"><a href="#장애-연쇄" class="headerlink" title="장애 연쇄"></a>장애 연쇄</h1><p>위 그림에서 <code>supplier 서버</code>에 장애가 생겨 항상 Timeout이 발생하는 경우, <code>supplier 서버</code>를 호출한 <code>client 서버</code>는 Timeout이 발생할 때까지 응답이 밀리게 된다. 응답이 밀리는 동안 요청이 계속 쌓여 결국 <code>client 서버</code>까지 요청이 과하게 밀려 장애가 발생할 수 있다.</p>
+<p>이러한 상황이 발생하지 않도록 <code>circuit breaker</code>를 두어 장애 전파를 막을 수 있다.</p>
+<table>
+<thead>
+<tr>
+<th><img src="https://raw.githubusercontent.com/spring-cloud/spring-cloud-netflix/master/docs/src/main/asciidoc/images/HystrixFallback.png" alt="image2"></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>출처 : <a href="https://cloud.spring.io/spring-cloud-netflix/multi/multi__circuit_breaker_hystrix_clients.html" target="_blank" rel="noopener">https://cloud.spring.io/spring-cloud-netflix/multi/multi__circuit_breaker_hystrix_clients.html</a></em></td>
+</tr>
+</tbody></table>
+<h1 id="Hystrix-Flow-Chart"><a href="#Hystrix-Flow-Chart" class="headerlink" title="Hystrix Flow Chart"></a>Hystrix Flow Chart</h1><table>
+<thead>
+<tr>
+<th><img src="https://raw.githubusercontent.com/wiki/Netflix/Hystrix/images/hystrix-command-flow-chart.png" alt="Inline-image-2018-03-05 10.55.00.102.png"></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>출처 : <a href="https://github.com/Netflix/Hystrix/wiki/How-it-Works" target="_blank" rel="noopener">https://github.com/Netflix/Hystrix/wiki/How-it-Works</a></em></td>
+</tr>
+</tbody></table>
+<ol>
+<li><code>HystrixCommand</code>, <code>HystrixObservableCommand</code> 객체 생성</li>
+<li>Command 실행</li>
+<li>캐시 여부 확인</li>
+<li>회로 상태 확인</li>
+<li>사용가능한 Thread Pool/Queue/Semaphore가 있는지 확인</li>
+<li><code>HystrixObservableCommand.construc()</code>, 혹은 <code>HystrixCommand.run()</code> 실행</li>
+<li>회로 상태 연산(Calculate circuit health)</li>
+<li>fallback 실행</li>
+<li>응답 반환</li>
+</ol>
+<h1 id="Hystrix-Circuit-Breaker-구현"><a href="#Hystrix-Circuit-Breaker-구현" class="headerlink" title="Hystrix Circuit Breaker 구현"></a>Hystrix Circuit Breaker 구현</h1><table>
+<thead>
+<tr>
+<th><img src="https://github.com/Netflix/Hystrix/wiki/images/circuit-breaker-1280.png" alt="Inline-image-2018-03-05 11.04.14.221.png"></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>출처 : <a href="https://github.com/Netflix/Hystrix/wiki/How-it-Works" target="_blank" rel="noopener">https://github.com/Netflix/Hystrix/wiki/How-it-Works</a></em></td>
+</tr>
+</tbody></table>
+<ol>
+<li>circuit health check를 위한 최소한의 요청이 있을 때(<code>HystrixCommandProperties.circuitBreakerRequestVolumeThreshold()</code>)</li>
+<li>그리고, 지정한 오류율을 초과했을 때(<code>HystrixCommandProperties.circuitBreakerErrorThresholdPercentage()</code>)</li>
+<li>회로의 상태를 <code>CLOSED</code>에서 <code>OPEN</code>으로 변경</li>
+<li>회로가 열린 동안, 모든 요청에 대해서 fallback method을 바로 실행</li>
+<li>일정 시간이 지난 후(<code>HystrixCommandProperties.circuitBreakerSleepWindowInMilliseconds()</code>), 하나의 요청을 원래 method로 실행(<code>HALF OPEN</code>). 이 요청이 실패한다면 <code>OPEN</code>으로 두고, 이 요청이 성공한다면 <code>CLOSED</code>로 상태를 변경. 다시 1번으로 돌아감.</li>
+</ol>
+<h1 id="기본-설정"><a href="#기본-설정" class="headerlink" title="기본 설정"></a>기본 설정</h1><ul>
+<li><code>metrics.rollingStats.timeInMilliseconds</code> : 오류 감시 시간, 기본값 10초</li>
+<li><code>circuitBreaker.requestVolumeThreshold</code> : 감시 시간 내 요청 수, 기본값 20</li>
+<li><code>circuitBreaker.errorThresholdPercentage</code> : 요청 대비 오류율, 기본값 50</li>
+</ul>
+<p>기본 설정을 풀어서 설명하면 다음과 같다</p>
+<blockquote>
+<p>감시시간 내(30초)에, 20번 이상의 요청이 있었고, 그 중에서 오류율이 50% 이상일 때 Circuit Breaker가 작동한다(circuit open)<br>감시 시간 내에 요청이 반드시 20번 이상이 있어야 회로가 열림. 30초 동안 요청이 19번이었고 모두 실패했어도 Circuit Breaker는 작동하지 않는다</p>
+</blockquote>
+<h1 id="예제"><a href="#예제" class="headerlink" title="예제"></a>예제</h1><p><strong>dependencies</strong></p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">dependencyManagement &#123;</span><br><span class="line">    imports &#123;</span><br><span class="line">        mavenBom <span class="string">"org.springframework.cloud:spring-cloud-dependencies:$&#123;springCloudVersion&#125;"</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">dependencies</span> &#123;</span><br><span class="line">    <span class="keyword">compile</span>(<span class="string">'org.springframework.cloud:spring-cloud-starter-netflix-hystrix'</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>사용</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="meta">@EnableCircuitBreaker</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Application</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">new</span> SpringApplicationBuilder(Application<span class="class">.<span class="keyword">class</span>).<span class="title">web</span>(<span class="title">true</span>).<span class="title">run</span>(<span class="title">args</span>)</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StoreIntegration</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@HystrixCommand</span>(commandKey=<span class="string">"getStores"</span>, fallbackMethod = <span class="string">"defaultStores"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">getStores</span><span class="params">(Map&lt;String, Object&gt; parameters)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//do stuff that might fail</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">defaultStores</span><span class="params">(Map&lt;String, Object&gt; parameters)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="comment">/* something useful */</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>StoreIntegration.getStores()</code>가 실패하거나 회로가 열렸을 시에는 <code>.defaultStores</code>가 실행된다.</li>
+</ul>
+<h1 id="설정"><a href="#설정" class="headerlink" title="설정"></a>설정</h1><p><strong>application.yml로 설정예시</strong></p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">hystrix:</span></span><br><span class="line">  <span class="attr">command:</span></span><br><span class="line">    <span class="comment"># 전역설정</span></span><br><span class="line">    <span class="attr">default:</span></span><br><span class="line">      <span class="attr">execution.isolation.thread.timeoutInMilliseconds:</span> <span class="number">10000</span></span><br><span class="line">    <span class="comment"># 특정 commandKey에 대한 설정</span></span><br><span class="line">    <span class="attr">getStores:</span></span><br><span class="line">      <span class="attr">execution.isolation.thread.timeoutInMilliseconds:</span> <span class="number">10000</span></span><br></pre></td></tr></table></figure>
+<p><strong>java 설정예시</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">UserResource</span> </span>&#123;</span><br><span class="line">    <span class="meta">@HystrixCommand</span>(commandProperties = &#123;</span><br><span class="line">            <span class="meta">@HystrixProperty</span>(name = <span class="string">"execution.isolation.thread.timeoutInMilliseconds"</span>, value = <span class="string">"500"</span>)</span><br><span class="line">        &#125;,</span><br><span class="line">        threadPoolProperties = &#123;</span><br><span class="line">            <span class="meta">@HystrixProperty</span>(name = <span class="string">"coreSize"</span>, value = <span class="string">"30"</span>),</span><br><span class="line">            <span class="meta">@HystrixProperty</span>(name = <span class="string">"maxQueueSize"</span>, value = <span class="string">"101"</span>),</span><br><span class="line">            <span class="meta">@HystrixProperty</span>(name = <span class="string">"keepAliveTimeMinutes"</span>, value = <span class="string">"2"</span>),</span><br><span class="line">            <span class="meta">@HystrixProperty</span>(name = <span class="string">"queueSizeRejectionThreshold"</span>, value = <span class="string">"15"</span>),</span><br><span class="line">            <span class="meta">@HystrixProperty</span>(name = <span class="string">"metrics.rollingStats.numBuckets"</span>, value = <span class="string">"12"</span>),</span><br><span class="line">            <span class="meta">@HystrixProperty</span>(name = <span class="string">"metrics.rollingStats.timeInMilliseconds"</span>, value = <span class="string">"1440"</span>)&#125;)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> User <span class="title">getUserById</span><span class="params">(String id)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> userResource.getUserById(id);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>설정 참고:<br><a href="https://github.com/Netflix/Hystrix/wiki/Configuration#execution.isolation.strategy" target="_blank" rel="noopener">https://github.com/Netflix/Hystrix/wiki/Configuration#execution.isolation.strategy</a></p>
+<h1 id="실사용례"><a href="#실사용례" class="headerlink" title="실사용례"></a>실사용례</h1><p>Micro Service Architecture에서 하나의 게시판을 보여주는 예제(게시글, 댓글, 추천 게시글 API를 호출)<br>예제는 spring 4.3.x + reactor로 작성했다.</p>
+<img  src=http://www.plantuml.com/plantuml/svg/TOvB4eCW38Rtd88BC4otBjps09uWXIoO4S80hUFjJOjQr74Lyl4_OiX72XYADAFZ8SmE8Bed59nWRk2B8Da1qmTJG_dbULvumlgpEKGjaQflqZkfVwbPFyIVIlMEB6lwxdJziPvbwvwhNZbxSbYQ0jjErx5n9r0SXQpB7B66w6_80W00>
+
+<p><strong>서비스</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Slf</span>4j</span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BoardService</span> </span>&#123;</span><br><span class="line">  <span class="meta">@Autowired</span> <span class="keyword">private</span> BoardClient boardClient;</span><br><span class="line">  <span class="meta">@Autowired</span> <span class="keyword">private</span> CommentClient commentClient;</span><br><span class="line">  <span class="meta">@Autowired</span> <span class="keyword">private</span> RecommendationClient recoClient;</span><br><span class="line">  <span class="meta">@Value</span>(<span class="string">"service.board.detail.timeout"</span>) <span class="keyword">private</span> Duration detailTimeout;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> BoardDetailDto <span class="title">getDetail</span><span class="params">(<span class="keyword">long</span> id)</span> </span>&#123;</span><br><span class="line">  </span><br><span class="line">    <span class="comment">// board server에서 게시물 단건 호출, 실패시 실패 응답 반환</span></span><br><span class="line">    Board board = boardClient.getOne(id);</span><br><span class="line">    <span class="keyword">if</span> (board == Board.ERROR) &#123;</span><br><span class="line">      <span class="keyword">return</span> BoardDetailDto.ERROR;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// board를 기반으로 댓글과 추천 게시물을 비동기 동시 호출</span></span><br><span class="line">    <span class="keyword">return</span> Mono.zip(Mono.just(board), commentClient.getCommentsByBoardId(id), recoClient.getRecommendationsByBoardId(id))</span><br><span class="line">               .map(TupleUtils.function(BoardDetailDto::<span class="keyword">new</span>))</span><br><span class="line">               .timeout(detailTimeout)</span><br><span class="line">               .doOnError(e.getMessage(), e)</span><br><span class="line">               .onErrorReturn(BoardDetailDto.create(board)) <span class="comment">// 실패시 board 만이라도 DTO로 만들어 응답</span></span><br><span class="line">               .blockOptional()</span><br><span class="line">               .orElse(BoardDetailDto.ERROR);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>CommentClient.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CommentClient</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@HystrixCommand</span>(fallbackMethod = <span class="string">"getCommentsByBoardIdFallback"</span>)</span><br><span class="line">  <span class="keyword">public</span> Mono&lt;List&lt;Comment&gt;&gt; getCommentsByBoardId(<span class="keyword">long</span> id) &#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">public</span> Mono&lt;List&lt;Comment&gt;&gt; getCommentsByBoardIdFallback(<span class="keyword">long</span> id) &#123;</span><br><span class="line">    <span class="keyword">return</span> Mono.just(Collections.emptyList());</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>여러 서비스를 호출하면서도, 하위 서비스의 장애가 client로 노출되지 않고, 성공한 서비스 응답들은 모두 client로 줄 수 있음</li>
+</ul>
+<h1 id="Isolation"><a href="#Isolation" class="headerlink" title="Isolation"></a>Isolation</h1><p>bulkhead pattern를 채용하여 종속성(dependency)을 분리하며, 각각에 대한 접근을 제한했다.</p>
+<table>
+<thead>
+<tr>
+<th><img src="https://github.com/Netflix/Hystrix/wiki/images/soa-5-isolation-focused-640.png" alt="Inline-image-2018-03-05 11.45.23.425.png"></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>출처 : <a href="https://github.com/Netflix/Hystrix/wiki/How-it-Works" target="_blank" rel="noopener">https://github.com/Netflix/Hystrix/wiki/How-it-Works</a></em></td>
+</tr>
+</tbody></table>
+<h2 id="Threads-amp-ThreadPool"><a href="#Threads-amp-ThreadPool" class="headerlink" title="Threads &amp; ThreadPool"></a>Threads &amp; ThreadPool</h2><p>호출 thread와 별도의 thread(ex. Tomcat thread pool)에서 동작한다. </p>
+<table>
+<thead>
+<tr>
+<th><img src="https://github.com/Netflix/Hystrix/wiki/images/request-example-with-latency-1280.png" alt="Inline-image-2018-03-05 11.48.29.958.png"></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>출처 : <a href="https://github.com/Netflix/Hystrix/wiki/How-it-Works" target="_blank" rel="noopener">https://github.com/Netflix/Hystrix/wiki/How-it-Works</a></em></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>ThreadPool을 사용하지 않아도 되는 경우</p>
+<ol>
+<li>네트워크 connection/read timeout, retry 옵션을 사용하여 매우 빨리 실패하거나</li>
+<li>client가 항상 정상동작한다는 신뢰가 있는 경우<br>즉, 그냥 ThreadPool을 사용하자</li>
+</ol>
+</blockquote>
+<p><strong>Netflix에서 각각의 Thread pool을 사용하여 의존성 격리를 구성한 이유</strong></p>
+<ul>
+<li>결론부터 먼저 말하자면, Thread를 나누어 다른 Thread에 접근하기 어렵도록 종속성을 원천차단한다.</li>
+<li>application은 수없이 많은 팀의, 수없이 많은 back-end service 를 수없이 많이 호출한다</li>
+<li>각 service는 client library를 가지고 있다</li>
+<li>client library는 항상 바뀐다</li>
+<li>client library는 새로운 네트워크를 호출할 수도 있고, retry, parsing, caching 등의 logic을 가지며 <code>blackbox</code> 취급된다</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th><img src="https://github.com/Netflix/Hystrix/wiki/images/isolation-options-1280.png" alt="Inline-image-2018-03-05 11.59.03.923.png"></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>출처 : <a href="https://github.com/Netflix/Hystrix/wiki/How-it-Works" target="_blank" rel="noopener">https://github.com/Netflix/Hystrix/wiki/How-it-Works</a></em></td>
+</tr>
+</tbody></table>
+<p><strong>Thread Pool 사용상 이점</strong></p>
+<ul>
+<li>application이 client library로부터 보호된다</li>
+<li>덕분에 새 client library를 추가할 때의 risk를 낮출 수 있다, 장애는 격리된 thread에서 발생한다</li>
+</ul>
+<p><strong>Thread Pool 사용상 단점</strong></p>
+<ul>
+<li>queueing, scheduling, context switching 등의 오버 헤드 발생가 발생된다(Netflix에서는 이를 사소한 정도로 간주)</li>
+</ul>
+<p><strong>Thread 비용</strong></p>
+<ul>
+<li>Hystrix는 자식 thread에서 <code>construct()</code>, <code>run()</code>을 실행할 때, 부모 thread에서 총 종단 시간을 측정하여 overhead를 계산한다.</li>
+<li>Netflix에서는 10억 건 이상의 Hystrix Command를 실행하며, 각 API 인스턴스마다 5-20개의 thread를 가지고 있는 thread pool을 40+개를 설정한다.(대부분의 thread pool 내의 thread 개수는 10개)</li>
+</ul>
+<p><strong>ThreadLocal</strong></p>
+<p>기본적으로 <code>@HytrixCommand</code>는 다른 Thread로 동작을 하기 때문에, ThreadLocal이나 spring에서 지원해주는 <code>@RequestScope</code>, <code>@SessionScope</code> 빈에 접근할 수 없다. 필요한 경우 <code>execution.isolation.strategy: SEMAPHORE</code>로 변경하여 현재 Thread에서 연산을 실행하게 할 수 있다.<br>Spring Security를 사용하는 경우, <code>hystrix.shareSecurityContext=true</code>로 설정해서 <code>SecurityContext</code>를 공유할 수 있다.</p>
+<blockquote>
+<p>THREAD 동작 방식의 경우에는 Thread-pool내의 Thread 갯수 만큼, SEMAPHORE 동작 방식의 경우에는 semaphore count 만큼 요청을 수행할 수 있다<br><code>execution.isolation.semaphore.maxConcurrentRequests</code></p>
+</blockquote>
+<h2 id="Semaphore"><a href="#Semaphore" class="headerlink" title="Semaphore"></a>Semaphore</h2><p>Thread pool을 사용하는 대신, <code>Semaphore(counter)</code>를 사용하여 종속성에 대한 동시 호출 수를 제한할 수 있다. 따라서 Thread를 사용하지 않고 부하를 분한하지만, timeout과 격리가 느슨해지는 단점이 있다 위에서 <code>ThreadPool을 사용하지 않아도 되는 경우</code>에서 설명한 것과 같이 <code>back-end server를 신뢰할 수 있다면 사용해도 괜찮다</code></p>
+<p><code>HystrixCommand</code>와 <code>HystrixObservableCommand</code>는 두 곳에서 <code>semaphore</code>를 지원한다</p>
+<ul>
+<li>Execution: <code>execution.isolation.strategy=SEMAPHORE</code>로 설정이 되어 있으면, 해당 command를 실행할 수 있는 부모 스레스 수를 제한</li>
+<li>Fallback 검색</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>작성자:</strong>
+    supawer0728
+  </li>
+  <li class="post-copyright-link">
+    <strong>원본링크:</strong>
+    <a href="https://supawer0728.github.io/2018/03/11/Spring-Cloud-Hystrix/" title="(Spring Cloud) Hystrix">https://supawer0728.github.io/2018/03/11/Spring-Cloud-Hystrix/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>라이센스: </strong>
+    <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a>
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/spring/" rel="tag"># spring</a>
+          
+            <a href="/tags/spring-cloud/" rel="tag"># spring-cloud</a>
+          
+            <a href="/tags/hystrix/" rel="tag"># hystrix</a>
+          
+            <a href="/tags/netflix/" rel="tag"># netflix</a>
+          
+        </div>
+      
+
+      
+      
+        <div class="post-widgets">
+        
+
+        
+
+        
+          
+          <div id="needsharebutton-postbottom">
+            <span class="btn">
+              <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </span>
+          </div>
+        
+        </div>
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/11/Spring-Cloud-Feign/" rel="next" title="(Spring Cloud) Feign">
+                <i class="fa fa-chevron-left"></i> (Spring Cloud) Feign
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/11/Spring-Cloud-Ribbon%EA%B3%BC-Eureka/" rel="prev" title="(Spring Cloud)Ribbon과 Eureka">
+                (Spring Cloud)Ribbon과 Eureka <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript" target="_blank" rel="noopener">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            목차
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            흝어보기
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="supawer0728" />
+            
+              <p class="site-author-name" itemprop="name">supawer0728</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">32</span>
+                  <span class="site-state-item-name">포스트</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">카테고리</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">50</span>
+                  <span class="site-state-item-name">태그</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/feed.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/supawer0728" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Hystrix란"><span class="nav-number">1.</span> <span class="nav-text">Hystrix란</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Circuit-Breaker-Pattern"><span class="nav-number">1.1.</span> <span class="nav-text">Circuit Breaker Pattern</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#장애-연쇄"><span class="nav-number">2.</span> <span class="nav-text">장애 연쇄</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Hystrix-Flow-Chart"><span class="nav-number">3.</span> <span class="nav-text">Hystrix Flow Chart</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Hystrix-Circuit-Breaker-구현"><span class="nav-number">4.</span> <span class="nav-text">Hystrix Circuit Breaker 구현</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#기본-설정"><span class="nav-number">5.</span> <span class="nav-text">기본 설정</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#예제"><span class="nav-number">6.</span> <span class="nav-text">예제</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#설정"><span class="nav-number">7.</span> <span class="nav-text">설정</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#실사용례"><span class="nav-number">8.</span> <span class="nav-text">실사용례</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Isolation"><span class="nav-number">9.</span> <span class="nav-text">Isolation</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Threads-amp-ThreadPool"><span class="nav-number">9.1.</span> <span class="nav-text">Threads &amp; ThreadPool</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Semaphore"><span class="nav-number">9.2.</span> <span class="nav-text">Semaphore</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">supawer0728</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+  <div class="footer-custom">To Improve Human Life</div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://supawer0728-github-com.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://supawer0728.github.io/2018/03/11/Spring-Cloud-Hystrix/';
+          this.page.identifier = '2018/03/11/Spring-Cloud-Hystrix/';
+          this.page.title = '(Spring Cloud) Hystrix';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://supawer0728-github-com.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('-1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/needsharebutton/needsharebutton.css">
+
+  
+  
+  <script src="/lib/needsharebutton/needsharebutton.js"></script>
+
+  <script>
+    
+      pbOptions = {};
+      
+          pbOptions.iconStyle = "box";
+      
+          pbOptions.boxForm = "horizontal";
+      
+          pbOptions.position = "bottomCenter";
+      
+          pbOptions.networks = "Twitter,Facebook,GooglePlus,Evernote";
+      
+      new needShareButton('#needsharebutton-postbottom', pbOptions);
+    
+    
+  </script>
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
