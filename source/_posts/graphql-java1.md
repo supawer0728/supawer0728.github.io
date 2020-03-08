@@ -1,7 +1,7 @@
 ---
-title: GraphQL On Spring Vol.1 - GraphQL 체험해보기
+title: GraphQL Vol.1 - GraphQL 체험해보기
 date: 2020-03-07 20:04:13
-modified_at: '2020-03-07'
+modified_at: '2020-03-08'
 tags: [graphql]
 categories:
   - graphql
