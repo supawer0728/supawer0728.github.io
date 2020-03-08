@@ -46,7 +46,8 @@ GraphQL은 조회를 위해 인수를 줄 수 있다.
 <iframe style="width: 100%" height="400px" resize="vertical" frameBorder="0" src="https://supawer-graphql-study.herokuapp.com/graphiql?query=%7B%0A%20%20user(id%3A%202)%20%7B%0A%20%20%20%20name%0A%20%20%20%20phone%0A%20%20%7D%0A%7D&variables=%7B%7D"></iframe>
 
 REST에서는 URL Path, Query String 등으로 인수를 넘겼다.
-GraphQL에서는 모든 필드와 중첩된 객체에 스키마로 정의한 인수를 넘길 수 있다. 심지어 인수는 스칼라 타입(scala: String이나 Int)에도 보낼 수 있다.
+GraphQL에서는 모든 필드와 중첩된 객체에 스키마로 정의한 인수를 넘길 수 있다.
+심지어 인수는 스칼라 타입(scala: String이나 Int)에도 보낼 수 있다.
 다음 예제를 살펴보자.
 
 <iframe style="width: 100%" height="400px" resize="vertical" frameBorder="0" src="https://supawer-graphql-study.herokuapp.com/graphiql?query=%7B%0A%20%20user(id%3A%202)%20%7B%0A%20%20%20%20name(toUpperCase%3A%20true)%0A%20%20%20%20phone%0A%20%20%7D%0A%7D&variables=%7B%7D"></iframe>
@@ -173,7 +174,8 @@ mutation CreateReviewForEpisode($ep: Episode!, $review: ReviewInput!) {
 }
 ```
 
-위와 같은 mutation에서 createReview를 통해 `ep`, `review` 변수가 제공되고, `star`와 `commentary`를 필드로 갖는 오브젝트가 반환된다.
+위와 같은 mutation에서 createReview를 통해 `ep`, `review` 변수가 제공되고,
+`star`와 `commentary`를 필드로 갖는 오브젝트가 반환된다.
 즉 Java 서버의 경우 아래와 같은 메서드 시그니처로 정의할 수 있다.
 
 ```java
@@ -188,8 +190,9 @@ public class ReviewService implements GraphQLQueryResolver {
 
 ### mutation의 필드들
 
-질의문과 변경문의 가장 큰 차이점은, 질의문은 각 필드에 대해서 병렬로 실행되는 반면에 변경문의 각 필드는 순차 실행된다는 점이다.
-즉, 한 번의 요청으로 `count`를 1 증가시키는 변경문을 두 개를 보낼 때, 첫 번째 요청이 완료되고 두 번째 요청이 실행되기 때문에 레이스 컨디션(Race Condition)에 빠질 우려가 없다.
+질의문과 변경문의 가장 큰 차이점은, 질의문은 각 필드에 대해서 병렬로 실행되는 반면에 변경문의 각 필드는 순차 실행된다는 것이다.
+즉, 한 번의 요청으로 `count`를 1 증가시키는 변경문을 두 개를 보낼 때,
+첫 번째 요청이 완료되고 두 번째 요청이 실행되기 때문에 레이스 컨디션(Race Condition)에 빠질 우려가 없다.
 
 ### Inline Fragments
 
@@ -333,8 +336,10 @@ enum UserProvider {
 ```
 
 GraphQL 서비스는 여러 언어로 구현될 수 있으므로 각자 언어에 맞게 enum을 구현한다.
-enum을 객체로 다루는 언어에서는 그 혜택을 누릴 수 있겠지만, Javascript와 같이 enum을 지원하지 않는 언어에서는 단순히 integer로 다뤄질 수 있다.
-**하지만 이러한 서비스의 세부 동작은 클라이언트에 노출되지 않으며, 클라이언트는 정의된 enum 값들 내에서 질의, 변경을 수행할 수 있다.**
+enum을 객체로 다루는 언어에서는 그 혜택을 누릴 수 있겠지만,
+Javascript와 같이 enum을 지원하지 않는 언어에서는 단순히 integer로 다뤄질 수 있다.
+**하지만 이러한 서비스의 세부 동작은 클라이언트에 노출되지 않으며,**
+**클라이언트는 정의된 enum 값들 내에서 질의, 변경을 수행할 수 있다.**
 
 ### List와 Non-null
 
@@ -347,7 +352,8 @@ type Album {
 
 `name`은 `String` 타입이며 `!`를 뒤에 붙여 `Non-Null`을 명시하였다.
 이 제약으로 인해 서버는 `name`에 `null` 값을 줄 수 없으며, `null`이 오는 경우에는 오류를 발생시킨다.
-`Non-Null`은 인수에도 선언할 수 있다. 아래와 같이 `Non-Null`로 선언된 인수에 `null`이 들어가면 오류가 질의를 실행할 때 오류가 발생한다.
+`Non-Null`은 인수에도 선언할 수 있다.
+아래와 같이 `Non-Null`로 선언된 인수에 `null`이 들어가면 오류가 질의를 실행할 때 오류가 발생한다.
 
 <iframe style="width: 100%" height="400px" resize="vertical" frameBorder="0" src="https://supawer-graphql-study.herokuapp.com/graphiql?query=query%20getVehicleById(%24id%3A%20Int!)%7B%0A%20%20vehicle(id%3A%20%24id)%20%7B%0A%20%20%20%20name%0A%20%20%20%20manufacturer%0A%20%20%7D%0A%7D&variables=%7B%0A%20%20%22id%22%3A%20null%0A%7D&operationName=getVehicleById"></iframe>
 
