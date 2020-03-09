@@ -89,6 +89,7 @@ theme: next
 deploy:
   type: git
   repo: https://github.com/supawer0728/supawer0728.github.io
+  branch: master
 
 #theme_config
 theme_config:
