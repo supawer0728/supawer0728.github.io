@@ -666,9 +666,9 @@
       
         <tags>
             
-            <tag> spring </tag>
-            
             <tag> spring-cloud </tag>
+            
+            <tag> spring </tag>
             
             <tag> netflix </tag>
             
@@ -766,9 +766,9 @@
       
         <tags>
             
-            <tag> spring </tag>
-            
             <tag> spring-cloud </tag>
+            
+            <tag> spring </tag>
             
             <tag> netflix </tag>
             
@@ -796,9 +796,9 @@
       
         <tags>
             
-            <tag> spring </tag>
-            
             <tag> spring-cloud </tag>
+            
+            <tag> spring </tag>
             
             <tag> feign </tag>
             
