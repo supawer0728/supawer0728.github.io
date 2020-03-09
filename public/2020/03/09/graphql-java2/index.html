@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Nanum Gothic:300,300italic,400,400italic,700,700italic|Nanum Pen Script:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-icon-180x180.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.4">
+
+
+
+  <link rel="manifest" href="/images/manifest.json">
+
+
+  <meta name="msapplication-config" content="/images/browserconfig.xml" />
+
+
+
+  <meta name="keywords" content="graphql," />
+
+
+
+
+
+  <link rel="alternate" href="/feed.xml" title="기록은 재산이다" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="머리말지난 포스트에서는 GraphQL에 대해서 간단하게 테스트를 해보았다.이번 포스트에서는 GraphQL의 Learn에 나오는 내용을 따라 설명을 덧붙이려고 한다.설명과 더불어 GraphiQL을 붙여 즉각 실행해볼 수 있게 구성하였다.  테스트는 Heroku를 사용하고 있다.Heroku를 무료로 사용할 시 유휴시간이 30분이 넘는 경우, 애플리케이션이 sl">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GraphQL Vol.2 - GraphQL 기초">
+<meta property="og:url" content="https://supawer0728.github.io/2020/03/09/graphql-java2/index.html">
+<meta property="og:site_name" content="기록은 재산이다">
+<meta property="og:description" content="머리말지난 포스트에서는 GraphQL에 대해서 간단하게 테스트를 해보았다.이번 포스트에서는 GraphQL의 Learn에 나오는 내용을 따라 설명을 덧붙이려고 한다.설명과 더불어 GraphiQL을 붙여 즉각 실행해볼 수 있게 구성하였다.  테스트는 Heroku를 사용하고 있다.Heroku를 무료로 사용할 시 유휴시간이 30분이 넘는 경우, 애플리케이션이 sl">
+<meta property="og:locale" content="ko_KR">
+<meta property="article:published_time" content="2020-03-08T16:55:00.000Z">
+<meta property="article:modified_time" content="2020-03-08T17:02:43.141Z">
+<meta property="article:author" content="supawer0728">
+<meta property="article:tag" content="graphql">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '작성자'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://supawer0728.github.io/2020/03/09/graphql-java2/"/>
+
+
+
+
+
+  <title>GraphQL Vol.2 - GraphQL 기초 | 기록은 재산이다</title>
+  
+
+
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-115481794-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'UA-115481794-1');
+</script>
+
+
+
+
+
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script data-ad-client="" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="ko">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">기록은 재산이다</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description">To Improve Human Life</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            홈
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            태그
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            카테고리
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            아카이브
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            검색
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="Searching..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://supawer0728.github.io/2020/03/09/graphql-java2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="supawer0728">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="기록은 재산이다">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">GraphQL Vol.2 - GraphQL 기초</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">작성일&#58;</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-03-09T01:55:00+09:00">
+                2020-03-09
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">수정일&#58;</span>
+              
+              <time title="수정일" itemprop="dateModified" datetime="2020-03-09T02:02:43+09:00">
+              
+                2020-03-08
+              
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/graphql/" itemprop="url" rel="index">
+                    <span itemprop="name">graphql</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2020/03/09/graphql-java2/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2020/03/09/graphql-java2/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="머리말"><a href="#머리말" class="headerlink" title="머리말"></a>머리말</h1><p>지난 포스트에서는 GraphQL에 대해서 간단하게 테스트를 해보았다.<br>이번 포스트에서는 <a href="https://graphql.org/learn/" target="_blank" rel="noopener">GraphQL의 Learn</a>에 나오는 내용을 따라 설명을 덧붙이려고 한다.<br>설명과 더불어 GraphiQL을 붙여 즉각 실행해볼 수 있게 구성하였다.</p>
+<blockquote>
+<p>테스트는 Heroku를 사용하고 있다.<br>Heroku를 무료로 사용할 시 유휴시간이 30분이 넘는 경우, 애플리케이션이 sleep 상태로 바뀐다.<br>그렇기 때문에 아래의 테스트 로딩이 느릴 수 있으나, 1분 이내에 로딩될 것이다.</p>
+</blockquote>
+<a id="more"></a>
+
+<h1 id="질의문-Query-변경문-Mutation"><a href="#질의문-Query-변경문-Mutation" class="headerlink" title="질의문(Query) / 변경문(Mutation)"></a>질의문(Query) / 변경문(Mutation)</h1><h3 id="필드"><a href="#필드" class="headerlink" title="필드"></a>필드</h3><p>이전 포스트에서 체험했다시피, 클라이언트에서는 스키마에서 필요로하는 필드를 서버에 요청하여 응답받을 수 있다.</p>
+<blockquote>
+<p>► 버튼을 눌러 테스트할 수 있다.</p>
+</blockquote>
+<iframe style="width: 100%" height="400px" resize="vertical" frameBorder="0" src="https://supawer-graphql-study.herokuapp.com/graphiql?query=%7B%0A%20%20user%20%7B%0A%20%20%20%20name%0A%20%20%7D%0A%7D&variables=%7B%7D"></iframe>
+
+<p>요청의 내용과 응답의 JSON의 각 필드는 대칭된다.</p>
+<blockquote>
+<p>위 요청 내용을 수정해서 테스트할 수도 있다. title을 지우고 ► 버튼을 눌러보자.</p>
+</blockquote>
+<p>또한 객체에 포함된 하위 타입에 대한 질의를 추가할 수 있다.<br>User가 재직하고 있는 Company를 조회해보자.</p>
+<iframe style="width: 100%" height="400px" resize="vertical" frameBorder="0" src="https://supawer-graphql-study.herokuapp.com/graphiql?query=%7B%0A%20%20user%20%7B%0A%20%20%20%20name%0A%20%20%20%20company%20%7B%0A%20%20%20%20%20%20name%0A%20%20%20%20%20%20catchPhrase%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D&variables=%7B%7D"></iframe>
+
+<p>응답에 포함된 User 또한 요청에 대응하는 JSON 구조를 취하고 있다.</p>
+<h3 id="질의-인수-Arguments"><a href="#질의-인수-Arguments" class="headerlink" title="질의 인수(Arguments)"></a>질의 인수(Arguments)</h3><p>GraphQL은 조회를 위해 인수를 줄 수 있다.</p>
+<iframe style="width: 100%" height="400px" resize="vertical" frameBorder="0" src="https://supawer-graphql-study.herokuapp.com/graphiql?query=%7B%0A%20%20user(id%3A%202)%20%7B%0A%20%20%20%20name%0A%20%20%20%20phone%0A%20%20%7D%0A%7D&variables=%7B%7D"></iframe>
+
+<p>REST에서는 URL Path, Query String 등으로 인수를 넘겼다.<br>GraphQL에서는 모든 필드와 중첩된 객체에 스키마로 정의한 인수를 넘길 수 있다.<br>심지어 인수는 스칼라 타입(scala: String이나 Int)에도 보낼 수 있다.<br>다음 예제를 살펴보자.</p>
+<iframe style="width: 100%" height="400px" resize="vertical" frameBorder="0" src="https://supawer-graphql-study.herokuapp.com/graphiql?query=%7B%0A%20%20user(id%3A%202)%20%7B%0A%20%20%20%20name(toUpperCase%3A%20true)%0A%20%20%20%20phone%0A%20%20%7D%0A%7D&variables=%7B%7D"></iframe>
+
+<h3 id="별칭-할당-Aliases"><a href="#별칭-할당-Aliases" class="headerlink" title="별칭 할당(Aliases)"></a>별칭 할당(Aliases)</h3><p>아래와 같이 질의마다 변수를 할당하듯 별칭을 줄 수 있다.<br>user를 조회하지만, 각각 다른 별칭으로 참조할 수 있다.</p>
+<iframe style="width: 100%" height="400px" resize="vertical" frameBorder="0" src="https://supawer-graphql-study.herokuapp.com/graphiql?query=%7B%0A%20%20me%3A%20user(id%3A%201)%20%7B%0A%20%20%20%20name%0A%20%20%20%20phone%0A%20%20%7D%0A%20%20you%3A%20user(id%3A2)%20%7B%0A%20%20%20%20name%0A%20%20%20%20phone%0A%20%20%7D%0A%7D&variables=%7B%7D"></iframe>
+
+
+<h3 id="Fragments"><a href="#Fragments" class="headerlink" title="Fragments"></a>Fragments</h3><p>위에서 별칭을 할당할 때, <code>me</code>와 <code>you</code>가 동일한 필드를 조회하고 있었다.<br>GraphQL은 이러한 반복을 없앨 수 있도록, Fragments라 부르는 재사용 구문을 제공한다.</p>
+<iframe style="width: 100%" height="400px" resize="vertical" frameBorder="0" src="https://supawer-graphql-study.herokuapp.com/graphiql?query=%7B%0A%20%20me%3A%20user(id%3A%201)%20%7B%0A%20%20%20%20...basigInfo%0A%20%20%7D%0A%20%20you%3A%20user(id%3A2)%20%7B%0A%20%20%20%20...basigInfo%0A%20%20%7D%0A%7D%0A%0Afragment%20basigInfo%20on%20User%20%7B%0A%20%20name%0A%20%20phone%0A%20%20email%0A%20%20website%0A%7D&variables=%7B%7D"></iframe>
+
+<p><code>fragment</code>를 선언 후 fragment의 이름을 정의하고 <code>on</code> 뒤에 타입을 명시한다.<br>명시한 타입을 기반으로 fragment 내부 블럭에 넣을 수 있는 필드가 결정된다.</p>
+<h3 id="연산자명"><a href="#연산자명" class="headerlink" title="연산자명"></a>연산자명</h3><p>여태까지 사용한 질의는 사실 모두 축약형이었다.<br>질의의 원형은 <code>query 연산자명 { ... }</code>의 형식이다.</p>
+<iframe style="width: 100%" height="400px" resize="vertical" frameBorder="0" src="https://supawer-graphql-study.herokuapp.com/graphiql?query=query%20meAndYou%20%7B%0A%20%20me%3A%20user(id%3A%201)%20%7B%0A%20%20%20%20name%0A%20%20%7D%0A%20%20you%3A%20user(id%3A2)%20%7B%0A%20%20%20%20name%0A%20%20%7D%0A%7D&operationName=meAndYou&variables=%7B%7D"></iframe>
+
+<p>연산 타입은 <code>query(질의)</code>, <code>mutation(변경)</code>, <code>subscription(구독)</code>의 3가지로 나뉜다.<br>연산자명은 모든 연산 타입에 대해서 명명할 수 있다.<br>연산자명은 디버깅을 하거나 서버 사이드에서 로깅을 할 때 유용하게 쓰일 수 있다.</p>
+<h3 id="변수-Variables"><a href="#변수-Variables" class="headerlink" title="변수(Variables)"></a>변수(Variables)</h3><p>앞에서 인수를 통해서 다른 id의 User를 가져올 수 있는 것을 확인했었다.<br>만약 클라이언트에서 동적으로 다른 질의를 할 때, 매번 다른 인수를 가진 질의 문자열을 생성한다면 큰 낭비일 것이다.<br>질의를 템플릿으로 고정해두고, 우리는 변수를 넘길 수 있다.<br>변수는 주로 JSON 형식으로 정의한다.</p>
+<blockquote>
+<p>하단의 <code>QUERY VARIABLES</code>를 참조.</p>
+</blockquote>
+<iframe style="width: 100%" height="400px" resize="vertical" frameBorder="0" src="https://supawer-graphql-study.herokuapp.com/graphiql?query=query%20findAllPostsWithLimit(%24limit%3A%20Int)%20%7B%0A%20%20posts(limit%3A%20%24limit)%20%7B%0A%20%20%20%20title%0A%20%20%09comments(limit%3A%20%24limit)%20%7B%0A%20%20%20%20%20%20name%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D&operationName=findAllPostsWithLimit&variables=%7B%0A%20%20%22limit%22%3A%202%0A%7D"></iframe>
+
+<p>Http Request의 모양은 다음과 같다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">POST &#x2F;graphql</span><br><span class="line">Host: localhost</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;: &quot;query findAllPostsWithLimit($limit: Int!) &#123; ... &#125;&quot;,</span><br><span class="line">  &quot;variables&quot;: &#123;</span><br><span class="line">    &quot;limit&quot;: 2</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;operationName&quot;: &quot;findAllPostsWithLimit&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>이제 클라이언트에서는 질의를 매번 수정할 필요 없이, 변수만 정의해서 동적으로 다른 질의를 할 수 있다.<br>fragment에서도 변수를 그대로 사용할 수 있다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">fragment limitedComments on Post &#123;</span><br><span class="line">  title</span><br><span class="line">  body</span><br><span class="line">  comments(limit: $limit) &#123;</span><br><span class="line">    title</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="변수-정의"><a href="#변수-정의" class="headerlink" title="변수 정의"></a>변수 정의</h3><p>위와 같이 <code>$limit: Int</code>로 변수를 정의할 수 있다.<br>변수는 scala, enum, 혹은 input 타입으로 정의할 수 있다.<br>변수로 복잡한 객체를 넘겨야 하는 경우 서버에서 제공하는 input 타입을 사용한다.</p>
+<p>위의 질의에서는 <code>Int</code> 타입으로 선언되었기 때문에 변수가 없어도 정상적으로 동작한다.<br>필수값으로 지정하려면 <code>Int!</code>로 정의해야 한다.<br>변수 없이 정상 동작하는지 확인해보자.</p>
+<iframe style="width: 100%" height="400px" resize="vertical" frameBorder="0" src="https://supawer-graphql-study.herokuapp.com/graphiql?query=query%20findAllPostsWithLimit(%24limit%3A%20Int)%20%7B%0A%20%20posts(limit%3A%20%24limit)%20%7B%0A%20%20%20%20title%0A%20%20%7D%0A%7D&operationName=findAllPostsWithLimit&variables=%7B%7D"></iframe>
+
+<h3 id="변수-기본값"><a href="#변수-기본값" class="headerlink" title="변수 기본값"></a>변수 기본값</h3><p>변수를 정의할 때 기본값을 넣을 수 있다.</p>
+<iframe style="width: 100%" height="400px" resize="vertical" frameBorder="0" src="https://supawer-graphql-study.herokuapp.com/graphiql?query=query%20findAllPostsWithLimit(%24limit%3A%20Int%20%3D%202)%20%7B%0A%20%20posts(limit%3A%20%24limit)%20%7B%0A%20%20%20%20title%0A%20%20%7D%0A%7D&operationName=findAllPostsWithLimit&variables=%7B%7D"></iframe>
+
+<h3 id="지시자-Directives"><a href="#지시자-Directives" class="headerlink" title="지시자(Directives)"></a>지시자(Directives)</h3><p>변수가 인수를 동적으로 전달할 수 있었다면, 지시자는 질의를 동적으로 변경할 수 있다.</p>
+<iframe style="width: 100%" height="400px" resize="vertical" frameBorder="0" src="https://supawer-graphql-study.herokuapp.com/graphiql?query=query%20post(%24id%3A%20Int!%2C%20%24withComments%3A%20Boolean!)%20%7B%0A%20%20post(id%3A%20%24id)%20%7B%0A%20%20%20%20title%0A%20%20%20%20comments%20%40include(if%3A%20%24withComments)%20%7B%0A%20%20%20%20%20%20body%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D&operationName=post&variables=%7B%0A%20%20%22id%22%3A%201%2C%0A%20%20%22withComments%22%3A%20false%0A%7D"></iframe>
+
+<p>기본적으로 GraphQL은 아래 2개의 지시자를 서버에서 구현하도록 정의했다.</p>
+<ul>
+<li><code>@include(if: Boolean)</code>: 인수가 <code>true</code>일 때에만 해당 필드를 포함.</li>
+<li><code>@skip(if: Boolean)</code>: 인수가 <code>true</code>이면 해당 필드를 건너뜀.</li>
+</ul>
+<p>서버는 새로운 지시자를 정의하여 구현할 수도 있다.</p>
+<h3 id="변경문-Mutations"><a href="#변경문-Mutations" class="headerlink" title="변경문(Mutations)"></a>변경문(Mutations)</h3><p>REST API에서 컨벤션 상에서 GET 요청으로는 변경을 일으키지 않듯이, GraphQL에서도 mutation으로 데이터를 변경한다.</p>
+<p>아래 mutation을 살펴보자</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">mutation CreateReviewForEpisode($ep: Episode!, $review: ReviewInput!) &#123;</span><br><span class="line">  createReview(episode: $ep, review: $review) &#123;</span><br><span class="line">    stars</span><br><span class="line">    commentary</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># variables</span><br><span class="line">&#123;</span><br><span class="line">  &quot;ep&quot;: &quot;JEDI&quot;,</span><br><span class="line">  &quot;review&quot;: &#123;</span><br><span class="line">    &quot;stars&quot;: 5,</span><br><span class="line">    &quot;commentary&quot;: &quot;This is a great movie!&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>위와 같은 mutation에서 createReview를 통해 <code>ep</code>, <code>review</code> 변수가 제공되고,<br><code>star</code>와 <code>commentary</code>를 필드로 갖는 오브젝트가 반환된다.<br>즉 Java 서버의 경우 아래와 같은 메서드 시그니처로 정의할 수 있다.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ReviewService</span> <span class="keyword">implements</span> <span class="title">GraphQLQueryResolver</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> Review <span class="title">createReview</span><span class="params">(Integer stars, ReviewInput review)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>위의 변수로 주어진 <code>review</code>가 앞에서 이야기했던 input 타입이다.</p>
+<h3 id="mutation의-필드들"><a href="#mutation의-필드들" class="headerlink" title="mutation의 필드들"></a>mutation의 필드들</h3><p>질의문과 변경문의 가장 큰 차이점은, 질의문은 각 필드에 대해서 병렬로 실행되는 반면에 변경문의 각 필드는 순차 실행된다는 것이다.<br>즉, 한 번의 요청으로 <code>count</code>를 1 증가시키는 변경문을 두 개를 보낼 때,<br>첫 번째 요청이 완료되고 두 번째 요청이 실행되기 때문에 레이스 컨디션(Race Condition)에 빠질 우려가 없다.</p>
+<h3 id="Inline-Fragments"><a href="#Inline-Fragments" class="headerlink" title="Inline Fragments"></a>Inline Fragments</h3><p>GraphQL은 타입을 추상화할 수 있는 interface를 제공하고 있으며, 다중 상속과 비슷한 union 타입 또한 제공하고 있다.</p>
+<p>탈것에 대해 다음과 같이 스키마가 정의되어 있다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">interface Vehicle &#123;</span><br><span class="line">    id: Int!</span><br><span class="line">    manufacturer: String!</span><br><span class="line">    name: String!</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">type Car implements Vehicle &#123;</span><br><span class="line">    id: Int!</span><br><span class="line">    manufacturer: String!</span><br><span class="line">    name: String!</span><br><span class="line">    tire: String!</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">type Airplane implements Vehicle &#123;</span><br><span class="line">    id: Int!</span><br><span class="line">    manufacturer: String!</span><br><span class="line">    name: String!</span><br><span class="line">    flyLimit: String!</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>이러한 탈것 추상 타입의 구현체인 자동차, 비행기에 따라 다르게 동작하도록 하려면 아래와 같이 inline fragment를 추가한다.</p>
+<iframe style="width: 100%" height="400px" resize="vertical" frameBorder="0" src="https://supawer-graphql-study.herokuapp.com/graphiql?query=%7B%0A%20%20vehicle(id%3A%201)%20%7B%0A%20%20%20%20name%0A%20%20%20%20manufacturer%0A%20%20%20%20...%20on%20Car%20%7B%0A%20%20%20%20%20%20tire%0A%20%20%20%20%7D%0A%20%20%20%20...%20on%20Airplane%20%7B%0A%20%20%20%20%20%20flyLimit%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D
+&variables=%7B%7D"></iframe>
+
+<h3 id="메타-필드"><a href="#메타-필드" class="headerlink" title="메타 필드"></a>메타 필드</h3><p>위에서의 추상 타입에 대한 구현체에 따라 클라이언트의 동작이 달라져야 하는 경우가 있을 수 있다.<br>이럴 때에는 <code>__typename</code> 메타 필드를 추가하여 실제 어떤 구현체가 응답으로 오는지 확인할 수 있다.</p>
+<iframe style="width: 100%" height="400px" resize="vertical" frameBorder="0" src="https://supawer-graphql-study.herokuapp.com/graphiql?query=%7B%0A%20%20vehicle(id%3A%201)%20%7B%0A%20%20%20%20__typename%0A%20%20%20%20name%0A%20%20%20%20manufacturer%0A%20%20%7D%0A%7D&variables=%7B%7D"></iframe>
+
+<h1 id="스키마와-타입"><a href="#스키마와-타입" class="headerlink" title="스키마와 타입"></a>스키마와 타입</h1><h3 id="타입"><a href="#타입" class="headerlink" title="타입"></a>타입</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  vehicle &#123;</span><br><span class="line">    name</span><br><span class="line">    manufacturer</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>위 예제와 같이 GraphQL에서 타입은:</p>
+<ul>
+<li>root 오브젝트로 시작한다.</li>
+<li>root 오브젝트에 field(<code>vehicle</code>)를 선언한다.</li>
+<li>vehicle에서 받을 응답값을 선택적으로 기재한다.</li>
+</ul>
+<p>요청 스키마를 따라 구조화된 JSON 응답이 오기 때문에, 서버 응답을 예측할 수 있다.<br>때문에 클라이언트는 어떤 구조로 요청을 보낼 수 있는가에 대해 알아야 하는데 이를 스키마로 정의해두었다.</p>
+<p>GraphQL을 제공하는 애플리케이션은 우리가 어떤 데이터를 질의할 수 있는지를 정의한 타입 셋을 가지고 있다.<br>그리고 애플리케이션은 질의가 들어오면 이 스키마를 가지고 질의 된 값들의 유효성을 검증한다.</p>
+<h3 id="객체-타입과-필드"><a href="#객체-타입과-필드" class="headerlink" title="객체 타입과 필드"></a>객체 타입과 필드</h3><p>GraphQL의 스키마에서 가장 기초적인 것은 오브젝트 타입이다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">type Album &#123;</span><br><span class="line">  name: String!</span><br><span class="line">  photos: [Photo!]!</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>타입의 이름을 <code>Album</code>로 지었다.</li>
+<li><code>name</code>과 <code>photo</code>는 <code>Album</code> 객체의 필드이다.</li>
+<li><code>String</code>은 GraphQL에서 기본으로 제공하는 스칼라 타입이다. 스칼라 타입은 다시 알아보기로 하자.</li>
+<li><code>String!</code>에서 <code>!</code>는 해당 필드가 Null을 허용하지 않음을 뜻한다.(non-null)</li>
+<li><code>[Photo!]!</code>는 <code>Photo</code> 객체의 배열을 뜻한다.<ul>
+<li><code>[]!</code>는 즉 <code>photos</code> 변수는 Null일 수 없음을 의미한다.</li>
+<li><code>Photo!</code>는 배열의 각 요소가 Null일 수 없음을 의미한다.</li>
+</ul>
+</li>
+</ul>
+<h3 id="Query와-Mutation-타입"><a href="#Query와-Mutation-타입" class="headerlink" title="Query와 Mutation 타입"></a>Query와 Mutation 타입</h3><p>GraphQL에서 대부분은 오브젝트 타입이지만, 아래의 두 타입은 특별한 취급을 받는다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">schema &#123;</span><br><span class="line">  query: Query</span><br><span class="line">  mutation: Mutation</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>모든 GraphQL 서비스는 <code>query</code> 타입을 가지며 <code>mutation</code> 타입은 있을 수도 있고 없을 수도 있다.<br>두 타입은 일반적인 오브젝트 타입과 같지만, 모든 GraphQL의 진입점이 된다는 점에서 특별 취급을 받는다.</p>
+<iframe style="width: 100%" height="400px" resize="vertical" frameBorder="0" src="https://supawer-graphql-study.herokuapp.com/graphiql?query=query%20%7B%0A%20%20user%20%7B%0A%20%20%20%20name%0A%20%20%20%20email%0A%20%20%7D%0A%7D&variables=%7B%7D"></iframe>
+
+<p>위 질의문을 수행하기 위해서 서비스는 아래의 스키마를 가져야 한다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">type Query &#123;</span><br><span class="line">  user: User</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>mutation</code> 또한 비슷한 방식으로 동작한다.</p>
+<h3 id="스칼라-타입"><a href="#스칼라-타입" class="headerlink" title="스칼라 타입"></a>스칼라 타입</h3><p>GraphQL은 다음의 스칼라 타입을 기본으로 제공한다.</p>
+<ul>
+<li>Int: signed 32-bit integer.</li>
+<li>Float: signed double-precision floating-point.(64-bit)</li>
+<li>String: UTF-8 Character Sequence.</li>
+<li>Boolean</li>
+<li>ID: 고유 식별자를 나타내는 타입이다. 주로 객체를 다시 페치해오거나, 캐시키로 사용된다.<br>ID는 String과 같은 방식으로 직렬화되지만, ID는 난독화된다는 것에 의미를 가진다.</li>
+</ul>
+<p>대부분의 GraphQL 서비스는 자체적으로 스칼라 타입을 정의할 수 있다. Java도 가능하다.</p>
+<p>아래와 같이 <code>Date</code> 타입을 정의할 수 있다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">scalas Date</span><br></pre></td></tr></table></figure>
+
+<p>이에 대해 어떻게 역/직렬화할 것인지는 구현하기에 달렸다.</p>
+<h3 id="Enumumeration"><a href="#Enumumeration" class="headerlink" title="Enumumeration"></a>Enumumeration</h3><p>아래와 같이 enum을 정의할 수 있다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">enum UserProvider &#123;</span><br><span class="line">  NAVER</span><br><span class="line">  LINE</span><br><span class="line">  KAKAO</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>GraphQL 서비스는 여러 언어로 구현될 수 있으므로 각자 언어에 맞게 enum을 구현한다.<br>enum을 객체로 다루는 언어에서는 그 혜택을 누릴 수 있겠지만,<br>Javascript와 같이 enum을 지원하지 않는 언어에서는 단순히 integer로 다뤄질 수 있다.<br><strong>하지만 이러한 서비스의 세부 동작은 클라이언트에 노출되지 않으며,</strong><br><strong>클라이언트는 정의된 enum 값들 내에서 질의, 변경을 수행할 수 있다.</strong></p>
+<h3 id="List와-Non-null"><a href="#List와-Non-null" class="headerlink" title="List와 Non-null"></a>List와 Non-null</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">type Album &#123;</span><br><span class="line">  name: String!</span><br><span class="line">  photos: [Photo!]!</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>name</code>은 <code>String</code> 타입이며 <code>!</code>를 뒤에 붙여 <code>Non-Null</code>을 명시하였다.<br>이 제약으로 인해 서버는 <code>name</code>에 <code>null</code> 값을 줄 수 없으며, <code>null</code>이 오는 경우에는 오류를 발생시킨다.<br><code>Non-Null</code>은 인수에도 선언할 수 있다.<br>아래와 같이 <code>Non-Null</code>로 선언된 인수에 <code>null</code>이 들어가면 오류가 질의를 실행할 때 오류가 발생한다.</p>
+<iframe style="width: 100%" height="400px" resize="vertical" frameBorder="0" src="https://supawer-graphql-study.herokuapp.com/graphiql?query=query%20getVehicleById(%24id%3A%20Int!)%7B%0A%20%20vehicle(id%3A%20%24id)%20%7B%0A%20%20%20%20name%0A%20%20%20%20manufacturer%0A%20%20%7D%0A%7D&variables=%7B%0A%20%20%22id%22%3A%20null%0A%7D&operationName=getVehicleById"></iframe>
+
+<p><code>Non-Null</code>과 <code>List</code>는 조합해서 사용할 수 있다.</p>
+<table>
+<thead>
+<tr>
+<th>myField: [String!]</th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>myField: null</code></td>
+<td>valid</td>
+</tr>
+<tr>
+<td><code>myField: []</code></td>
+<td>valid</td>
+</tr>
+<tr>
+<td><code>myField: [&#39;a&#39;, &#39;b&#39;]</code></td>
+<td>valid</td>
+</tr>
+<tr>
+<td><code>myField: [&#39;a&#39;, null, &#39;b&#39;]</code></td>
+<td>error</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>myField: [String]!</th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>myField: null</code></td>
+<td>error</td>
+</tr>
+<tr>
+<td><code>myField: []</code></td>
+<td>valid</td>
+</tr>
+<tr>
+<td><code>myField: [&#39;a&#39;, &#39;b&#39;]</code></td>
+<td>valid</td>
+</tr>
+<tr>
+<td><code>myField: [&#39;a&#39;, null, &#39;b&#39;]</code></td>
+<td>valid</td>
+</tr>
+</tbody></table>
+<h3 id="인터페이스"><a href="#인터페이스" class="headerlink" title="인터페이스"></a>인터페이스</h3><p>GraphQL은 추상 타입으로 인터페이스를 제공한다.<br>인터페이스를 정의하고 구현하는 방법은 다음과 같다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">interface Vehicle &#123;</span><br><span class="line">  id: Int!</span><br><span class="line">  manufacturer: String!</span><br><span class="line">  name: String!</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">type Car implements Vehicle &#123;</span><br><span class="line">  id: Int!</span><br><span class="line">  manufacturer: String!</span><br><span class="line">  name: String!</span><br><span class="line">  tire: String!</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">type Airplane implements Vehicle &#123;</span><br><span class="line">  id: Int!</span><br><span class="line">  manufacturer: String!</span><br><span class="line">  name: String!</span><br><span class="line">  flyLimit: String!</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Union"><a href="#Union" class="headerlink" title="Union"></a>Union</h3><p>Union은 각 타입을 묶어낼 수 있다는 점이 인터페이스와 비슷하나 공통 필드가 선언되지 않는다는 점에서 차이가 있다.<br>다음과 같이 선언한다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">union SearchResult &#x3D; Album | Post | Todo</span><br></pre></td></tr></table></figure>
+
+<p>클라이언트에서는 마치 통합 검색과도 같이 사용할 수 있다.</p>
+<iframe style="width: 100%" height="400px" resize="vertical" frameBorder="0" src="https://supawer-graphql-study.herokuapp.com/graphiql?query=%7B%0A%20%20search(title%3A%20%22quos%22)%20%7B%0A%20%20%20%20...%20on%20Album%20%7B%0A%20%20%20%20%20%20title%0A%20%20%20%20%7D%0A%20%20%20%20...%20on%20Post%20%7B%0A%20%20%20%20%20%20title%0A%20%20%20%20%7D%0A%20%20%20%20...%20on%20Todo%20%7B%0A%20%20%20%20%20%20completed%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D&variables=%7B%7D"></iframe>
+
+<h3 id="Input"><a href="#Input" class="headerlink" title="Input"></a>Input</h3><p>여태까지는 enum이나 String 등의 스칼라 타입만 인수로 사용했었으나, 더 복잡한 객체 또한 인수로 넘길 수 있다.<br>이 경우 아래와 같이 <code>Input</code> 타입을 정의할 수 있다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">input CommentInput &#123;</span><br><span class="line">  name: String!</span><br><span class="line">  email: String!</span><br><span class="line">  body: String!</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>특정 Post에 댓글을 다는 변경을 다음과 같이 표현할 수 있겠다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">mutation CreateComment($id: Int!, $comment: CommentInput) &#123;</span><br><span class="line">  createComment(id: $id, comment: $comment) &#123;</span><br><span class="line">    id</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># Variable</span><br><span class="line">&#123;</span><br><span class="line">  &quot;id&quot;: 1,</span><br><span class="line">  &quot;comment&quot;: &#123;</span><br><span class="line">    &quot;name&quot;: &quot;댓글러&quot;,</span><br><span class="line">    &quot;email&quot;: &quot;댓글러@naver.com&quot;,</span><br><span class="line">    &quot;body&quot;: &quot;댓글&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="검증-Validation"><a href="#검증-Validation" class="headerlink" title="검증(Validation)"></a>검증(Validation)</h1><p>타입을 사용하기 때문에 GraphQL의 질의가 유효한지 여부를 미리 알 수 있다.<br>덕분에 서버와 클라이언트는 런타임으로 검증되기 전에 질의 생성 시점에서 유효하지 않은 질의를 알 수 있다.</p>
+<p>fragment는 자기 자신을 참조하지 못한다. 아래 구문은 오류가 발생한다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  task &#123;</span><br><span class="line">    ...TitleAndSubTasks</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">fragment TitleAndSubTasks on Task &#123;</span><br><span class="line">  title</span><br><span class="line">  subTasks &#123;</span><br><span class="line">    ...TitleAndSubTasks</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>질의문은 해당 타입에 존재하는 필드만 선언해야 한다. 아래 구문은 오류가 발생한다.</p>
+<iframe style="width: 100%" height="400px" resize="vertical" frameBorder="0" src="https://supawer-graphql-study.herokuapp.com/graphiql?query=%7B%0A%20%20todo(id%3A1)%20%7B%0A%20%20%20%20undefiendField%0A%20%20%7D%0A%7D&variables=%7B%7D"></iframe>
+
+<p>또한 스칼라, enum 타입 외의 다른 타입을 질의한다면 반드시 하위 필드를 명시해야 한다.<br>아래 질의는 오류가 발생한다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  todo(id: 1)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="Introspection"><a href="#Introspection" class="headerlink" title="Introspection"></a>Introspection</h1><p>GraphQL은 Introspection System으로 어떤 스키마가 정의되어 있는지 확인할 수 있다.<br><code>__schema</code> 필드를 사용하여, 어떤 타입들이 사용가능한 지 알 수 있다.</p>
+<iframe style="width: 100%" height="400px" resize="vertical" frameBorder="0" src="https://supawer-graphql-study.herokuapp.com/graphiql?query=%7B%0A%20%20__schema%20%7B%0A%20%20%20%20types%20%7B%0A%20%20%20%20%20%20name%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D&variables=%7B%7D"></iframe>
+
+<p>꽤 많은 타입들을 발견할 수 있다. 다음과 같이 정리해보자.</p>
+<ul>
+<li>사용자 정의 객체 타입: Query, Todo, Post 등 개발자가 정의한 타입.</li>
+<li>스칼라 타입: String, Int, Boolean</li>
+<li>Introspection System Type: __Schema, __Type, __TypeKind, __Field, __InputValue, __EnumValue, __Diretive</li>
+</ul>
+<p>마지막에 다룬 부분이 GraphQL의 스키마를 엿볼 수 있는 Introspection의 타입들이 되겠다.</p>
+<p>아래와 같이 최초 진입점이었던 <code>Query</code>를 조회할 수 있다.</p>
+<blockquote>
+<p>GraphiQL에서 제공하는 우측 상단의 <code>&lt; Docs</code>와 비교해보자.</p>
+</blockquote>
+<iframe style="width: 100%" height="400px" resize="vertical" frameBorder="0" src="https://supawer-graphql-study.herokuapp.com/graphiql?query=%7B%0A%20%20__schema%20%7B%0A%20%20%20%20queryType%20%7B%0A%20%20%20%20%20%20name%0A%20%20%20%20%20%20fields%20%7B%0A%20%20%20%20%20%20%20%20name%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D&variables=%7B%7D"></iframe>
+
+<p>특정 타입에 대해서는 <code>__type</code>으로 조회할 수 있다.</p>
+<iframe style="width: 100%" height="400px" resize="vertical" frameBorder="0" src="https://supawer-graphql-study.herokuapp.com/graphiql?query=%7B%0A%20%20__type(name%3A%20%22Post%22)%20%7B%0A%20%20%20%20name%0A%20%20%20%20kind%0A%20%20%20%20fields%20%7B%0A%20%20%20%20%20%20name%0A%20%20%20%20%20%20type%20%7B%0A%20%20%20%20%20%20%20%20ofType%20%7B%0A%20%20%20%20%20%20%20%20%20%20name%0A%20%20%20%20%20%20%20%20%20%20kind%0A%20%20%20%20%20%20%20%20%20%20description%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%7D%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D%0A&variables=%7B%7D"></iframe>
+
+<p>이러한 Introspection의 도움으로 IDE나 브라우저에서 좋은 UX툴을 만들 수 있다.<br>이미 우리가 체험한 <a href="https://supawer-graphql-study.herokuapp.com/graphiql" target="_blank" rel="noopener">GraphiQL</a>도 마찬가지이고 <a href="https://supawer-graphql-study.herokuapp.com/voyager" target="_blank" rel="noopener">Voyager</a> 또한 문서화할 때 유용하다.</p>
+<h1 id="맺음말"><a href="#맺음말" class="headerlink" title="맺음말"></a>맺음말</h1><p>GraphQL에 대해서 기초적인 내용들을 익혀보았다.</p>
+<p>GraphQL은 타입 기반으로 스키마를 미리 정의한다.<br>클라이언트는 그 스키마를 바탕으로 질의문을 생성, 조작할 수 있다.<br>미리 정의된 스키마가 있으므로 질의에 사용된 인수에 대한 유효성 검사를 쉽게할 수 있다.<br>또한 Introspection System을 제공하고 있으므로 유용한 헬퍼 툴을 만들기 쉽고, 문서화하기도 편리하다.</p>
+<p>GraphQL을 어떻게 사용할 수 있는지는 알게 되었으나, 슬슬 백엔드에서는 어떻게 GraphQL을 구현했을 지 궁금할 즈음이다.<br>처음에는 체험하기, 기초, Spring Boot 연동의 3부작으로 포스트를 작성할 예정이었으나, 생각이 바뀌어 5부작이 될 것 같다.<br>체험하기, 기초, Best Practice, GraphQL Java, GraphQL On Spring Boot로 진행할 예정이다.</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>작성자:</strong>
+    supawer0728
+  </li>
+  <li class="post-copyright-link">
+    <strong>원본링크:</strong>
+    <a href="https://supawer0728.github.io/2020/03/09/graphql-java2/" title="GraphQL Vol.2 - GraphQL 기초">https://supawer0728.github.io/2020/03/09/graphql-java2/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>라이센스: </strong>
+    <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a>
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/graphql/" rel="tag"># graphql</a>
+          
+        </div>
+      
+
+      
+      
+        <div class="post-widgets">
+        
+
+        
+
+        
+          
+          <div id="needsharebutton-postbottom">
+            <span class="btn">
+              <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </span>
+          </div>
+        
+        </div>
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/03/07/graphql-java1/" rel="next" title="GraphQL Vol.1 - GraphQL 체험해보기">
+                <i class="fa fa-chevron-left"></i> GraphQL Vol.1 - GraphQL 체험해보기
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript" target="_blank" rel="noopener">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            목차
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            흝어보기
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="supawer0728" />
+            
+              <p class="site-author-name" itemprop="name">supawer0728</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">34</span>
+                  <span class="site-state-item-name">포스트</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">17</span>
+                  <span class="site-state-item-name">카테고리</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">51</span>
+                  <span class="site-state-item-name">태그</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/feed.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/supawer0728" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#머리말"><span class="nav-number">1.</span> <span class="nav-text">머리말</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#질의문-Query-변경문-Mutation"><span class="nav-number">2.</span> <span class="nav-text">질의문(Query) &#x2F; 변경문(Mutation)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#필드"><span class="nav-number">2.0.1.</span> <span class="nav-text">필드</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#질의-인수-Arguments"><span class="nav-number">2.0.2.</span> <span class="nav-text">질의 인수(Arguments)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#별칭-할당-Aliases"><span class="nav-number">2.0.3.</span> <span class="nav-text">별칭 할당(Aliases)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Fragments"><span class="nav-number">2.0.4.</span> <span class="nav-text">Fragments</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#연산자명"><span class="nav-number">2.0.5.</span> <span class="nav-text">연산자명</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#변수-Variables"><span class="nav-number">2.0.6.</span> <span class="nav-text">변수(Variables)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#변수-정의"><span class="nav-number">2.0.7.</span> <span class="nav-text">변수 정의</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#변수-기본값"><span class="nav-number">2.0.8.</span> <span class="nav-text">변수 기본값</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#지시자-Directives"><span class="nav-number">2.0.9.</span> <span class="nav-text">지시자(Directives)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#변경문-Mutations"><span class="nav-number">2.0.10.</span> <span class="nav-text">변경문(Mutations)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mutation의-필드들"><span class="nav-number">2.0.11.</span> <span class="nav-text">mutation의 필드들</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Inline-Fragments"><span class="nav-number">2.0.12.</span> <span class="nav-text">Inline Fragments</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#메타-필드"><span class="nav-number">2.0.13.</span> <span class="nav-text">메타 필드</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#스키마와-타입"><span class="nav-number">3.</span> <span class="nav-text">스키마와 타입</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#타입"><span class="nav-number">3.0.1.</span> <span class="nav-text">타입</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#객체-타입과-필드"><span class="nav-number">3.0.2.</span> <span class="nav-text">객체 타입과 필드</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Query와-Mutation-타입"><span class="nav-number">3.0.3.</span> <span class="nav-text">Query와 Mutation 타입</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#스칼라-타입"><span class="nav-number">3.0.4.</span> <span class="nav-text">스칼라 타입</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Enumumeration"><span class="nav-number">3.0.5.</span> <span class="nav-text">Enumumeration</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#List와-Non-null"><span class="nav-number">3.0.6.</span> <span class="nav-text">List와 Non-null</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#인터페이스"><span class="nav-number">3.0.7.</span> <span class="nav-text">인터페이스</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Union"><span class="nav-number">3.0.8.</span> <span class="nav-text">Union</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Input"><span class="nav-number">3.0.9.</span> <span class="nav-text">Input</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#검증-Validation"><span class="nav-number">4.</span> <span class="nav-text">검증(Validation)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Introspection"><span class="nav-number">5.</span> <span class="nav-text">Introspection</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#맺음말"><span class="nav-number">6.</span> <span class="nav-text">맺음말</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">supawer0728</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+  <div class="footer-custom">To Improve Human Life</div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://supawer0728-github-com.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://supawer0728.github.io/2020/03/09/graphql-java2/';
+          this.page.identifier = '2020/03/09/graphql-java2/';
+          this.page.title = 'GraphQL Vol.2 - GraphQL 기초';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://supawer0728-github-com.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('-1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/needsharebutton/needsharebutton.css">
+
+  
+  
+  <script src="/lib/needsharebutton/needsharebutton.js"></script>
+
+  <script>
+    
+      pbOptions = {};
+      
+          pbOptions.iconStyle = "box";
+      
+          pbOptions.boxForm = "horizontal";
+      
+          pbOptions.position = "bottomCenter";
+      
+          pbOptions.networks = "Twitter,Facebook,GooglePlus,Evernote";
+      
+      new needShareButton('#needsharebutton-postbottom', pbOptions);
+    
+    
+  </script>
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
