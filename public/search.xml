@@ -691,9 +691,9 @@
           
           <category> spring </category>
           
-          <category> cloud </category>
-          
           <category> architecture </category>
+          
+          <category> cloud </category>
           
           <category> netflix </category>
           
@@ -770,9 +770,9 @@
             
             <tag> spring-cloud </tag>
             
-            <tag> hystrix </tag>
-            
             <tag> netflix </tag>
+            
+            <tag> hystrix </tag>
             
         </tags>
       
@@ -800,9 +800,9 @@
             
             <tag> spring-cloud </tag>
             
-            <tag> netflix </tag>
-            
             <tag> feign </tag>
+            
+            <tag> netflix </tag>
             
         </tags>
       
